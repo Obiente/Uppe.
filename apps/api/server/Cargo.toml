@@ -12,8 +12,6 @@ logger = { path = "../crates/logger" }
 
 [dependencies.macros_utils]
 path = "../crates/macros_utils"
-default-features = false
-features = ["actix"]
 
 [build-dependencies]
 dotenvy.workspace = true

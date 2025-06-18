@@ -4,4 +4,15 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-actix-web = { workspace = true }
+actix-web.workspace = true
+logger = { path = "../crates/logger" }
+thiserror.workspace = true
+actix_error_proc = "1.1.4"
+
+[dependencies.macros_utils]
+path = "../crates/macros_utils"
+default-features = false
+features = ["actix"]
+
+[build-dependencies]
+dotenvy.workspace = true

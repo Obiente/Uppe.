@@ -24,10 +24,6 @@
       in {
         devShells.default = craneLib.devShell {
           packages = with pkgs; [ toolchain nodejs_22 nodePackages.pnpm ];
-
-          env = {
-            LAZYVIM_RUST_DIAGNOSTICS = "bacon-ls"; # Chiko's nvim config thing
-          };
         };
       });
 }

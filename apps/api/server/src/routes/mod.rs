@@ -1,5 +1,5 @@
-mod hello;
+mod health;
 
 macros_utils::routes! {
-    load hello,
+    load health,
 }

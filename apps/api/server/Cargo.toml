@@ -5,9 +5,10 @@ edition = "2024"
 
 [dependencies]
 actix-web.workspace = true
-logger = { path = "../crates/logger" }
 thiserror.workspace = true
+
 actix_error_proc = "1.1.4"
+logger = { path = "../crates/logger" }
 
 [dependencies.macros_utils]
 path = "../crates/macros_utils"

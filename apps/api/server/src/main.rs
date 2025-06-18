@@ -1,5 +1,5 @@
-// TODO: Scaffold the API with the basic macros for Actix development
-
-fn main() {
-    println!("Hello, world!");
+#[actix_web::main]
+async fn main() {
+    // TODO: Setup logging, ill leave this to chiko since he has his preferences
+    println!("This runs correctly");
 }

@@ -1,5 +1,5 @@
 {
-  "name": "PeerUP",
+  "name": "@Obiente/PeerUP",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -8,8 +8,13 @@
     "dev": "turbo run dev",
     "lint": "turbo run lint"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": ["peerup", "obiente", "uptime", "p2p", "monitoring", "decentralized"],
+  "author": {
+    "name": "Obiente",
+    "url": "https://obiente.com",
+    "github": "Obiente",
+    "email": "peerup@obiente.dev"
+  },
   "license": "ISC",
   "packageManager": "pnpm@10.12.1",
   "devDependencies": {

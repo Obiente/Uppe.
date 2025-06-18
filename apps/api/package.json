@@ -1,6 +1,7 @@
 {
-  "name": "api",
-  "scripts": {
-    "build": "cargo build --release"
-  }
+    "name": "api",
+    "scripts": {
+        "build": "cargo build --release",
+        "format": "rustfmt **/**/*.rs"
+    }
 }

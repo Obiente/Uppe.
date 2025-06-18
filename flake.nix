@@ -1,69 +1,33 @@
 {
-  description = "Custom flake for peerup's development";
-
+  description = "Custom flake for PeerUp's development";
   inputs = {
-    nixpkgs.url = "https://flakehub.com/f/NixOS/nixpkgs/0.1";
-    fenix = {
-      url = "https://flakehub.com/f/nix-community/fenix/0.1";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
+    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    crane.url = "github:ipetkov/crane";
+    fenix.url = "github:nix-community/fenix";
+    flake-utils.url = "github:numtide/flake-utils";
   };
 
-  outputs =
-    inputs:
-    let
-      supportedSystems = [
-        "x86_64-linux"
-        "aarch64-linux"
-        "x86_64-darwin"
-        "aarch64-darwin"
-      ];
-      forEachSupportedSystem =
-        f:
-        inputs.nixpkgs.lib.genAttrs supportedSystems (
-          system:
-          f {
-            pkgs = import inputs.nixpkgs {
-              inherit system;
-              overlays = [
-                inputs.self.overlays.default
-              ];
-            };
-          }
-        );
-    in
-    {
-      overlays.default = final: prev: {
-        rustToolchain = inputs.fenix.packages.${prev.stdenv.hostPlatform.system}.fromToolchainFile {
-          file = ./rust-toolchain.toml;
-          sha256 = "sha256-UTXLfAqJncftlHpo2DKbMtLY++q0hMRsWTRiiRD+QxQ=";
-        };
-      };
+  outputs = { nixpkgs, flake-utils, fenix, ... }@inputs:
+    flake-utils.lib.eachDefaultSystem (system:
+      let
+        pkgs = nixpkgs.legacyPackages.${system};
+        crane = inputs.crane.mkLib pkgs;
+        toolchainToml = ./rust-toolchain.toml;
 
-      devShells = forEachSupportedSystem (
-        { pkgs }:
-        {
-          default = pkgs.mkShell {
-            packages = with pkgs; [
-              # Rust
-              rustToolchain
-              openssl
-              pkg-config
-              cargo-deny
-              cargo-edit
-              cargo-watch
-              rust-analyzer
-              # Node
-              nodejs
-              nodePackages.pnpm
-            ];
-
-            env = {
-              # Required by rust-analyzer
-              RUST_SRC_PATH = "${pkgs.rustToolchain}/lib/rustlib/src/rust/library";
-            };
+        toolchain = with fenix.packages.${system};
+          fromToolchainFile {
+            file = toolchainToml;
+            sha256 = "sha256-SISBvV1h7Ajhs8g0pNezC1/KGA0hnXnApQ/5//STUbs=";
           };
-        }
-      );
-    };
+
+        craneLib = crane.overrideToolchain toolchain;
+      in {
+        devShells.default = craneLib.devShell {
+          packages = with pkgs; [ toolchain nodejs_22 nodePackages.pnpm ];
+
+          env = {
+            LAZYVIM_RUST_DIAGNOSTICS = "bacon-ls"; # Chiko's nvim config thing
+          };
+        };
+      });
 }

@@ -1,4 +1,11 @@
 [toolchain]
 channel = "nightly"
-components = ["cargo", "rust-src", "rust-std", "rustc", "rustfmt", "clippy"]
-profile = "default"
+components = [
+    "cargo",
+    "rust-src",
+    "rustc",
+    "rustfmt",
+    "clippy",
+    "rust-analyzer",
+]
+profile = "minimal"

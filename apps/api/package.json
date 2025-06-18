@@ -1,5 +1,5 @@
 {
-  "name": "api",
+  "name": "@peerup/api",
   "scripts": {
     "build": "cargo build --release",
     "build:debug": "cargo build",

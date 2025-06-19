@@ -1,0 +1,23 @@
+{
+  "folders": [
+    {
+      "path": "apps/api",
+      "name": "Api"
+    },
+    {
+      "path": "apps/client",
+      "name": "Client"
+    },
+    {
+      "path": "apps/docs",
+      "name": "Docs"
+    },
+    {
+      "path": "apps/service",
+      "name": "Service"
+    },
+    {
+      "path": "./"
+    },
+  ],
+}

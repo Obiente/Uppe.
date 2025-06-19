@@ -1,0 +1,17 @@
+[package]
+name = "server"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+actix-web.workspace = true
+thiserror.workspace = true
+
+actix_error_proc = "1.1.4"
+logger = { path = "../crates/logger" }
+
+[dependencies.macros_utils]
+path = "../crates/macros_utils"
+
+[build-dependencies]
+dotenvy.workspace = true

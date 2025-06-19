@@ -1,8 +1,6 @@
 {
-  "name": "@peerup/service",
+  "name": "@peerup/api",
   "scripts": {
-    "dev": "cargo run dev",
-    "add": "cargo add",
     "build": "cargo build --release",
     "build:debug": "cargo build",
     "format": "rustfmt **/**/*.rs"

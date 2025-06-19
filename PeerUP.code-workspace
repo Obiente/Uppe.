@@ -2,7 +2,7 @@
   "folders": [
     {
       "path": "apps/api",
-      "name": "Api"
+      "name": "Api",
     },
     {
       "path": "apps/client",
@@ -17,6 +17,7 @@
       "name": "Service"
     },
     {
+      "name": "Root",
       "path": "./"
     },
   ],

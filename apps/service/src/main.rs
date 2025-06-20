@@ -7,19 +7,20 @@ fn get_env_var<T: std::str::FromStr>(name: &str, default: T) -> T {
         Err(_) => default,
     }
 }
-const BIND: &str = get_env_var("BIND", "*");
-const PORT: u16 = get_env_var::<u16>("PORT", 5555);
+
 fn main() {
-    // Start the ZeroMQ service
+    let bind: String = get_env_var("BIND", "*".to_string());
+    let port: u16 = get_env_var("PORT", 5555);
     let context = zmq::Context::new();
     let socket = context
         .socket(zmq::REP)
         .unwrap();
     socket
-        .bind(&format!("tcp://{}:{}", BIND, PORT))
+        .bind(&format!("tcp://{}:{}", bind, port))
         .unwrap();
 
-        peer::announcer::(&socket);
+        // peer::announcer::(&socket);
+        // peer::announcer::(&socket);
     loop {
       
     }

@@ -10,7 +10,7 @@ let
     with fenix.packages.${system};
     fromToolchainFile {
       file = ./rust-toolchain.toml;
-      sha256 = "sha256-hPIBpoDATIduLcMs1jk8ZLhM9fXXZUslxE0kMtzosso=";
+      sha256 = "sha256-4RPRix7Kv4PT0n2YUOrpyVamDS007JGIOet8K29wEJg=";
     };
   craneWithTC = (crane.mkLib pkgs).overrideToolchain fenixToolchain;
 
@@ -25,12 +25,14 @@ let
   ];
   rustPackages = [ fenixToolchain ];
 
-  mkCraneShell = name: packages: craneWithTC.devShell {
-    name = name;
-    packages = packages;
-    buildInputs = [ versionedLibCxx ];
-    LD_LIBRARY_PATH = lib.makeLibraryPath [ versionedLibCxx ];
-  };
+  mkCraneShell =
+    name: packages:
+    craneWithTC.devShell {
+      inherit name;
+      inherit packages;
+      buildInputs = [ versionedLibCxx ];
+      LD_LIBRARY_PATH = lib.makeLibraryPath [ versionedLibCxx ];
+    };
 
   inherit (pkgs) lib mkShellNoCC buildNpmPackage;
 in
@@ -45,7 +47,7 @@ in
 
   client = buildNpmPackage {
     pname = "PeerUP-client";
-    version = (lib.importJSON ./apps/client/package.json).version;
+    inherit ((lib.importJSON ./apps/client/package.json)) version;
     nodejs = versionedNode;
 
     src = ./apps/client;

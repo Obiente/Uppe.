@@ -29,13 +29,17 @@
         };
       in
       {
-        devShells.default = defaultResult.sharedShell;
+        devShells = {
+          default = defaultResult.sharedShell;
 
-        devShells.node = defaultResult.nodeShell;
-        devShells.rust = defaultResult.rustShell;
+          node = defaultResult.nodeShell;
+          rust = defaultResult.rustShell;
+        };
 
-        packages.client = defaultResult.client;
-        packages.service = defaultResult.service;
+        packags = {
+          inherit (defaultResult) client;
+          inherit (defaultResult) service;
+        };
       }
     );
 }

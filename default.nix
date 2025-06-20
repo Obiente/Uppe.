@@ -10,7 +10,7 @@ let
     with fenix.packages.${system};
     fromToolchainFile {
       file = ./rust-toolchain.toml;
-      sha256 = "sha256-4RPRix7Kv4PT0n2YUOrpyVamDS007JGIOet8K29wEJg=";
+      sha256 = "sha256-hPIBpoDATIduLcMs1jk8ZLhM9fXXZUslxE0kMtzosso=";
     };
   craneWithTC = (crane.mkLib pkgs).overrideToolchain fenixToolchain;
 
@@ -47,7 +47,7 @@ in
 
   client = buildNpmPackage {
     pname = "PeerUP-client";
-    inherit ((lib.importJSON ./apps/client/package.json)) version;
+    version = (lib.importJSON ./apps/client/package.json).version;
     nodejs = versionedNode;
 
     src = ./apps/client;

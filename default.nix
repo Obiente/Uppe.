@@ -15,6 +15,7 @@ let
   craneWithTC = (crane.mkLib pkgs).overrideToolchain fenixToolchain;
 
   versionedNode = pkgs.nodejs_24;
+  versionedLibCxx = pkgs.stdenv.cc.cc.lib;
 
   nodePackages = [
     versionedNode
@@ -24,6 +25,13 @@ let
   ];
   rustPackages = [ fenixToolchain ];
 
+  mkCraneShell = name: packages: craneWithTC.devShell {
+    name = name;
+    packages = packages;
+    buildInputs = [ versionedLibCxx ];
+    LD_LIBRARY_PATH = lib.makeLibraryPath [ versionedLibCxx ];
+  };
+
   inherit (pkgs) lib mkShellNoCC buildNpmPackage;
 in
 {
@@ -32,15 +40,8 @@ in
     packages = nodePackages;
   };
 
-  rustShell = craneWithTC.devShell {
-    name = "rust-service";
-    packages = rustPackages;
-  };
-
-  sharedShell = craneWithTC.devShell {
-    name = "shared-shell";
-    packages = nodePackages ++ rustPackages;
-  };
+  rustShell = mkCraneShell "rust-service" rustPackages;
+  sharedShell = mkCraneShell "shared-shell" (nodePackages ++ rustPackages);
 
   client = buildNpmPackage {
     pname = "PeerUP-client";
@@ -59,7 +60,9 @@ in
   service = craneWithTC.buildPackage {
     src = craneWithTC.cleanCargoSource ./apps/service;
     strictDeps = true;
-
     doCheck = false;
+
+    nativeBuildInputs = [ pkgs.autoPatchelfHook ];
+    buildInputs = [ versionedLibCxx ];
   };
 }

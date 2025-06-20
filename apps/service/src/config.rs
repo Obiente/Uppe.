@@ -24,11 +24,7 @@ pub struct ZeroMQ {
 /// Used to ensure we are actually reading a toml file
 fn normalize_toml_path(path: &path::Path) -> path::PathBuf {
     let mut path = path.to_path_buf();
-    if path
-        .extension()
-        .map(|ext| ext != "toml")
-        .unwrap_or(true)
-    {
+    if path.extension().map(|ext| ext != "toml").unwrap_or(true) {
         path.set_extension("toml");
     }
     path
@@ -50,27 +46,30 @@ fn default_config_path() -> Result<path::PathBuf, Error> {
 
 impl Default for Config {
     fn default() -> Self {
-        Self {
-            zeromq: ZeroMQ { bind: "*".into(), port: 5555 },
-        }
+        Self { zeromq: ZeroMQ { bind: "*".into(), port: 5555 } }
     }
 }
 
 impl fmt::Display for Config {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        /// Little helper to nicely indent nested structures when they appear
-        fn write_indented(
-            f: &mut fmt::Formatter<'_>,
-            level: usize,
-            label: &str,
-            value: &dyn fmt::Display,
-        ) -> fmt::Result {
-            writeln!(f, "{:indent$}{}: {}", "", label, value, indent = level * 2)
-        }
+        let write_indented = |level: usize| {
+            move |f: &mut fmt::Formatter<'_>, label: &str, value: &dyn fmt::Display| {
+                writeln!(f, "  {:indent$}{}: {}", "", label, value, indent = level * 2)
+            }
+        };
+        let write_title_indented = |level: usize| {
+            move |f: &mut fmt::Formatter<'_>, label: &str| {
+                writeln!(f, "{:indent$}{}", "", label, indent = level * 2)
+            }
+        };
+
+        let write_title_1 = write_title_indented(1);
+        let write_1 = write_indented(1);
 
         writeln!(f, "Current Internal Configuration State:")?;
-        write_indented(f, 1, "Bind Address", &self.bind)?;
-        write_indented(f, 1, "Port", &self.port)?;
+        write_title_1(f, "ZeroMQ")?;
+        write_1(f, "Bind Address", &self.zeromq.bind)?;
+        write_1(f, "Port", &self.zeromq.port)?;
 
         Ok(())
     }

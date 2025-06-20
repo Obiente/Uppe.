@@ -19,7 +19,7 @@ fn main() {
         .bind(&format!("tcp://{}:{}", BIND, PORT))
         .unwrap();
 
-        peer::manager::find_peer_announcer(&socket);
+        peer::announcer::(&socket);
     loop {
       
     }

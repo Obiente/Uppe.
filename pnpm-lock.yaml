@@ -32,6 +32,8 @@ importers:
         specifier: ^4.1.10
         version: 4.1.10
 
+  apps/service: {}
+
 packages:
 
   '@ampproject/remapping@2.3.0':

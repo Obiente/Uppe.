@@ -36,7 +36,7 @@
           rust = defaultResult.rustShell;
         };
 
-        packags = {
+        packages = {
           inherit (defaultResult) client;
           inherit (defaultResult) service;
         };

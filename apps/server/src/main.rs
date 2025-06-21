@@ -2,7 +2,6 @@
 
 use std::net::SocketAddr;
 
-use actix_web::web::get;
 use actix_web::{App, HttpServer};
 
 mod error;

@@ -1,4 +1,10 @@
 packages:
-  - "apps/*"
-  - "packages/*"
-  - "client"
+  - apps/*
+  - packages/*
+  - client
+
+onlyBuiltDependencies:
+  - "@sentry/cli"
+  - "@tailwindcss/oxide"
+  - esbuild
+  - sharp

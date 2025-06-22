@@ -3,8 +3,4 @@ packages:
   - packages/*
   - client
 
-onlyBuiltDependencies:
-  - "@sentry/cli"
-  - "@tailwindcss/oxide"
-  - esbuild
-  - sharp
+dangerouslyAllowAllBuilds: true

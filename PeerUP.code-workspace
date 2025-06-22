@@ -1,8 +1,8 @@
 {
   "folders": [
     {
-      "path": "apps/api",
-      "name": "Api",
+      "path": "apps/server",
+      "name": "Server",
     },
     {
       "path": "apps/client",

@@ -1,4 +1,6 @@
 packages:
-  - "apps/*"
-  - "packages/*"
-  - "client"
+  - apps/*
+  - packages/*
+  - client
+
+dangerouslyAllowAllBuilds: true

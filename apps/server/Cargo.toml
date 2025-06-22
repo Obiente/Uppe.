@@ -8,10 +8,10 @@ actix-web.workspace = true
 thiserror.workspace = true
 
 actix_error_proc = "1.1.4"
-logger = { path = "../crates/logger" }
+logger = { path = "../../crates/logger" }
 
 [dependencies.macros_utils]
-path = "../crates/macros_utils"
+path = "../../crates/macros_utils"
 
 [build-dependencies]
 dotenvy.workspace = true

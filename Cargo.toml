@@ -1,6 +1,6 @@
 [workspace]
 resolver = "3"
-members = ["crates/*", "server"]
+members = ["crates/*", "apps/server", "apps/service"]
 
 [workspace.dependencies]
 actix-web = "=4.11.0"

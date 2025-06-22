@@ -1,7 +1,9 @@
 [package]
 name = "service"
-authors = ["obiente"]
-
+authors = [ 
+    "veryCrunchy",
+    "Jayden Andrews"
+]
 
 version = "0.1.0"
 edition = "2024"

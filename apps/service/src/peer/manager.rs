@@ -10,7 +10,7 @@ fn connect_to_peer(peer_address: &str) -> Result<(), String> {
     Ok(())
 }
 
-fn find_peer_announcer(socket: &zmq::Socket) -> Result<(), String> {
+fn find_peer_announcer(_socket: &zmq::Socket) -> Result<(), String> {
     // Simulate finding a peer announcer
     let peer_address = "tcp://localhost:5555"; // Example address
     match connect_to_peer(peer_address) {

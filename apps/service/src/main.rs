@@ -4,7 +4,6 @@ use clap::{Parser, crate_authors, crate_version};
 
 mod config;
 mod peer;
-
 #[derive(Parser, Debug)]
 #[command(about = "Distributed monitoring system", long_about = None)]
 struct Args {
@@ -55,6 +54,7 @@ impl ZmqConn {
 }
 
 fn main() {
+    let _ = peer::identity::main();
     let cli = Args::parse();
     if cli.version {
         let authors = crate_authors!().split(':').collect::<Vec<&str>>().join("\", \"");
@@ -62,7 +62,6 @@ fn main() {
         return;
     }
     let cfg = config::Config::from_config(cli.config.as_ref()).expect("Failed to fetch config");
-
     let zmq_conn = ZmqConn::new(&cfg);
 
     loop {

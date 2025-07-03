@@ -8,7 +8,14 @@
     "dev": "turbo run dev",
     "lint": "turbo run lint"
   },
-  "keywords": ["peerup", "obiente", "uptime", "p2p", "monitoring", "decentralized"],
+  "keywords": [
+    "peerup",
+    "obiente",
+    "uptime",
+    "p2p",
+    "monitoring",
+    "decentralized"
+  ],
   "author": {
     "name": "Obiente",
     "url": "https://obiente.com",

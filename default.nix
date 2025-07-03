@@ -19,6 +19,7 @@ let
 
   nodePackages = [
     versionedNode
+    pkgs.svelte-language-server
     pkgs.astro-language-server
     pkgs.nodePackages.serve
     pkgs.pnpm_10

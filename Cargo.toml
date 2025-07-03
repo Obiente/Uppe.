@@ -5,8 +5,6 @@ members = ["crates/*", "apps/server", "apps/service"]
 [workspace.dependencies]
 actix-web = "=4.11.0"
 thiserror = "2.0.12"
-
-log = "0.4.27"
 tracing = "0.1.41"
 
 dotenvy = "0.15.7"

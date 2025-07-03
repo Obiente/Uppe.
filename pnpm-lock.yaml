@@ -29,6 +29,10 @@ importers:
       tailwindcss:
         specifier: ^4.1.10
         version: 4.1.10
+    devDependencies:
+      typescript:
+        specifier: ^5.8.3
+        version: 5.8.3
 
   apps/server: {}
 

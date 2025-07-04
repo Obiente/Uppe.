@@ -1,126 +1,156 @@
 ---
-import { t, changeLanguage } from "i18next";
-import { localizePath } from "astro-i18next";
-import { IconHeartHandshake, IconSeeding, IconShadow } from "$components/icons";
-import Layout from "$layouts/base.astro";
-import EditorFrame from "$components/editor-frame.svelte";
-import Card from "$components/card.svelte";
-import { themes } from "$data/themes";
+import Header from "$components/Header.astro";
+import Hero from "$components/Hero.astro";
+import StatsOverview from "$components/StatsOverview.astro";
+import MonitorOverview from "$components/MonitorOverview.astro";
+import ShareRatio from "$components/ShareRatio.astro";
+import NetworkStatus from "$components/NetworkStatus.astro";
+import GlobalPingMap from "$components/GlobalPingMap.astro";
+import UptimeChart from "$components/UptimeChart.astro";
+import AlertCenter from "$components/AlertCenter.astro";
+import IncidentList from "$components/IncidentList.astro";
+import Layout from "$layouts/Layout.astro";
 
-changeLanguage("en");
+import ActionCard from '../components/ui/ActionCard.astro';
+import Section from '../components/ui/Section.astro';
+import Grid from '../components/ui/Grid.astro';
+
+// Import mock data
+import { mockMonitors, mockDetailedMonitors } from '../mock/monitors.ts';
+import { mockGlobalPingData } from '../mock/network.ts';
+import { mockIncidents } from '../mock/incidents.ts';
+import { mockAlerts } from '../mock/alerts.ts';
+import { mockUptimeData, mockHours, mockNetworkStats } from '../mock/stats.ts';
+
+// Calculate stats from mock data
+const totalMonitors = mockMonitors.length;
+const onlineMonitors = mockMonitors.filter(m => m.status === 'online').length;
+const offlineMonitors = mockMonitors.filter(m => m.status === 'offline').length;
+const avgResponseTime = Math.round(mockMonitors.reduce((acc, m) => acc + m.responseTime, 0) / totalMonitors);
+const avgUptime = Math.round(mockMonitors.reduce((acc, m) => acc + m.uptime, 0) / totalMonitors * 10) / 10;
+
+const {
+  shareRatio,
+  monitoringForOthers,
+  receivingFromOthers,
+  contributionScore,
+  connectedPeers,
+  totalPeers,
+  networkHealth,
+  myNodeId,
+  bandwidthUsed,
+  bandwidthLimit,
+  checksPerformedToday,
+  checksReceivedToday
+} = mockNetworkStats;
 ---
 
-<Layout title={t("home.title")} description={t("home.description")}>
-	<section
-		class="grid min-h-content items-center gap-20 lg:grid-cols-[1fr,minmax(0,1fr)]"
-	>
-		<div class="space-y-6 text-center lg:space-y-10 lg:text-left">
-			<h1
-				class="animate-enter font-display text-5xl font-bold tracking-tight lg:text-8xl"
-			>
-				{t("home.title")}
-			</h1>
+<Layout>
+  <Header />
+  
+  <main class="min-h-screen">
+    <!-- Hero Section -->
+    <Section>
+      <Hero 
+        title="Decentralized Uptime Monitoring"
+        description="Monitor your services with our peer-to-peer network. Get real-time alerts, detailed analytics, and guaranteed 100% coverage even when your node is offline."
+        actionText="Add Your First Monitor"
+        actionUrl="/add-monitor"
+      />
+    </Section>
 
-			<p
-				class="animate-enter mx-auto max-w-sm text-lg text-subtle lg:mx-0 lg:max-w-md lg:text-xl"
-				style="--stagger: 1"
-			>
-				{t("home.description")}
-			</p>
+    <!-- Stats Overview -->
+    <Section>
+      <StatsOverview
+        totalMonitors={totalMonitors}
+        onlineMonitors={onlineMonitors}
+        offlineMonitors={offlineMonitors}
+        avgResponseTime={avgResponseTime}
+        avgUptime={avgUptime}
+      />
+    </Section>
 
-			<div>
-				<a
-					href={localizePath("/themes")}
-					class="animate-enter inline-flex h-12 items-center rounded-full bg-muted/10 px-6 font-medium transition hover:bg-muted/20 focus:outline-none focus:ring"
-					style="--stagger: 2">{t("home.discover_button")}&nbsp;&rarr;</a
-				>
-			</div>
-		</div>
+    <!-- P2P Network Status and Share Ratio -->
+    <Section>
+      <Grid cols="2">
+        <NetworkStatus
+          connectedPeers={connectedPeers}
+          totalPeers={totalPeers}
+          networkHealth={networkHealth}
+          myNodeId={myNodeId}
+          bandwidthUsed={bandwidthUsed}
+          bandwidthLimit={bandwidthLimit}
+          checksPerformedToday={checksPerformedToday}
+          checksReceivedToday={checksReceivedToday}
+        />
+        
+        <ShareRatio
+          shareRatio={shareRatio}
+          monitoringForOthers={monitoringForOthers}
+          receivingFromOthers={receivingFromOthers}
+          contributionScore={contributionScore}
+        />
+      </Grid>
+    </Section>
 
-		<div class="animate-enter overflow-hidden" style="--stagger: 1">
-			<EditorFrame />
-		</div>
-	</section>
+    <!-- Global Ping Map -->
+    <Section>
+      <GlobalPingMap
+        peerData={mockGlobalPingData}
+        targetUrl="https://myapp.com"
+      />
+    </Section>
 
-	<div class="h-20"></div>
+    <!-- Monitor Overview -->
+    <Section>
+      <MonitorOverview monitors={mockDetailedMonitors} />
+    </Section>
 
-	<section
-		class="mx-auto grid max-w-lg grid-cols-1 gap-10 md:max-w-full md:grid-cols-3 md:gap-6"
-	>
-		<Card
-			size="lg"
-			href={localizePath("/palette")}
-			linkText={t("home.feature_card_1.link")}
-		>
-			<div
-				class="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-foam to-pine text-surface"
-			>
-				<IconSeeding size={28} stroke={1.5} />
-			</div>
+    <!-- Alerts and Uptime Chart -->
+    <Section>
+      <Grid cols="2">
+        <AlertCenter alerts={mockAlerts} />
+        
+        <UptimeChart
+          hours={mockHours}
+          uptimeData={mockUptimeData}
+        />
+      </Grid>
+    </Section>
 
-			<div class="h-6"></div>
+    <!-- Recent Incidents -->
+    <Section>
+      <IncidentList recentIncidents={mockIncidents} />
+    </Section>
 
-			<h2 class="text-lg font-bold leading-none tracking-tight">
-				{t("home.feature_card_1.title")}
-			</h2>
-
-			<div class="h-3"></div>
-
-			<p>
-				{t("home.feature_card_1.description")}
-			</p>
-		</Card>
-
-		<Card
-			size="lg"
-			href={localizePath("/themes")}
-			linkText={t("home.feature_card_2.link")}
-		>
-			<div
-				class="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-iris to-gold text-surface"
-			>
-				<IconShadow size={28} stroke={1.5} />
-			</div>
-
-			<div class="h-6"></div>
-
-			<h2 class="text-lg font-bold leading-none tracking-tight">
-				{t("home.feature_card_2.title")}
-			</h2>
-
-			<div class="h-3"></div>
-
-			<p>
-				{t("home.feature_card_2.description")}
-			</p>
-		</Card>
-
-		<Card
-			size="lg"
-			href={localizePath("/resources")}
-			linkText={t("home.feature_card_3.link")}
-		>
-			<div
-				class="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-rose to-love text-surface"
-			>
-				<IconHeartHandshake size={28} stroke={1.5} />
-			</div>
-
-			<div class="h-6"></div>
-
-			<h2 class="text-lg font-bold leading-none tracking-tight">
-				{t("home.feature_card_3.title")}
-			</h2>
-
-			<div class="h-3"></div>
-
-			<p>
-				{
-					t("home.feature_card_3.description", {
-						numberOfPorts: Math.floor(themes.length / 10) * 10,
-					})
-				}
-			</p>
-		</Card>
-	</section>
+    <!-- Quick Actions -->
+    <Section title="Quick Actions">
+      <Grid cols="4">
+        <ActionCard
+          href="/add-monitor"
+          icon="plus"
+          title="Add Monitor"
+          description="Monitor new service"
+        />
+        <ActionCard
+          href="/status-pages"
+          icon="document"
+          title="Status Pages"
+          description="Manage public pages"
+        />
+        <ActionCard
+          href="/network-map"
+          icon="globe"
+          title="Network Map"
+          description="View peer network"
+        />
+        <ActionCard
+          href="/analytics"
+          icon="chart"
+          title="Analytics"
+          description="View detailed stats"
+        />
+      </Grid>
+    </Section>
+  </main>
 </Layout>

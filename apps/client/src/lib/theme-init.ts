@@ -1,9 +1,8 @@
 // Theme initialization script for server-side rendering
-// This file is intentionally kept minimal to avoid hydration errors
 
 import { rosePineTheme } from './design-system';
 
-
+//NOTE: we probably want to use a more dynamic theme system in the future
 export function getThemeCSS(): string {
   const theme = rosePineTheme;
   
@@ -52,4 +51,3 @@ export function getThemeCSS(): string {
 
 // This file is strictly for server-side rendering of theme CSS
 // For client-side theme functionality, see theme-client.ts
-// This separation helps avoid conflicts with Astro's hydration process

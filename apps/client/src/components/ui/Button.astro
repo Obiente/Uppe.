@@ -1,0 +1,53 @@
+---
+//TODO: add typed props from design system
+export interface Props {
+  variant?: "primary" | "secondary" | "danger" | "ghost" | "outline";
+  size?: "sm" | "md" | "lg";
+  type?: "button" | "submit" | "reset";
+  href?: string;
+  disabled?: boolean;
+  class?: string;
+  [key: string]: any;
+}
+
+const {
+  variant = "primary",
+  size = "md",
+  type = "button",
+  href,
+  disabled = false,
+  class: className = "",
+  ...rest
+} = Astro.props;
+
+const baseClasses = "inline-flex items-center justify-center font-medium rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-bg-primary disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none transform hover:scale-105 active:scale-95";
+
+const variantClasses = {
+  primary: "bg-accent-primary text-inverse focus:ring-interactive-primary shadow-lg hover:shadow-xl",
+  secondary: "bg-bg-secondary border-2 border-border-secondary text-primary hover:bg-bg-elevated hover:border-border-focus focus:ring-border-focus shadow-md hover:shadow-lg",
+  danger: "bg-gradient-to-r from-status-error to-interactive-danger text-inverse hover:from-interactive-dangerHover hover:to-status-error focus:ring-status-error shadow-lg hover:shadow-xl",
+  ghost: "text-primary hover:bg-bg-secondary hover:text-primary focus:ring-border-focus",
+  outline: "border-2 border-interactive-primary text-interactive-primary hover:bg-interactive-primary hover:text-inverse focus:ring-interactive-primary"
+};
+//TODO: fix the other variant styles
+
+const sizeClasses = {
+  sm: "px-4 py-2 text-sm gap-1.5",
+  md: "px-6 py-3 text-base gap-2",
+  lg: "px-8 py-4 text-lg gap-2.5"
+};
+
+const classes = `${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${className}`;
+---
+
+{
+  href ? (
+    <a href={href} class={classes} {...rest}>
+      <slot />
+    </a>
+  ) : (
+    <button type={type} class={classes} disabled={disabled} {...rest}>
+      <slot />
+    </button>
+  )
+}

@@ -66,16 +66,22 @@ import {
                 label="Email Notifications"
                 description="Receive alerts when monitors go down"
                 checked={true}
+                id="emailNotifications"
+                name="emailNotifications"
               />
               <Toggle 
                 label="Incident Reports"
                 description="Weekly summary of incidents and uptime"
                 checked={false}
+                id="incidentReports"
+                name="incidentReports"
               />
               <Toggle 
                 label="P2P Network Updates"
                 description="Updates about network status and improvements"
                 checked={true}
+                id="networkUpdates"
+                name="networkUpdates"
               />
             </div>
           </CardBody>
@@ -101,6 +107,8 @@ import {
                 label="Contribute to Network"
                 description="Help monitor other services in the network"
                 checked={true}
+                id="contributeToNetwork"
+                name="contributeToNetwork"
               />
               <FormGroup>
                 <Label for="maxBandwidth">Max Bandwidth (MB/day)</Label>
@@ -124,6 +132,8 @@ import {
                 label="Auto-Accept Monitoring Requests"
                 description="Automatically accept requests to monitor services"
                 checked={true}
+                id="autoAcceptRequests"
+                name="autoAcceptRequests"
               />
             </div>
           </CardBody>
@@ -157,6 +167,8 @@ import {
                 label="Detailed Logging"
                 description="Store detailed logs of all monitoring activities"
                 checked={false}
+                id="detailedLogging"
+                name="detailedLogging"
               />
             </div>
           </CardBody>
@@ -187,6 +199,7 @@ import {
                         label=""
                         checked={true}
                         id="clusterVisibility"
+                        name="clusterVisibility"
                       />
                     </div>
                   </div>

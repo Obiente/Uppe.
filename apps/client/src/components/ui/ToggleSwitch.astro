@@ -1,0 +1,43 @@
+---
+export interface Props {
+  checked?: boolean;
+  name?: string;
+  id: string;
+  size?: "sm" | "md" | "lg";
+  className?: string;
+}
+
+const {
+  checked = false,
+  name,
+  id,
+  size = "md",
+  className = "",
+}: Props = Astro.props;
+
+const sizeConfig = {
+  sm: {
+    container: "h-5 w-9",
+    thumb: "h-3 w-3"
+  },
+  md: {
+    container: "h-6 w-11", 
+    thumb: "h-4 w-4"
+  },
+  lg: {
+    container: "h-7 w-13",
+    thumb: "h-5 w-5"
+  }
+};
+
+const config = sizeConfig[size];
+---
+
+<div class={`relative inline-flex items-center cursor-pointer ${className}`}>
+  <input type="checkbox" checked={checked} class="sr-only peer" name={name} id={id} />
+  <label for={id} class={`relative ${config.container} bg-elevated peer-checked:bg-accent-primary rounded-full transition-all duration-200 shadow-inner cursor-pointer block`}>
+  </label>
+  <span
+    class={`absolute inline-block ${config.thumb} transform rounded-full bg-secondary transition-transform duration-200 shadow-md translate-x-1 peer-checked:translate-x-6 pointer-events-none top-1`}
+  ></span>
+</div>

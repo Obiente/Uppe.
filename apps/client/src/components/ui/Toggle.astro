@@ -1,13 +1,16 @@
 ---
+import Heading from "./Heading.astro";
+import Paragraph from "./Paragraph.astro";
+import ToggleSwitch from "./ToggleSwitch.astro";
+
 export interface Props {
   label: string;
   description?: string;
   checked?: boolean;
   name?: string;
-  id?: string;
-  size?: 'sm' | 'md' | 'lg';
+  id: string;
+  size?: "sm" | "md" | "lg";
   className?: string;
-  onChange?: string;
 }
 
 const {
@@ -16,98 +19,20 @@ const {
   checked = false,
   name,
   id,
-  size = 'md',
+  size = "md",
   className = "",
-  onChange,
 } = Astro.props;
-
-// Size configurations
-const sizeConfig = {
-  sm: {
-    container: 'h-5 w-9',
-    thumb: 'h-3 w-3',
-    translateOn: 'translate-x-5',
-    translateOff: 'translate-x-1'
-  },
-  md: {
-    container: 'h-6 w-11',
-    thumb: 'h-4 w-4',
-    translateOn: 'translate-x-6',
-    translateOff: 'translate-x-1'
-  },
-  lg: {
-    container: 'h-7 w-13',
-    thumb: 'h-5 w-5',
-    translateOn: 'translate-x-7',
-    translateOff: 'translate-x-1'
-  }
-};
-
-const config = sizeConfig[size];
 ---
 
 <div class={`flex items-center justify-between ${className}`}>
   <div>
-    <div class="text-primary font-medium">{label}</div>
-    {
-      description && (
-        <div class="text-secondary text-sm">{description}</div>
-      )
-    }
+    <Heading>{label}</Heading>
+    {description && <Paragraph color="secondary">{description}</Paragraph>}
   </div>
-  <button
-    class={`relative inline-flex ${config.container} items-center rounded-full transition-all duration-200 shadow-inner ${
-      checked ? "bg-interactive-primary" : "bg-bg-elevated border-2 border-border-subtle"
-    }`}
-    data-checked={checked}
+  <ToggleSwitch
+    checked={checked}
+    name={name ?? id}
     id={id}
-    data-name={name}
-    data-onchange={onChange}
-  >
-    <span
-      class={`inline-block ${config.thumb} transform rounded-full bg-text-inverse transition-transform duration-200 shadow-md ${
-        checked ? config.translateOn : config.translateOff
-      }`}></span>
-  </button>
+    size={size}
+  />
 </div>
-
-<script>
-  document.addEventListener("DOMContentLoaded", () => {
-    const toggles = document.querySelectorAll(
-      "button[data-checked]"
-    ) as NodeListOf<HTMLButtonElement>;
-    toggles.forEach((toggle) => {
-      toggle.addEventListener("click", () => {
-        const isChecked = toggle.dataset.checked === "true";
-        const newChecked = !isChecked;
-
-        toggle.dataset.checked = newChecked.toString();
-        const span = toggle.querySelector("span") as HTMLSpanElement;
-
-        if (span) {
-          if (newChecked) {
-            toggle.classList.remove("bg-bg-elevated", "border-2", "border-border-subtle");
-            toggle.classList.add("bg-interactive-primary");
-            span.classList.remove("translate-x-1");
-            span.classList.add("translate-x-6");
-          } else {
-            toggle.classList.remove("bg-interactive-primary");
-            toggle.classList.add("bg-bg-elevated", "border-2", "border-border-subtle");
-            span.classList.remove("translate-x-6");
-            span.classList.add("translate-x-1");
-          }
-        }
-
-        // Trigger custom onChange if provided
-        if (toggle.dataset.onchange) {
-          const fn = new Function(
-            "checked",
-            "element",
-            toggle.dataset.onchange
-          );
-          fn(newChecked, toggle);
-        }
-      });
-    });
-  });
-</script>

@@ -1,5 +1,3 @@
-@plugin "@iconify/tailwind4";
-
 @theme {
   --color-bg-primary: var(--color-bg-primary);
   --color-bg-secondary: var(--color-bg-secondary);
@@ -68,4 +66,35 @@
 
 @utility text-accent-* {
   color: --value(--color-accent- *);
+}
+
+/* Icon utilities */
+@utility icon-xs {
+  width: 0.75rem;
+  height: 0.75rem;
+}
+
+@utility icon-sm {
+  width: 1rem;
+  height: 1rem;
+}
+
+@utility icon-md {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+@utility icon-lg {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+@utility icon-xl {
+  width: 2rem;
+  height: 2rem;
+}
+
+@utility icon-2xl {
+  width: 2.5rem;
+  height: 2.5rem;
 }

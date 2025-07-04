@@ -2,16 +2,20 @@
 export interface Props {
   icon: `${string}:${string}`;
   class?: string;
-  [key: string]: any;
 }
-
-const { icon, class: className = "" } = Astro.props;
-
+const { icon, class: className = "" }: Props = Astro.props;
 import { getIconData, iconToSVG, iconToHTML, replaceIDs } from "@iconify/utils";
 
 const [iconPack, iconName] = icon.split(":");
-const { icons } = await import(`@iconify-json/${iconPack}`);
-const iconData = getIconData(icons, iconName);
+const { icons } = await import(`@iconify-json/${iconPack}`).catch(() => {
+  throw new Error(`Icon pack '${iconPack}' not found.`, {cause: this});
+});
+
+let iconData = getIconData(icons, iconName);
+if (!iconData) {
+  throw new Error(`Icon '${iconName}' not found in pack '${iconPack}'.`);
+}
+
 if (!iconData) {
   return;
 }

@@ -1,3 +1,5 @@
+@plugin "@iconify/tailwind4";
+
 @theme {
   --color-bg-primary: var(--color-bg-primary);
   --color-bg-secondary: var(--color-bg-secondary);

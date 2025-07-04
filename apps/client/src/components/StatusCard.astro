@@ -1,0 +1,34 @@
+---
+import Card from './ui/Card.astro';
+import StatusBadge from './ui/StatusBadge.astro';
+import Metric from './ui/Metric.astro';
+
+interface Props {
+	status: 'online' | 'offline' | 'warning';
+	uptime: number;
+	responseTime: number;
+	lastCheck: string;
+}
+
+const { status, uptime, responseTime, lastCheck } = Astro.props;
+
+const statusMap = {
+	online: 'online' as const,
+	offline: 'offline' as const,
+	warning: 'degraded' as const
+};
+---
+
+<Card>
+	<div class="flex items-center justify-between mb-4">
+		<StatusBadge status={statusMap[status]} />
+		<span class="text-secondary text-sm">
+			{lastCheck}
+		</span>
+	</div>
+
+	<div class="grid grid-cols-2 gap-4">
+		<Metric label="Uptime" value={`${uptime}%`} />
+		<Metric label="Response Time" value={`${responseTime}ms`} />
+	</div>
+</Card>

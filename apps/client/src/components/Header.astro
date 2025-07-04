@@ -1,0 +1,40 @@
+---
+import Container from "./ui/Container.astro";
+import Logo from "./ui/Logo.astro";
+import NavLink from "./ui/NavLink.astro";
+import StatusIndicator from "./ui/StatusIndicator.astro";
+import _Button from "./ui/Button.astro";
+
+interface Props {
+  title?: string;
+}
+
+const { title = "PeerUP" } = Astro.props;
+---
+
+<header class="bg-surface-primary border-b border-border-subtle">
+  <Container>
+    <div class="flex items-center justify-between h-16">
+      <div class="flex items-center">
+        <div class="flex-shrink-0">
+          <Logo title={title} />
+        </div>
+        <nav class="ml-8 flex items-center space-x-6">
+          <NavLink href="/">Dashboard</NavLink>
+          <NavLink href="/analytics">Analytics</NavLink>
+          <NavLink href="/network-map">Network</NavLink>
+          <NavLink href="/status-pages">Status Pages</NavLink>
+          <NavLink href="/add-monitor">Add Monitor</NavLink>
+          <NavLink href="/settings">Settings</NavLink>
+        </nav>
+      </div>
+      <div class="flex items-center space-x-4">
+        <StatusIndicator
+          status="online"
+          label="Network: Online"
+          animated={true}
+        />
+      </div>
+    </div>
+  </Container>
+</header>

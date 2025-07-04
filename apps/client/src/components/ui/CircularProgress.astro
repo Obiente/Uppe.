@@ -1,0 +1,79 @@
+---
+import Paragraph from './Paragraph.astro';
+
+export interface Props {
+  percentage: number;
+  label: string;
+  description?: string;
+  subtitle?: string;
+  size?: 'sm' | 'md' | 'lg';
+  variant?: 'primary' | 'success' | 'warning' | 'error';
+  className?: string;
+}
+
+const { 
+  percentage, 
+  label, 
+  description, 
+  subtitle,
+  size = 'md', 
+  variant = 'primary',
+  className = '' 
+} = Astro.props;
+
+const sizeMap = {
+  'sm': { container: 'w-20 h-20', text: 'text-lg', subtext: 'text-xs' },
+  'md': { container: 'w-28 h-28', text: 'text-2xl', subtext: 'text-xs' },
+  'lg': { container: 'w-36 h-36', text: 'text-3xl', subtext: 'text-sm' }
+};
+
+const variantClasses = {
+  'primary': 'text-interactive-primary',
+  'success': 'text-status-success',
+  'warning': 'text-status-warning',
+  'error': 'text-status-error'
+};
+
+const circumference = 2 * Math.PI * 50;
+const strokeDasharray = (percentage / 100) * circumference;
+---
+
+<div class={`text-center ${className}`}>
+  <div class={`relative ${sizeMap[size].container} mx-auto mb-4`}>
+    <svg class="w-full h-full transform -rotate-90" viewBox="0 0 120 120">
+      <circle
+        cx="60"
+        cy="60"
+        r="50"
+        stroke="currentColor"
+        stroke-width="8"
+        fill="none"
+        class="text-bg-elevated opacity-30"
+      />
+      <circle
+        cx="60"
+        cy="60"
+        r="50"
+        stroke="currentColor"
+        stroke-width="8"
+        fill="none"
+        stroke-linecap="round"
+        class={variantClasses[variant]}
+        stroke-dasharray={`${strokeDasharray} ${circumference}`}
+        style="transition: stroke-dasharray 0.5s ease-in-out"
+      />
+    </svg>
+    <div class="absolute inset-0 flex items-center justify-center">
+      <div class="text-center">
+        <div class={`${sizeMap[size].text} font-bold text-primary`}>{percentage}%</div>
+        <div class={`${sizeMap[size].subtext} text-secondary`}>{label}</div>
+      </div>
+    </div>
+  </div>
+  {description && (
+    <Paragraph >{description}</Paragraph>
+  )}
+  {subtitle && (
+    <Paragraph class="text-secondary text-xs mt-1">{subtitle}</Paragraph>
+  )}
+</div>

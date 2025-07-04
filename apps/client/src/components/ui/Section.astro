@@ -1,0 +1,49 @@
+---
+export interface Props {
+  class?: string;
+  containerClass?: string;
+  size?: 'sm' | 'md' | 'lg' | 'xl' | 'full';
+  padding?: 'sm' | 'md' | 'lg' | 'xl';
+  background?: 'none' | 'subtle' | 'elevated' | 'primary';
+  [key: string]: any;
+}
+
+const { 
+  class: className = '',
+  containerClass = '',
+  size = 'xl',
+  padding = 'lg',
+  background = 'none',
+  ...rest
+} = Astro.props;
+
+const sizeClasses = {
+  sm: 'max-w-3xl',
+  md: 'max-w-5xl',
+  lg: 'max-w-6xl',
+  xl: 'max-w-7xl',
+  full: 'max-w-full'
+};
+
+const paddingClasses = {
+  sm: 'px-4 sm:px-6 py-6',
+  md: 'px-4 sm:px-6 lg:px-8 py-8',
+  lg: 'px-6 sm:px-8 lg:px-12 py-10',
+  xl: 'px-8 sm:px-12 lg:px-16 py-12'
+};
+
+const backgroundClasses = {
+  none: '',
+  subtle: 'bg-bg-secondary/30',
+  elevated: 'bg-bg-elevated rounded-2xl shadow-lg',
+  primary: 'bg-gradient-to-r from-interactive-primary/10 to-accent-primary/10 rounded-2xl'
+};
+
+const sectionClasses = `${sizeClasses[size]} mx-auto ${paddingClasses[padding]} ${backgroundClasses[background]} ${className}`;
+---
+
+<section class={sectionClasses} {...rest}>
+  <div class={containerClass}>
+    <slot />
+  </div>
+</section>

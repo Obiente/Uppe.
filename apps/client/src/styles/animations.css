@@ -1,0 +1,395 @@
+/* Fade and slide animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { 
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to { 
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideDown {
+  from { 
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to { 
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideLeft {
+  from { 
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to { 
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideRight {
+  from { 
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to { 
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Pulse and glow animations */
+@keyframes pulse {
+  0%, 100% { 
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% { 
+    transform: scale(1.05);
+    opacity: 0.8;
+  }
+}
+
+@keyframes glow {
+  0%, 100% { 
+    box-shadow: 0 0 5px currentColor;
+  }
+  50% { 
+    box-shadow: 0 0 20px currentColor;
+  }
+}
+
+@keyframes statusPulse {
+  0%, 100% { 
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% { 
+    transform: scale(1.2);
+    opacity: 0.6;
+  }
+}
+
+/* Rotation animations */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes spinSlow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes globe3d {
+  0% { transform: rotateY(0deg) rotateX(0deg); }
+  25% { transform: rotateY(90deg) rotateX(5deg); }
+  50% { transform: rotateY(180deg) rotateX(0deg); }
+  75% { transform: rotateY(270deg) rotateX(-5deg); }
+  100% { transform: rotateY(360deg) rotateX(0deg); }
+}
+
+/* Scale animations */
+@keyframes scaleIn {
+  from { 
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  to { 
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes bounce {
+  0%, 20%, 53%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40%, 43% {
+    transform: translateY(-10px);
+  }
+  70% {
+    transform: translateY(-5px);
+  }
+  90% {
+    transform: translateY(-2px);
+  }
+}
+
+/* Progress and loading animations */
+@keyframes progressFill {
+  from { width: 0%; }
+  to { width: var(--progress-width, 100%); }
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* Notification animations */
+@keyframes notificationSlide {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Button and interactive animations */
+@keyframes buttonHover {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-1px); }
+  100% { transform: translateY(0px); }
+}
+
+@keyframes buttonPress {
+  0% { transform: scale(1); }
+  50% { transform: scale(0.98); }
+  100% { transform: scale(1); }
+}
+
+/* Data loading animations */
+@keyframes dataLoad {
+  0% { 
+    opacity: 0;
+    transform: translateY(10px) scale(0.95);
+  }
+  50% {
+    opacity: 0.5;
+    transform: translateY(5px) scale(0.98);
+  }
+  100% { 
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes countUp {
+  0% { transform: translateY(20px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+/* Network and connectivity animations */
+@keyframes networkPulse {
+  0% { 
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% { 
+    transform: scale(1.05);
+    opacity: 0.8;
+  }
+  100% { 
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes connectionLine {
+  0% { 
+    opacity: 0;
+    stroke-dasharray: 0 100;
+  }
+  100% { 
+    opacity: 1;
+    stroke-dasharray: 100 0;
+  }
+}
+
+/* Warning and alert animations */
+@keyframes warningShake {
+  0% { transform: translateX(0); }
+  25% { transform: translateX(-2px); }
+  50% { transform: translateX(2px); }
+  75% { transform: translateX(-2px); }
+  100% { transform: translateX(0); }
+}
+
+@keyframes alertBounce {
+  0% { transform: translateY(0px); }
+  25% { transform: translateY(-5px); }
+  50% { transform: translateY(0px); }
+  75% { transform: translateY(-2px); }
+  100% { transform: translateY(0px); }
+}
+
+/* Utility classes */
+.animate-fade-in { animation: fadeIn 0.3s ease-out; }
+.animate-slide-up { animation: slideUp 0.4s ease-out; }
+.animate-slide-down { animation: slideDown 0.4s ease-out; }
+.animate-slide-left { animation: slideLeft 0.4s ease-out; }
+.animate-slide-right { animation: slideRight 0.4s ease-out; }
+.animate-pulse { animation: pulse 2s infinite; }
+.animate-glow { animation: glow 2s infinite; }
+.animate-status-pulse { animation: statusPulse 2s infinite; }
+.animate-spin { animation: spin 1s linear infinite; }
+.animate-spin-slow { animation: spinSlow 3s linear infinite; }
+.animate-globe-3d { animation: globe3d 20s linear infinite; }
+.animate-scale-in { animation: scaleIn 0.3s ease-out; }
+.animate-bounce { animation: bounce 1s infinite; }
+.animate-shimmer { 
+  animation: shimmer 2s infinite;
+  background: linear-gradient(90deg, transparent, var(--color-shimmer, rgba(255,255,255,0.1)), transparent);
+  background-size: 200% 100%;
+}
+
+/* Button and interactive animations */
+.animate-button-hover:hover {
+  animation: buttonHover 0.2s ease-in-out;
+}
+
+.animate-button-press:active {
+  animation: buttonPress 0.1s ease-in-out;
+}
+
+/* Data loading animations */
+.animate-data-load {
+  animation: dataLoad 0.5s ease-out;
+}
+
+.animate-count-up {
+  animation: countUp 0.6s ease-out;
+}
+
+/* Network and connectivity animations */
+.animate-network-pulse {
+  animation: networkPulse 2s ease-in-out infinite;
+}
+
+.animate-connection-line {
+  animation: connectionLine 1s ease-out;
+}
+
+/* Warning and alert animations */
+.animate-warning-shake {
+  animation: warningShake 0.5s ease-in-out;
+}
+
+.animate-alert-bounce {
+  animation: alertBounce 0.6s ease-out;
+}
+
+/* Animation delays for staggered effects */
+.animate-delay-100 { animation-delay: 0.1s; }
+.animate-delay-200 { animation-delay: 0.2s; }
+.animate-delay-300 { animation-delay: 0.3s; }
+.animate-delay-500 { animation-delay: 0.5s; }
+
+/* Stagger animations for lists */
+.animate-stagger-up > *:nth-child(1) { animation-delay: 0.1s; }
+.animate-stagger-up > *:nth-child(2) { animation-delay: 0.2s; }
+.animate-stagger-up > *:nth-child(3) { animation-delay: 0.3s; }
+.animate-stagger-up > *:nth-child(4) { animation-delay: 0.4s; }
+.animate-stagger-up > *:nth-child(5) { animation-delay: 0.5s; }
+.animate-stagger-up > *:nth-child(6) { animation-delay: 0.6s; }
+
+/* Hover animations */
+.hover-scale { transition: transform 0.2s ease; }
+.hover-scale:hover { transform: scale(1.05); }
+
+.hover-lift { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+.hover-lift:hover { 
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg, 0 10px 25px rgba(0,0,0,0.2));
+}
+
+.hover-glow { transition: box-shadow 0.2s ease; }
+.hover-glow:hover { box-shadow: 0 0 20px currentColor; }
+
+/* Interactive animations */
+.click-shrink { transition: transform 0.1s ease; }
+.click-shrink:active { transform: scale(0.95); }
+
+.loading-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.loading-shimmer::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, var(--color-shimmer, rgba(255,255,255,0.1)), transparent);
+  animation: shimmer 1.5s infinite;
+}
+
+/* Status-specific animations */
+.status-online { animation: statusPulse 2s infinite; }
+.status-offline { animation: pulse 1s infinite; }
+.status-warning { animation: glow 1.5s infinite; }
+
+/* Network connection animations */
+.network-pulse {
+  position: relative;
+}
+
+.network-pulse::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.3;
+  transform: translate(-50%, -50%) scale(0);
+  animation: pulse 2s infinite;
+}
+
+/* 3D Globe specific animations */
+.globe-container {
+  perspective: 1000px;
+  transform-style: preserve-3d;
+}
+
+.globe-sphere {
+  transform-style: preserve-3d;
+  animation: globe3d 30s linear infinite;
+}
+
+.globe-interactive {
+  cursor: grab;
+  transition: transform 0.1s ease;
+}
+
+.globe-interactive:active {
+  cursor: grabbing;
+}
+
+/* Responsive animations */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Performance optimizations */
+.will-animate {
+  will-change: transform, opacity;
+}
+
+.gpu-accelerated {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+}

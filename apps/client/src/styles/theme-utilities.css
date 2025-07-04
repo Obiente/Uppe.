@@ -1,0 +1,115 @@
+/* Theme utility classes that map to our design system */
+
+@layer utilities {
+  /* Background colors */
+  .bg-surface-primary {
+    background-color: var(--color-bg-primary);
+  }
+  .bg-surface-secondary {
+    background-color: var(--color-bg-secondary);
+  }
+  .bg-surface-tertiary {
+    background-color: var(--color-bg-tertiary);
+  }
+  .bg-surface-elevated {
+    background-color: var(--color-bg-elevated);
+  }
+  .bg-surface-overlay {
+    background-color: var(--color-bg-overlay);
+  }
+  
+  /* Text colors */
+  .text-primary {
+    color: var(--color-text-primary);
+  }
+  .text-secondary {
+    color: var(--color-text-secondary);
+  }
+  .text-tertiary {
+    color: var(--color-text-tertiary);
+  }
+  .text-inverse {
+    color: var(--color-text-inverse);
+  }
+  .text-disabled {
+    color: var(--color-text-disabled);
+  }
+  
+  /* Border colors */
+  .border-border-subtle {
+    border-color: var(--color-border-subtle);
+  }
+  .border-border-default {
+    border-color: var(--color-border-default);
+  }
+  .border-border-strong {
+    border-color: var(--color-border-strong);
+  }
+  .border-border-focus {
+    border-color: var(--color-border-focus);
+  }
+  
+  /* Accent colors */
+  .bg-accent-primary {
+    background-color: var(--color-accent-primary);
+  }
+  .bg-accent-primary-hover {
+    background-color: var(--color-accent-primary-hover);
+  }
+  .bg-accent-secondary {
+    background-color: var(--color-accent-secondary);
+  }
+  .bg-accent-secondary-hover {
+    background-color: var(--color-accent-secondary-hover);
+  }
+  .text-accent-primary {
+    color: var(--color-accent-primary);
+  }
+  .text-accent-secondary {
+    color: var(--color-accent-secondary);
+  }
+  
+  /* Status colors */
+  .bg-status-online {
+    background-color: var(--color-status-online);
+  }
+  .bg-status-warning {
+    background-color: var(--color-status-warning);
+  }
+  .bg-status-error {
+    background-color: var(--color-status-error);
+  }
+  .bg-status-info {
+    background-color: var(--color-status-info);
+  }
+  .bg-status-neutral {
+    background-color: var(--color-status-neutral);
+  }
+  .text-status-online {
+    color: var(--color-status-online);
+  }
+  .text-status-warning {
+    color: var(--color-status-warning);
+  }
+  .text-status-error {
+    color: var(--color-status-error);
+  }
+  .text-status-info {
+    color: var(--color-status-info);
+  }
+  .text-status-neutral {
+    color: var(--color-status-neutral);
+  }
+  .border-status-online {
+    border-color: var(--color-status-online);
+  }
+  .border-status-warning {
+    border-color: var(--color-status-warning);
+  }
+  .border-status-error {
+    border-color: var(--color-status-error);
+  }
+  .border-status-info {
+    border-color: var(--color-status-info);
+  }
+}

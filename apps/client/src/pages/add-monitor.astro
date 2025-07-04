@@ -1,29 +1,35 @@
 ---
-import Header from "$components/Header.astro";
+import { Header } from "$components";
 import Layout from "$layouts/Layout.astro";
-import { 
-  Section, 
-  Card, 
-  CardBody, 
-  Heading, 
-  Paragraph, 
-  Input, 
-  Select, 
+import {
+  Section,
+  Card,
+  CardBody,
+  Heading,
+  Paragraph,
+  Input,
+  Select,
   Textarea,
-  Toggle, 
+  Toggle,
   Button,
   FormGroup,
-  Label
-} from "../components/ui";
+  Icon,
+  Label,
+} from "$ui";
 ---
 
-<Layout title="Add Monitor - PeerUP" description="Add a new monitor to your PeerUP dashboard">
+<Layout
+  title="Add Monitor - PeerUP"
+  description="Add a new monitor to your PeerUP dashboard"
+>
   <Header title="PeerUP" />
-  
+
   <main class="min-h-screen">
     <Section>
       <Heading level={1} class="mb-2">Add New Monitor</Heading>
-      <Paragraph class="text-secondary">Configure a new service to monitor through our P2P network</Paragraph>
+      <Paragraph class="text-secondary"
+        >Configure a new service to monitor through our P2P network</Paragraph
+      >
     </Section>
 
     <Section>
@@ -36,7 +42,7 @@ import {
               <div class="space-y-4">
                 <FormGroup>
                   <Label for="monitorName">Monitor Name</Label>
-                  <Input 
+                  <Input
                     id="monitorName"
                     type="text"
                     placeholder="My Website"
@@ -44,7 +50,7 @@ import {
                 </FormGroup>
                 <FormGroup>
                   <Label for="url">URL to Monitor</Label>
-                  <Input 
+                  <Input
                     id="url"
                     type="url"
                     placeholder="https://example.com"
@@ -52,7 +58,7 @@ import {
                 </FormGroup>
                 <FormGroup>
                   <Label for="description">Description (Optional)</Label>
-                  <Textarea 
+                  <Textarea
                     id="description"
                     placeholder="Brief description of this service..."
                     rows={3}
@@ -76,11 +82,7 @@ import {
                 </FormGroup>
                 <FormGroup>
                   <Label for="timeout">Timeout (seconds)</Label>
-                  <Input 
-                    id="timeout"
-                    type="number"
-                    value="30"
-                  />
+                  <Input id="timeout" type="number" value="30" />
                 </FormGroup>
                 <FormGroup>
                   <Label for="monitorType">Monitor Type</Label>
@@ -108,8 +110,10 @@ import {
                   </Select>
                 </FormGroup>
                 <FormGroup>
-                  <Label for="minConfirmations">Minimum Peer Confirmations</Label>
-                  <Input 
+                  <Label for="minConfirmations"
+                    >Minimum Peer Confirmations</Label
+                  >
+                  <Input
                     id="minConfirmations"
                     type="number"
                     value="3"
@@ -117,12 +121,13 @@ import {
                     max="10"
                   />
                   <Paragraph class="text-secondary text-xs mt-1">
-                    Number of peers required to confirm status before triggering alerts
+                    Number of peers required to confirm status before triggering
+                    alerts
                   </Paragraph>
                 </FormGroup>
                 <FormGroup>
                   <Label for="targetCoverage">Target Peer Coverage</Label>
-                  <Input 
+                  <Input
                     id="targetCoverage"
                     type="number"
                     value="15"
@@ -133,7 +138,7 @@ import {
                     Number of peers to actively monitor this service
                   </Paragraph>
                 </FormGroup>
-                <Toggle 
+                <Toggle
                   label="Fallback Monitoring"
                   description="Continue monitoring even when your node is offline"
                   checked={true}
@@ -145,19 +150,19 @@ import {
             <div>
               <Heading level={2} class="mb-4">Alert Settings</Heading>
               <div class="space-y-4">
-                <Toggle 
+                <Toggle
                   label="Email Alerts"
                   description="Send email when monitor goes down"
                   checked={true}
                 />
-                <Toggle 
+                <Toggle
                   label="Webhook Notifications"
                   description="Send POST request to webhook URL"
                   checked={false}
                 />
                 <FormGroup class="hidden">
                   <Label for="webhookUrl">Webhook URL</Label>
-                  <Input 
+                  <Input
                     id="webhookUrl"
                     type="url"
                     placeholder="https://your-webhook-url.com"
@@ -168,13 +173,13 @@ import {
 
             <!-- Submit Button -->
             <div class="flex justify-end gap-4 pt-6">
-              <Button variant="secondary" type="button">
-                Cancel
-              </Button>
-              <Button variant="primary" type="submit" class="flex items-center gap-2">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
-                </svg>
+              <Button variant="secondary" type="button"> Cancel </Button>
+              <Button
+                variant="primary"
+                type="submit"
+                class="flex items-center gap-2"
+              >
+                <Icon name="heroicons:plus" size="4" />
                 Create Monitor
               </Button>
             </div>

@@ -1,6 +1,7 @@
 ---
 import Badge from './Badge.astro';
 import Button from './Button.astro';
+import Icon from './Icon.astro';
 
 interface Props {
   alert: {
@@ -39,11 +40,11 @@ const getAlertColor = (type: string) => {
 
 const getAlertIcon = (type: string) => {
   switch (type) {
-    case 'down': return 'M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z';
-    case 'slow': return 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z';
-    case 'recovered': return 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z';
-    case 'network': return 'M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0';
-    default: return 'M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z';
+    case 'down': return 'heroicons:exclamation-triangle';
+    case 'slow': return 'heroicons:clock';
+    case 'recovered': return 'heroicons:check-circle';
+    case 'network': return 'heroicons:wifi';
+    default: return 'heroicons:information-circle';
   }
 };
 
@@ -61,9 +62,7 @@ const getAlertVariant = (type: string) => {
 <div class={`border rounded-lg p-4 ${getAlertBg(alert.type)} ${alert.acknowledged ? 'opacity-60' : ''} ${className}`}>
   <div class="flex items-start gap-3">
     <div class={`flex-shrink-0 ${getAlertColor(alert.type)}`}>
-      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d={getAlertIcon(alert.type)}/>
-      </svg>
+      <Icon name={getAlertIcon(alert.type)} size="md" />
     </div>
     <div class="flex-1 min-w-0">
       <div class="flex items-center gap-2 mb-1">

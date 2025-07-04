@@ -2,6 +2,7 @@
 import Card from './Card.astro';
 import Heading from './Heading.astro';
 import Paragraph from './Paragraph.astro';
+import Icon from './Icon.astro';
 
 export interface Props {
   href: string;
@@ -54,18 +55,14 @@ const cardVariants = {
   <Card variant={cardVariants[variant]} class="p-6">
     <div class="flex items-center gap-4">
       <div class={`w-14 h-14 ${iconBgClasses[iconBg]} rounded-xl flex items-center justify-center transition-transform duration-200 group-hover:scale-110 shadow-lg`}>
-        <svg class={`w-7 h-7 ${iconTextClasses[iconBg]}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d={icon}/>
-        </svg>
+        <Icon name={icon} size="lg" class={iconTextClasses[iconBg]} />
       </div>
       <div class="flex-1">
         <Heading as="h3" size="lg" weight="semibold" class="group-hover:text-interactive-primary transition-colors">{title}</Heading>
         <Paragraph size="sm" color="secondary" class="mt-1">{description}</Paragraph>
       </div>
       <div class="text-tertiary group-hover:text-interactive-primary transition-colors">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-        </svg>
+        <Icon name="heroicons:chevron-right" size="md" />
       </div>
     </div>
   </Card>

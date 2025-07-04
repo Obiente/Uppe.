@@ -8,15 +8,15 @@ import CircularProgress from "./ui/CircularProgress.astro";
 import ProgressBar from "./ui/ProgressBar.astro";
 import Button from "./ui/Button.astro";
 import StatusBadge from "./ui/StatusBadge.astro";
-import { Container } from "./ui";
+import Container  from "./ui/Container.astro";
 
 interface Props {
   connectedPeers: number;
   totalPeers: number;
-  networkHealth: number; // 0-100
+  networkHealth: number;
   myNodeId: string;
-  bandwidthUsed: number; // MB
-  bandwidthLimit: number; // MB
+  bandwidthUsed: number;
+  bandwidthLimit: number;
   checksPerformedToday: number;
   checksReceivedToday: number;
 }

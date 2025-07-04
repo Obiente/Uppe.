@@ -10,8 +10,9 @@ import {
   Paragraph, 
   Button,
   MetricDisplay,
-  StatusPageCard
-} from "../components/ui";
+  StatusPageCard,
+  Icon
+} from "$ui";
 
 // Mock data for public status pages
 const statusPages = [
@@ -134,9 +135,7 @@ const statusPages = [
 				<CardBody>
 					<div class="text-center py-8">
 						<div class="bg-accent-primary/10 p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-							<svg class="w-8 h-8 text-accent-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
-							</svg>
+							<Icon name="heroicons:chart-bar-square" size="8" class="text-accent-primary" />
 						</div>
 						<Heading level={3} class="mb-2">Ready to go public?</Heading>
 						<Paragraph class="text-secondary mb-4">Create your first public status page and keep your users informed about your service status.</Paragraph>

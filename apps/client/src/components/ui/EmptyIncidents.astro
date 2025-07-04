@@ -1,4 +1,6 @@
 ---
+import { Icon } from './index';
+
 interface Props {
 	class?: string;
 }
@@ -15,9 +17,7 @@ const statusClasses = 'text-status-success text-sm mt-2 font-medium';
 
 <div class={containerClasses}>
 	<div class={iconContainerClasses}>
-		<svg class={iconClasses} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-			<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-		</svg>
+		<Icon name="heroicons:check-circle" size="10" class="text-status-success" />
 	</div>
 	<h3 class={titleClasses}>No Recent Incidents</h3>
 	<p class={messageClasses}>No incidents reported in the last 24 hours</p>

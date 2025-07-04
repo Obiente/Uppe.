@@ -1,5 +1,6 @@
 ---
 import Button from './Button.astro';
+import { Icon } from './index';
 
 interface Props {
   className?: string;
@@ -12,17 +13,19 @@ const { className = '' } = Astro.props;
   <Button 
     variant="secondary" 
     size="sm" 
-    className="bg-surface-overlay hover:bg-surface-elevated text-primary transition-colors"
+    className="bg-surface-overlay hover:bg-surface-elevated text-primary transition-colors flex items-center gap-2"
     onclick="pauseGlobe()"
   >
-    ⏸️ Pause
+    <Icon name="heroicons:pause" size="4" />
+    Pause
   </Button>
   <Button 
     variant="secondary" 
     size="sm" 
-    className="bg-surface-overlay hover:bg-surface-elevated text-primary transition-colors"
+    className="bg-surface-overlay hover:bg-surface-elevated text-primary transition-colors flex items-center gap-2"
     onclick="resetGlobe()"
   >
-    🔄 Reset
+    <Icon name="heroicons:arrow-path" size="4" />
+    Reset
   </Button>
 </div>

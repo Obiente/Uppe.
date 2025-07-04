@@ -16,11 +16,11 @@ import Section from '../components/ui/Section.astro';
 import Grid from '../components/ui/Grid.astro';
 
 // Import mock data
-import { mockMonitors, mockDetailedMonitors } from '../mock/monitors.ts';
-import { mockGlobalPingData } from '../mock/network.ts';
-import { mockIncidents } from '../mock/incidents.ts';
-import { mockAlerts } from '../mock/alerts.ts';
-import { mockUptimeData, mockHours, mockNetworkStats } from '../mock/stats.ts';
+import { mockMonitors, mockDetailedMonitors } from '../mock/monitors';
+import { mockGlobalPingData } from '../mock/network';
+import { mockIncidents } from '../mock/incidents';
+import { mockAlerts } from '../mock/alerts';
+import { mockUptimeData, mockHours, mockNetworkStats } from '../mock/stats';
 
 // Calculate stats from mock data
 const totalMonitors = mockMonitors.length;
@@ -69,7 +69,6 @@ const {
         avgUptime={avgUptime}
       />
     </Section>
-
     <!-- P2P Network Status and Share Ratio -->
     <Section>
       <Grid cols="2">
@@ -92,7 +91,7 @@ const {
         />
       </Grid>
     </Section>
-
+    
     <!-- Global Ping Map -->
     <Section>
       <GlobalPingMap
@@ -128,25 +127,25 @@ const {
       <Grid cols="4">
         <ActionCard
           href="/add-monitor"
-          icon="plus"
+          icon="heroicons:plus"
           title="Add Monitor"
           description="Monitor new service"
         />
         <ActionCard
           href="/status-pages"
-          icon="document"
+          icon="heroicons:document-text"
           title="Status Pages"
           description="Manage public pages"
         />
         <ActionCard
           href="/network-map"
-          icon="globe"
+          icon="heroicons:globe-americas"
           title="Network Map"
           description="View peer network"
         />
         <ActionCard
           href="/analytics"
-          icon="chart"
+          icon="heroicons:chart-bar"
           title="Analytics"
           description="View detailed stats"
         />

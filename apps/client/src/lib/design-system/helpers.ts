@@ -2,6 +2,37 @@ import { components } from './components';
 
 type ComponentKey = keyof typeof components;
 
+// Extract the structure of each component for better type inference
+type ComponentConfig = typeof components;
+
+// Get the variants for a specific component
+type GetVariants<T extends ComponentKey> = ComponentConfig[T] extends { variants: infer V }
+  ? V extends Record<string, string>
+    ? keyof V
+    : never
+  : never;
+
+// Get the sizes for a specific component
+type GetSizes<T extends ComponentKey> = ComponentConfig[T] extends { sizes: infer S }
+  ? S extends Record<string | number, string>
+    ? keyof S
+    : never
+  : never;
+
+// Get all possible option keys for a component
+type GetOptionKeys<T extends ComponentKey> = ComponentConfig[T] extends Record<string, any>
+  ? Exclude<keyof ComponentConfig[T], 'base' | 'variants' | 'sizes'>
+  : never;
+
+// Component-specific options type
+type ComponentOptions<T extends ComponentKey> = {
+  variant?: GetVariants<T>;
+  size?: GetSizes<T>;
+  inline?: boolean;
+} & {
+  [K in GetOptionKeys<T>]?: boolean;
+};
+
 interface ComponentStyles {
   base?: string;
   variants?: Record<string, string>;
@@ -11,21 +42,16 @@ interface ComponentStyles {
 }
 
 /**
- * Get component classes from the design system
+ * Get component classes from the design system with full type inference
  * 
  * @param component - The component name (e.g., 'badge', 'button')
- * @param options - Component options (variant, size, etc)
+ * @param options - Component options (variant, size, etc) - fully typed based on component
  * @param className - Additional class names
  * @returns Combined class names
  */
-export function getClasses(
-  component: ComponentKey,
-  options?: {
-    variant?: string;
-    size?: string | number;
-    inline?: boolean;
-    [key: string]: any;
-  },
+export function getClasses<T extends ComponentKey>(
+  component: T,
+  options?: ComponentOptions<T>,
   className: string = ''
 ): string {
   const componentStyles = components[component] as ComponentStyles;

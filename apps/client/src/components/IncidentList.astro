@@ -1,0 +1,45 @@
+---
+import Card from './ui/Card.astro';
+import Heading from './ui/Heading.astro';
+import Button from './ui/Button.astro';
+import IncidentItem from './ui/IncidentItem.astro';
+import EmptyIncidents from './ui/EmptyIncidents.astro';
+
+interface Props {
+	recentIncidents: Array<{
+		id: string;
+		title: string;
+		status: 'resolved' | 'ongoing' | 'investigating';
+		time: string;
+		duration: string;
+		description: string;
+	}>;
+}
+
+const { recentIncidents } = Astro.props;
+---
+
+<Card>
+	<div class="flex items-center justify-between p-6 border-b border-border-subtle">
+		<Heading as="h3" size="lg">Recent Incidents</Heading>
+		<Button variant="secondary" size="sm">
+			View All
+		</Button>
+	</div>
+
+	<div class="space-y-4 p-6">
+		{recentIncidents.length === 0 ? (
+			<EmptyIncidents />
+		) : (
+			recentIncidents.map((incident) => (
+				<IncidentItem
+					title={incident.title}
+					description={incident.description}
+					status={incident.status}
+					time={incident.time}
+					duration={incident.duration}
+				/>
+			))
+		)}
+	</div>
+</Card>

@@ -1,0 +1,23 @@
+---
+import ProgressBar from './ProgressBar.astro';
+
+interface Props {
+  label: string;
+  value: number;
+  unit?: string;
+  variant?: 'primary' | 'success' | 'warning' | 'error';
+  className?: string;
+}
+
+const { label, value, unit = '', variant = 'primary', className = '' } = Astro.props;
+---
+
+<div class={`flex items-center justify-between ${className}`}>
+  <span class="text-primary">{label}</span>
+  <div class="flex items-center gap-2">
+    <div class="w-20">
+      <ProgressBar value={value} variant={variant} />
+    </div>
+    <span class="text-primary text-sm">{value}{unit}</span>
+  </div>
+</div>

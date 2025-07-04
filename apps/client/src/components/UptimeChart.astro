@@ -1,0 +1,22 @@
+---
+import Card from './ui/Card.astro';
+import CardBody from './ui/CardBody.astro';
+import ChartHeader from './ui/ChartHeader.astro';
+import UptimeGrid from './ui/UptimeGrid.astro';
+import ChartTimeLabels from './ui/ChartTimeLabels.astro';
+
+interface Props {
+	hours: number[];
+	uptimeData: number[];
+}
+
+const { hours, uptimeData } = Astro.props;
+---
+
+<Card>
+	<CardBody>
+		<ChartHeader title="24 Hour Uptime" className="mb-4" />
+		<UptimeGrid hours={hours} uptimeData={uptimeData} className="px-0" />
+		<ChartTimeLabels />
+	</CardBody>
+</Card>

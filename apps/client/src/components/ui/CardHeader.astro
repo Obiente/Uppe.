@@ -1,0 +1,22 @@
+---
+export interface Props {
+  class?: string;
+  variant?: 'default' | 'highlight' | 'subtle';
+  [key: string]: any;
+}
+
+const { class: className = '', variant = 'default', ...rest } = Astro.props;
+
+// Variant classes
+const variantClasses = {
+  default: 'px-6 py-4 border-b border-border-subtle',
+  highlight: 'px-6 py-4 border-b-2 border-interactive-primary bg-interactive-primary/5',
+  subtle: 'px-6 py-4 border-b border-border-subtle/50'
+};
+
+const headerClasses = `${variantClasses[variant]} ${className}`;
+---
+
+<div class={headerClasses} {...rest}>
+  <slot />
+</div>

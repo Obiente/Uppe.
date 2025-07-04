@@ -1,0 +1,64 @@
+---
+interface Props {
+  status: 'online' | 'offline' | 'warning' | 'error' | 'unknown';
+  label?: string;
+  size?: 'sm' | 'md' | 'lg';
+  animated?: boolean;
+  variant?: 'dot' | 'badge' | 'icon';
+  className?: string;
+}
+
+const { status, label, size = 'sm', animated = false, variant = 'dot', className = '' } = Astro.props;
+
+// Size classes
+const sizeClasses = {
+  sm: { dot: 'w-2 h-2', text: 'text-xs', container: 'gap-1.5' },
+  md: { dot: 'w-3 h-3', text: 'text-sm', container: 'gap-2' },
+  lg: { dot: 'w-4 h-4', text: 'text-base', container: 'gap-2.5' }
+};
+
+// Status configurations
+const statusConfig = {
+  online: { 
+    color: 'bg-status-success', 
+    textColor: 'text-status-success',
+    icon: '✓'
+  },
+  offline: { 
+    color: 'bg-status-error', 
+    textColor: 'text-status-error',
+    icon: '✕'
+  },
+  warning: { 
+    color: 'bg-status-warning', 
+    textColor: 'text-status-warning',
+    icon: '⚠'
+  },
+  error: { 
+    color: 'bg-status-error', 
+    textColor: 'text-status-error',
+    icon: '✕'
+  },
+  unknown: { 
+    color: 'bg-text-tertiary', 
+    textColor: 'text-tertiary',
+    icon: '?'
+  }
+};
+
+const config = statusConfig[status];
+const sizeConfig = sizeClasses[size];
+---
+
+<div class={`flex items-center ${sizeConfig.container} ${sizeConfig.text} ${className}`}>
+  {variant === 'dot' && (
+    <div class={`${sizeConfig.dot} rounded-full ${config.color} ${animated && status === 'online' ? 'animate-pulse' : ''}`}></div>
+  )}
+  {variant === 'icon' && (
+    <span class={`${config.textColor} font-bold`}>{config.icon}</span>
+  )}
+  {variant === 'badge' && (
+    <div class={`${sizeConfig.dot} rounded-full ${config.color} ${animated ? 'animate-pulse' : ''} shadow-lg`}></div>
+  )}
+  {label && <span class={config.textColor}>{label}</span>}
+</div>

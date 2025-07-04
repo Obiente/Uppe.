@@ -7,7 +7,7 @@
 		"paths": {
 			"$components/*": ["src/components/*"],
 			"$layouts/*": ["src/layouts/*"],
-			"$data/*": ["src/data/*"],
+			"$data/*": ["src/mock/*"],
 			"$store": ["src/store.ts"]
 		},
 	}

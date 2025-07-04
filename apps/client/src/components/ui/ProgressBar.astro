@@ -1,0 +1,57 @@
+---
+export interface Props {
+  label: string;
+  value: number;
+  maxValue?: number;
+  variant?: "primary" | "success" | "warning" | "error";
+  showValue?: boolean;
+  valueText?: string;
+  size?: "sm" | "md" | "lg";
+  class?: string;
+}
+
+const { 
+  label, 
+  value, 
+  maxValue = 100, 
+  variant = 'primary', 
+  showValue = true, 
+  valueText,
+  size = "md",
+  class: className = '' 
+} = Astro.props;
+
+const percentage = Math.min(Math.round((value / maxValue) * 100), 100);
+
+// Base progress bar classes with simple styling
+const baseClasses = "w-full bg-elevated rounded-full overflow-hidden";
+
+// Bar variant classes with base colors
+const barVariantClasses = {
+  primary: "bg-interactive-primary",
+  success: "bg-status-success",
+  warning: "bg-status-warning",
+  error: "bg-status-error"
+};
+
+// Size classes
+const sizeClasses = {
+  sm: "h-2",
+  md: "h-3",
+  lg: "h-4"
+};
+
+const barClasses = `${barVariantClasses[variant]} transition-all duration-500 ease-out ${sizeClasses[size]} rounded-full`;
+---
+
+<div class={`flex items-center justify-between gap-4 ${className}`}>
+  <span class="text-primary font-medium">{label}</span>
+  <div class="flex items-center gap-3 flex-1 max-w-xs">
+    <div class={`${baseClasses} ${sizeClasses[size]}`}>
+      <div class={barClasses} style={`width: ${percentage}%`}></div>
+    </div>
+    {showValue && (
+      <span class="text-secondary text-sm font-medium min-w-max">{valueText || `${percentage}%`}</span>
+    )}
+  </div>
+</div>

@@ -1,0 +1,106 @@
+---
+import Card from './ui/Card.astro';
+import CardBody from './ui/CardBody.astro';
+import Grid from './ui/Grid.astro';
+import Heading from './ui/Heading.astro';
+import Button from './ui/Button.astro';
+import StatusBadge from './ui/StatusBadge.astro';
+import Badge from './ui/Badge.astro';
+import Metric from './ui/Metric.astro';
+import MonitorCardHeader from './ui/MonitorCardHeader.astro';
+
+interface Props {
+	monitors: Array<{
+		id: string;
+		name: string;
+		url: string;
+		status: 'online' | 'offline' | 'warning';
+		uptime: number;
+		avgPing: number;
+		totalChecks: number;
+		lastIncident: string | null;
+		peerCoverage: number;
+	}>;
+}
+
+const { monitors } = Astro.props;
+
+const getStatusVariant = (status: string) => {
+	switch (status) {
+		case 'online': return 'online' as const;
+		case 'offline': return 'offline' as const;
+		case 'warning': return 'degraded' as const;
+		default: return 'unknown' as const;
+	}
+};
+---
+
+<Card>
+	<CardBody class="border-b border-border-subtle">
+		<div class="flex items-center justify-between">
+			<div>
+				<Heading as="h3" size="xl">Monitor Overview</Heading>
+				<p class="text-secondary text-sm">
+					{monitors.length} monitor{monitors.length !== 1 ? 's' : ''} across the network
+				</p>
+			</div>
+			<Button variant="secondary" size="sm">
+				View All Details
+			</Button>
+		</div>
+	</CardBody>
+
+	<CardBody>
+		<Grid cols="1" gap="4">
+			{monitors.map((monitor) => (
+				<Card class={`border-status-${monitor.status}/20 bg-status-${monitor.status}/10 hover:bg-surface-elevated transition-colors`}>
+					<CardBody>
+						<MonitorCardHeader 
+							title={monitor.name}
+							url={monitor.url}
+							status={monitor.status}
+							region="Global"
+						/>
+
+						<Grid cols="2" colsLg="4" gap="4" class="mb-4">
+							<Metric label="Uptime" value={`${monitor.uptime}%`} size="sm" color="success" />
+							<Metric label="Avg Response" value={`${monitor.avgPing}ms`} size="sm" />
+							<Metric label="Total Checks" value={monitor.totalChecks.toLocaleString()} size="sm" />
+							<Metric label="Last Incident" value={monitor.lastIncident || 'None'} size="sm" />
+						</Grid>
+
+						<div class="flex items-center justify-between text-sm">
+							<span class="text-secondary">
+								{monitor.peerCoverage} peers monitoring
+							</span>
+							<div class="flex items-center gap-1">
+								{Array.from({ length: Math.min(monitor.peerCoverage, 5) }).map(() => (
+									<div class="w-2 h-2 rounded-full bg-status-success"></div>
+								))}
+								{monitor.peerCoverage > 5 && (
+									<Badge variant="info" size="sm">
+										+{monitor.peerCoverage - 5}
+									</Badge>
+								)}
+							</div>
+						</div>
+					</CardBody>
+				</Card>
+			))}
+		</Grid>
+	</CardBody>
+
+	{monitors.length === 0 && (
+		<CardBody class="text-center">
+			<div class="py-8">
+				<Heading as="h3" size="lg" class="mb-2">No monitors configured yet</Heading>
+				<p class="text-secondary mb-4">
+					Start monitoring your services and websites by adding your first monitor.
+				</p>
+				<Button variant="primary" size="sm">
+					Add your first monitor
+				</Button>
+			</div>
+		</CardBody>
+	)}
+</div>

@@ -1,0 +1,254 @@
+---
+import Header from "$components/Header.astro";
+import Layout from "$layouts/Layout.astro";
+import { 
+  Section, 
+  Grid, 
+  Card, 
+  CardBody, 
+  Heading, 
+  Paragraph, 
+  Input, 
+  Select, 
+  Toggle, 
+  Button,
+  FormGroup,
+  Label,
+  Alert,
+  Badge
+} from "../components/ui";
+---
+
+<Layout title="PeerUP Settings" description="Configure your PeerUP monitoring settings">
+  <Header title="PeerUP" />
+  
+  <main class="min-h-screen">
+    <Section>
+      <Heading level={1} class="mb-2">Settings</Heading>
+      <Paragraph class="text-secondary">Configure your monitoring preferences and account settings</Paragraph>
+    </Section>
+
+    <div class="space-y-8">
+      <!-- Account Settings -->
+      <Section>
+        <Card>
+          <CardBody>
+            <Heading level={2} class="mb-4">Account Settings</Heading>
+            <div class="space-y-4">
+              <FormGroup>
+                <Label for="displayName">Display Name</Label>
+                <Input 
+                  id="displayName"
+                  type="text"
+                  value="PeerUP User"
+                />
+              </FormGroup>
+              <FormGroup>
+                <Label for="email">Email Address</Label>
+                <Input 
+                  id="email"
+                  type="email"
+                  value="user@example.com"
+                />
+              </FormGroup>
+            </div>
+          </CardBody>
+        </Card>
+      </Section>
+
+      <!-- Notification Settings -->
+      <Section>
+        <Card>
+          <CardBody>
+            <Heading level={2} class="mb-4">Notification Settings</Heading>
+            <div class="space-y-4">
+              <Toggle 
+                label="Email Notifications"
+                description="Receive alerts when monitors go down"
+                checked={true}
+              />
+              <Toggle 
+                label="Incident Reports"
+                description="Weekly summary of incidents and uptime"
+                checked={false}
+              />
+              <Toggle 
+                label="P2P Network Updates"
+                description="Updates about network status and improvements"
+                checked={true}
+              />
+            </div>
+          </CardBody>
+        </Card>
+      </Section>
+
+      <!-- P2P Network Settings -->
+      <Section>
+        <Card>
+          <CardBody>
+            <Heading level={2} class="mb-4">P2P Network Settings</Heading>
+            <div class="space-y-4">
+              <FormGroup>
+                <Label for="peerDiscovery">Peer Discovery Method</Label>
+                <Select id="peerDiscovery">
+                  <option>DHT + Bootstrap Nodes</option>
+                  <option>DHT Only</option>
+                  <option>Bootstrap Nodes Only</option>
+                  <option>Manual Peer List</option>
+                </Select>
+              </FormGroup>
+              <Toggle 
+                label="Contribute to Network"
+                description="Help monitor other services in the network"
+                checked={true}
+              />
+              <FormGroup>
+                <Label for="maxBandwidth">Max Bandwidth (MB/day)</Label>
+                <Input 
+                  id="maxBandwidth"
+                  type="number"
+                  value="100"
+                />
+              </FormGroup>
+              <FormGroup>
+                <Label for="maxChecks">Max Concurrent Checks</Label>
+                <Input 
+                  id="maxChecks"
+                  type="number"
+                  value="50"
+                  min="1"
+                  max="200"
+                />
+              </FormGroup>
+              <Toggle 
+                label="Auto-Accept Monitoring Requests"
+                description="Automatically accept requests to monitor services"
+                checked={true}
+              />
+            </div>
+          </CardBody>
+        </Card>
+      </Section>
+
+      <!-- Advanced Settings -->
+      <Section>
+        <Card>
+          <CardBody>
+            <Heading level={2} class="mb-4">Advanced Settings</Heading>
+            <div class="space-y-4">
+              <FormGroup>
+                <Label for="checkInterval">Check Interval</Label>
+                <Select id="checkInterval">
+                  <option>30 seconds</option>
+                  <option>1 minute</option>
+                  <option>5 minutes</option>
+                  <option>10 minutes</option>
+                </Select>
+              </FormGroup>
+              <FormGroup>
+                <Label for="timeout">Timeout (seconds)</Label>
+                <Input 
+                  id="timeout"
+                  type="number"
+                  value="30"
+                />
+              </FormGroup>
+              <Toggle 
+                label="Detailed Logging"
+                description="Store detailed logs of all monitoring activities"
+                checked={false}
+              />
+            </div>
+          </CardBody>
+        </Card>
+      </Section>
+
+      <!-- Cluster Management -->
+      <Section>
+        <Card>
+          <CardBody>
+            <Heading level={2} class="mb-4">Cluster Management</Heading>
+            
+            <div class="space-y-6">
+              <Card class="border-2 border-border-subtle">
+                <CardBody>
+                  <div class="flex items-center justify-between">
+                    <div class="flex-1">
+                      <div class="flex items-center gap-2 mb-2">
+                        <Heading level={3}>Cluster Visibility</Heading>
+                        <Badge variant="primary">Public</Badge>
+                      </div>
+                      <Paragraph class="text-secondary text-sm">
+                        Your monitoring cluster is currently public. Other users can discover and join your cluster for collaborative monitoring.
+                      </Paragraph>
+                    </div>
+                    <div class="ml-4">
+                      <Toggle 
+                        label=""
+                        checked={true}
+                        id="clusterVisibility"
+                      />
+                    </div>
+                  </div>
+                </CardBody>
+              </Card>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="space-y-4">
+                  <FormGroup>
+                    <Label for="clusterName">Cluster Name</Label>
+                    <Input 
+                      id="clusterName"
+                      type="text"
+                      value="My Monitoring Cluster"
+                    />
+                  </FormGroup>
+                  <FormGroup>
+                    <Label for="maxClusterSize">Max Cluster Size</Label>
+                    <Select id="maxClusterSize">
+                      <option value="10">10 peers</option>
+                      <option value="25" selected>25 peers</option>
+                      <option value="50">50 peers</option>
+                      <option value="100">100 peers</option>
+                    </Select>
+                  </FormGroup>
+                </div>
+                <div class="space-y-4">
+                  <FormGroup>
+                    <Label for="joinPolicy">Join Policy</Label>
+                    <Select id="joinPolicy">
+                      <option value="open" selected>Open (Anyone can join)</option>
+                      <option value="approval">Approval Required</option>
+                      <option value="invite">Invite Only</option>
+                    </Select>
+                  </FormGroup>
+                  <FormGroup>
+                    <Label for="minMRScore">Minimum MR Score</Label>
+                    <Select id="minMRScore">
+                      <option value="0">No minimum</option>
+                      <option value="1">1.0 (Balanced)</option>
+                      <option value="1.5" selected>1.5 (Good contributor)</option>
+                      <option value="2">2.0 (Excellent contributor)</option>
+                    </Select>
+                  </FormGroup>
+                </div>
+              </div>
+            </div>
+          </CardBody>
+        </Card>
+      </Section>
+
+      <!-- Save Button -->
+      <Section>
+        <div class="flex justify-end">
+          <Button variant="primary" class="flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+            Save Settings
+          </Button>
+        </div>
+      </Section>
+    </div>
+  </main>
+</Layout>

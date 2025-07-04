@@ -1,0 +1,361 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import Header from '../../../components/Header.astro';
+// Theme is now handled by Layout.astro
+
+// Import UI components
+import Button from '../../../components/ui/Button.astro';
+import Card from '../../../components/ui/Card.astro';
+import CardHeader from '../../../components/ui/CardHeader.astro';
+import CardBody from '../../../components/ui/CardBody.astro';
+import Input from '../../../components/ui/Input.astro';
+import Select from '../../../components/ui/Select.astro';
+import Textarea from '../../../components/ui/Textarea.astro';
+import Label from '../../../components/ui/Label.astro';
+import Checkbox from '../../../components/ui/Checkbox.astro';
+import FormGroup from '../../../components/ui/FormGroup.astro';
+import Heading from '../../../components/ui/Heading.astro';
+import Paragraph from '../../../components/ui/Paragraph.astro';
+
+export async function getStaticPaths() {
+  // In a real app, this would fetch from your API or database
+  return [
+    { params: { id: '1' } },
+    { params: { id: '2' } },
+    { params: { id: '3' } }
+  ];
+}
+
+const { id } = Astro.params;
+
+// Mock service data - in real app, this would come from API
+const serviceData = {
+	id: id,
+	name: 'Production API',
+	url: 'https://api.example.com',
+	status: 'online',
+	uptime: 99.97,
+	avgResponseTime: 142,
+	lastCheck: '2024-01-15T10:30:00Z',
+	monitoringPeers: 12,
+	checkInterval: 60,
+	created: '2024-01-01T00:00:00Z',
+	isPublic: true,
+	publicSlug: 'production-api',
+	tags: ['production', 'api', 'critical'],
+	notifications: {
+		email: true,
+		slack: true,
+		webhook: true,
+		webhookUrl: 'https://hooks.slack.com/services/...'
+	},
+	monitoringSettings: {
+		timeout: 10,
+		retries: 3,
+		followRedirects: true,
+		verifySSL: true,
+		expectedStatusCodes: [200, 201, 202],
+		keyword: '',
+		headers: {}
+	}
+};
+---
+
+<Layout title={`Edit ${serviceData.name} - PeerUP`}>
+	<Header />
+	
+	<main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+		<!-- Header -->
+		<div class="mb-8 animate-slide-up">
+			<div class="flex items-center justify-between mb-4">
+				<div>
+					<Heading as="h1" size="3xl">Edit Service</Heading>
+					<Paragraph color="secondary">Configure monitoring settings for {serviceData.name}</Paragraph>
+				</div>
+				<div class="flex items-center gap-3">
+					<Button variant="secondary" href={`/service/${serviceData.id}`}>
+						View Service
+					</Button>
+					<Button variant="danger">
+						Delete Service
+					</Button>
+				</div>
+			</div>
+		</div>
+
+		<form class="space-y-8">
+			<!-- Basic Settings -->
+			<Card class="animate-slide-up">
+				<CardHeader>
+					<Heading as="h2" size="xl">Basic Settings</Heading>
+				</CardHeader>
+				<CardBody>
+					<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+						<FormGroup>
+							<Label for="serviceName">Service Name</Label>
+							<Input id="serviceName" type="text" value={serviceData.name} />
+						</FormGroup>
+						
+						<FormGroup>
+							<Label for="serviceUrl">URL to Monitor</Label>
+							<Input id="serviceUrl" type="url" value={serviceData.url} />
+						</FormGroup>
+						
+						<FormGroup>
+							<Label for="checkInterval">Check Interval (seconds)</Label>
+							<Select id="checkInterval">
+								<option value="30">30 seconds</option>
+								<option value="60" selected>60 seconds</option>
+								<option value="300">5 minutes</option>
+								<option value="900">15 minutes</option>
+								<option value="1800">30 minutes</option>
+							</Select>
+						</FormGroup>
+						
+						<FormGroup>
+							<Label for="serviceTags">Tags</Label>
+							<Input 
+								id="serviceTags"
+								type="text" 
+								value={serviceData.tags.join(', ')} 
+								placeholder="production, api, critical" 
+							/>
+						</FormGroup>
+					</div>
+				</CardBody>
+			</Card>
+
+			<!-- Monitoring Settings -->
+			<Card class="animate-slide-up">
+				<CardHeader>
+					<Heading as="h2" size="xl">Monitoring Settings</Heading>
+				</CardHeader>
+				<CardBody>
+					<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+						<FormGroup>
+							<Label for="timeout">Timeout (seconds)</Label>
+							<Input 
+								id="timeout"
+								type="number" 
+								value={serviceData.monitoringSettings.timeout} 
+								min="1" 
+								max="60" 
+							/>
+						</FormGroup>
+						
+						<FormGroup>
+							<Label for="retries">Retries</Label>
+							<Input 
+								id="retries"
+								type="number" 
+								value={serviceData.monitoringSettings.retries} 
+								min="0" 
+								max="10" 
+							/>
+						</FormGroup>
+						
+						<FormGroup>
+							<Label for="statusCodes">Expected Status Codes</Label>
+							<Input 
+								id="statusCodes"
+								type="text" 
+								value={serviceData.monitoringSettings.expectedStatusCodes.join(', ')} 
+								placeholder="200, 201, 202" 
+							/>
+						</FormGroup>
+						
+						<FormGroup>
+							<Label for="keyword">Keyword Check (optional)</Label>
+							<Input 
+								id="keyword"
+								type="text" 
+								value={serviceData.monitoringSettings.keyword} 
+								placeholder="Expected text in response" 
+							/>
+						</FormGroup>
+					</div>
+					<div class="mt-6 space-y-4">
+						<div class="flex items-center gap-3">
+							<Checkbox 
+								id="followRedirects" 
+								checked={serviceData.monitoringSettings.followRedirects} 
+							/>
+							<Label for="followRedirects" class="form-label-inline">
+								Follow redirects
+							</Label>
+						</div>
+						
+						<div class="flex items-center gap-3">
+							<Checkbox 
+								id="verifySSL" 
+								checked={serviceData.monitoringSettings.verifySSL} 
+							/>
+							<Label for="verifySSL" class="form-label-inline">
+								Verify SSL certificate
+							</Label>
+						</div>
+					</div>
+				</CardBody>
+			</Card>
+
+			<!-- Public Status Page -->
+			<Card class="animate-slide-up">
+				<CardHeader>
+					<Heading as="h2" size="xl">Public Status Page</Heading>
+				</CardHeader>
+				<CardBody>
+					<div class="space-y-4">
+						<div class="flex items-center gap-3">
+							<Checkbox 
+								id="isPublic" 
+								checked={serviceData.isPublic} 
+							/>
+							<Label for="isPublic" class="form-label-inline font-medium">
+								Enable public status page
+							</Label>
+						</div>
+						<div class="ml-7">
+							<FormGroup>
+								<Label for="publicSlug">Public URL Slug</Label>
+								<div class="flex items-center gap-2">
+									<Paragraph size="sm" color="secondary">status.peerup.com/</Paragraph>
+									<Input 
+										id="publicSlug"
+										type="text" 
+										value={serviceData.publicSlug} 
+										class="flex-1" 
+									/>
+								</div>
+							</FormGroup>
+						</div>
+					</div>
+				</CardBody>
+			</Card>
+
+			<!-- Notifications -->
+			<Card class="animate-slide-up">
+				<CardHeader>
+					<Heading as="h2" size="xl">Notifications</Heading>
+				</CardHeader>
+				<CardBody>
+					<div class="space-y-6">
+						<div class="flex items-center justify-between">
+							<div>
+								<Paragraph class="font-medium">Email Notifications</Paragraph>
+								<Paragraph size="sm" color="secondary">Get notified via email when incidents occur</Paragraph>
+							</div>
+							<Checkbox checked={serviceData.notifications.email} />
+						</div>
+						
+						<div class="flex items-center justify-between">
+							<div>
+								<Paragraph class="font-medium">Slack Notifications</Paragraph>
+								<Paragraph size="sm" color="secondary">Send alerts to your Slack channel</Paragraph>
+							</div>
+							<Checkbox checked={serviceData.notifications.slack} />
+						</div>
+						
+						<div class="space-y-4">
+							<div class="flex items-center justify-between">
+								<div>
+									<Paragraph class="font-medium">Webhook Notifications</Paragraph>
+									<Paragraph size="sm" color="secondary">Send HTTP requests to custom endpoints</Paragraph>
+								</div>
+								<Checkbox checked={serviceData.notifications.webhook} />
+							</div>
+							
+							{serviceData.notifications.webhook && (
+								<div class="ml-4">
+									<FormGroup>
+										<Label for="webhookUrl">Webhook URL</Label>
+										<Input 
+											id="webhookUrl"
+											type="url" 
+											value={serviceData.notifications.webhookUrl} 
+											placeholder="https://hooks.slack.com/services/..." 
+										/>
+									</FormGroup>
+								</div>
+							)}
+						</div>
+					</div>
+				</CardBody>
+			</Card>
+
+			<!-- Peer Selection -->
+			<Card class="animate-slide-up">
+				<CardHeader>
+					<Heading as="h2" size="xl">Peer Selection</Heading>
+				</CardHeader>
+				<CardBody>
+					<div class="space-y-4">
+						<FormGroup>
+							<Label for="monitoringPeers">Monitoring Peers</Label>
+							<Paragraph size="sm" color="secondary" class="mb-4">
+								Choose which peers monitor your service. More peers provide better coverage but consume more network resources.
+							</Paragraph>
+							
+							<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+								<FormGroup>
+									<Label for="peerStrategy">Peer Selection Strategy</Label>
+									<Select id="peerStrategy">
+										<option value="auto" selected>Auto (Recommended)</option>
+										<option value="geographic">Geographic Distribution</option>
+										<option value="performance">Best Performance</option>
+										<option value="manual">Manual Selection</option>
+									</Select>
+								</FormGroup>
+								
+								<FormGroup>
+									<Label for="peerCount">Target Peer Count</Label>
+									<Input 
+										id="peerCount"
+										type="number" 
+										value={serviceData.monitoringPeers} 
+										min="3" 
+										max="50" 
+									/>
+								</FormGroup>
+							</div>
+						</FormGroup>
+					</div>
+				</CardBody>
+			</Card>
+
+			<!-- Action Buttons -->
+			<div class="flex items-center justify-end gap-4 pt-6">
+				<Button type="button" variant="secondary">
+					Cancel
+				</Button>
+				<Button type="submit" variant="primary">
+					Save Changes
+				</Button>
+			</div>
+		</form>
+	</main>
+</Layout>
+
+<script>
+	// Theme is now handled by Layout.astro
+	
+	// Page initialization
+	document.addEventListener('DOMContentLoaded', () => {
+		
+		// Handle public status page toggle
+		const publicToggle = document.getElementById('isPublic') as HTMLInputElement;
+		const publicSlugSection = publicToggle?.closest('.space-y-4')?.querySelector('.ml-7') as HTMLElement;
+		
+		function togglePublicSlug() {
+			if (publicToggle && publicSlugSection) {
+				if (publicToggle.checked) {
+					publicSlugSection.style.display = 'block';
+				} else {
+					publicSlugSection.style.display = 'none';
+				}
+			}
+		}
+		
+		publicToggle?.addEventListener('change', togglePublicSlug);
+		togglePublicSlug(); // Initial state
+	});
+</script>

@@ -1,0 +1,26 @@
+---
+interface Props {
+  hours: number[];
+  uptimeData: number[];
+  className?: string;
+}
+
+const { hours, uptimeData, className = '' } = Astro.props;
+
+const getUptimeColor = (uptime: number) => {
+  if (uptime >= 99) return 'bg-status-online';
+  if (uptime >= 95) return 'bg-status-warning';
+  if (uptime >= 90) return 'bg-status-warning/70';
+  return 'bg-status-error';
+};
+---
+
+<div class={`grid grid-cols-24 gap-1 mb-4 ${className}`}>
+  {uptimeData.map((uptime, index) => (
+    <div
+      class={`h-8 rounded-sm ${getUptimeColor(uptime)} hover:opacity-80 transition-opacity cursor-pointer`}
+      title={`${hours[index]}:00 - ${uptime}% uptime`}
+    >
+    </div>
+  ))}
+</div>

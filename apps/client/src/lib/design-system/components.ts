@@ -53,8 +53,8 @@ export const components = {
   
   // Card component
   card: {
-    base: 'bg-surface-secondary border border-border-subtle rounded-lg overflow-hidden',
-    header: 'px-6 py-4 border-b border-border-subtle',
+    base: 'p-6 bg-surface-secondary border border-border-primary rounded-lg overflow-hidden',
+    header: 'px-6 py-4 border-b border-border-primary',
     title: 'text-xl font-semibold text-primary',
     body: 'px-6 py-4'
   },

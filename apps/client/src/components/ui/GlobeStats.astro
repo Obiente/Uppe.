@@ -1,0 +1,23 @@
+---
+interface Props {
+  onlinePeers: number;
+  slowPeers: number;
+  errorPeers: number;
+  className?: string;
+}
+
+const { onlinePeers, slowPeers, errorPeers, className = '' } = Astro.props;
+---
+
+<div class={`bg-surface-overlay/80 backdrop-blur-sm rounded-lg p-3 ${className}`}>
+  <div class="text-primary text-sm font-medium mb-1">Network Status</div>
+  <div class="text-status-online text-xs">
+    {onlinePeers} online peers
+  </div>
+  <div class="text-status-warning text-xs">
+    {slowPeers} slow peers
+  </div>
+  <div class="text-status-error text-xs">
+    {errorPeers} error peers
+  </div>
+</div>

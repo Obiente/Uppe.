@@ -1,0 +1,33 @@
+---
+interface Props {
+  href: string;
+  children?: any;
+  className?: string;
+  active?: boolean;
+  variant?: 'default' | 'pill' | 'underline';
+}
+
+const { href, children, className = '', active = false, variant = 'default' } = Astro.props;
+
+// Base classes
+const baseClasses = "inline-flex items-center transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-interactive-primary";
+
+// Variant classes
+const variantClasses = {
+  default: active 
+    ? "text-interactive-primary font-medium" 
+    : "text-secondary hover:text-primary",
+  pill: active 
+    ? "bg-interactive-primary text-inverse px-3 py-1.5 rounded-full font-medium shadow-md" 
+    : "text-secondary hover:text-primary hover:bg-bg-elevated px-3 py-1.5 rounded-full",
+  underline: active 
+    ? "text-interactive-primary font-medium border-b-2 border-interactive-primary pb-1" 
+    : "text-secondary hover:text-primary hover:border-b-2 hover:border-border-subtle pb-1"
+};
+
+const classes = `${baseClasses} ${variantClasses[variant]} ${className}`;
+---
+
+<a href={href} class={classes}>
+  <slot>{children}</slot>
+</a>

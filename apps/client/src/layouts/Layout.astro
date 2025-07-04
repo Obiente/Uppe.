@@ -1,5 +1,15 @@
 ---
-import '../styles/global.css' 
+import '../styles/global.css';
+import { getThemeCSS } from '../lib/theme-init';
+
+interface Props {
+	title?: string;
+	description?: string;
+}
+
+const { title = "PeerUP", description = "Decentralized P2P Uptime Monitoring" } = Astro.props;
+
+const themeCSS = getThemeCSS();
 ---
 <!doctype html>
 <html lang="en">
@@ -8,18 +18,23 @@ import '../styles/global.css'
 		<meta name="viewport" content="width=device-width" />
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<meta name="generator" content={Astro.generator} />
-		<title>Astro Basics</title>
+		<title>{title}</title>
+		<meta name="description" content={description} />
+		
+		<!-- 
+			Server-side rendered theme CSS 
+			This prevents FOUC (Flash of Unstyled Content) and ensures consistent initial rendering
+		-->
+		<style set:html={themeCSS}></style>
 	</head>
-	<body>
+	<body class="bg-primary min-h-screen">
 		<slot />
+		<!-- <script>
+		
+			import { initTheme } from '../lib/theme-client';
+			document.addEventListener('astro:page-load', () => {
+				initTheme();
+			});
+		</script> -->
 	</body>
 </html>
-
-<style>
-	html,
-	body {
-		margin: 0;
-		width: 100%;
-		height: 100%;
-	}
-</style>

@@ -1,0 +1,103 @@
+---
+interface Props {
+  className?: string;
+}
+
+const { className = '' } = Astro.props;
+---
+
+<div class={`relative bg-surface-secondary rounded-lg p-8 h-96 overflow-hidden ${className}`}>
+  <div class="absolute inset-0 opacity-20">
+    <svg viewBox="0 0 1000 400" class="w-full h-full">
+      <!-- Continents outlines -->
+      <path d="M100 180 Q150 140 200 180 Q250 220 300 180 Q350 140 400 180" 
+            stroke="currentColor" stroke-width="2" fill="none" class="text-border-subtle"/>
+      <path d="M450 160 Q500 120 550 160 Q600 200 650 160 Q700 120 750 160" 
+            stroke="currentColor" stroke-width="2" fill="none" class="text-border-subtle"/>
+      <path d="M80 280 Q130 240 180 280 Q230 320 280 280" 
+            stroke="currentColor" stroke-width="2" fill="none" class="text-border-subtle"/>
+      <path d="M700 240 Q750 200 800 240 Q850 280 900 240" 
+            stroke="currentColor" stroke-width="2" fill="none" class="text-border-subtle"/>
+    </svg>
+  </div>
+  
+  <!-- Peer Nodes -->
+  <div class="relative z-10 h-full">
+    <!-- North America -->
+    <div class="absolute top-16 left-32">
+      <div class="w-4 h-4 rounded-full bg-status-online animate-pulse cursor-pointer" title="New York - 45 peers"></div>
+      <div class="absolute -top-6 left-1/2 transform -translate-x-1/2 text-xs text-secondary whitespace-nowrap">45</div>
+    </div>
+    <div class="absolute top-24 left-16">
+      <div class="w-3 h-3 rounded-full bg-status-online animate-pulse cursor-pointer" title="Los Angeles - 23 peers"></div>
+      <div class="absolute -top-6 left-1/2 transform -translate-x-1/2 text-xs text-secondary whitespace-nowrap">23</div>
+    </div>
+    <div class="absolute top-12 left-48">
+      <div class="w-3 h-3 rounded-full bg-status-online animate-pulse cursor-pointer" title="Toronto - 31 peers"></div>
+      <div class="absolute -top-6 left-1/2 transform -translate-x-1/2 text-xs text-secondary whitespace-nowrap">31</div>
+    </div>
+    
+    <!-- Europe -->
+    <div class="absolute top-20 left-96">
+      <div class="w-4 h-4 rounded-full bg-status-online animate-pulse cursor-pointer" title="London - 78 peers"></div>
+      <div class="absolute -top-6 left-1/2 transform -translate-x-1/2 text-xs text-secondary whitespace-nowrap">78</div>
+    </div>
+    <div class="absolute top-16 left-[26rem]">
+      <div class="w-3 h-3 rounded-full bg-status-online animate-pulse cursor-pointer" title="Frankfurt - 56 peers"></div>
+      <div class="absolute -top-6 left-1/2 transform -translate-x-1/2 text-xs text-secondary whitespace-nowrap">56</div>
+    </div>
+    <div class="absolute top-24 left-[28rem]">
+      <div class="w-3 h-3 rounded-full bg-status-warning animate-pulse cursor-pointer" title="Amsterdam - 34 peers"></div>
+      <div class="absolute -top-6 left-1/2 transform -translate-x-1/2 text-xs text-secondary whitespace-nowrap">34</div>
+    </div>
+    
+    <!-- Asia -->
+    <div class="absolute top-20 left-[36rem]">
+      <div class="w-4 h-4 rounded-full bg-status-online animate-pulse cursor-pointer" title="Tokyo - 120 peers"></div>
+      <div class="absolute -top-6 left-1/2 transform -translate-x-1/2 text-xs text-secondary whitespace-nowrap">120</div>
+    </div>
+    <div class="absolute top-28 left-[34rem]">
+      <div class="w-3 h-3 rounded-full bg-status-online animate-pulse cursor-pointer" title="Singapore - 67 peers"></div>
+      <div class="absolute -top-6 left-1/2 transform -translate-x-1/2 text-xs text-secondary whitespace-nowrap">67</div>
+    </div>
+    <div class="absolute top-16 left-[32rem]">
+      <div class="w-3 h-3 rounded-full bg-status-error animate-pulse cursor-pointer" title="Mumbai - 0 peers"></div>
+      <div class="absolute -top-6 left-1/2 transform -translate-x-1/2 text-xs text-secondary whitespace-nowrap">0</div>
+    </div>
+    
+    <!-- Australia -->
+    <div class="absolute top-72 left-[38rem]">
+      <div class="w-3 h-3 rounded-full bg-status-online animate-pulse cursor-pointer" title="Sydney - 45 peers"></div>
+      <div class="absolute -top-6 left-1/2 transform -translate-x-1/2 text-xs text-secondary whitespace-nowrap">45</div>
+    </div>
+    
+    <!-- South America -->
+    <div class="absolute top-64 left-20">
+      <div class="w-3 h-3 rounded-full bg-status-online animate-pulse cursor-pointer" title="São Paulo - 28 peers"></div>
+      <div class="absolute -top-6 left-1/2 transform -translate-x-1/2 text-xs text-secondary whitespace-nowrap">28</div>
+    </div>
+    
+    <!-- Africa -->
+    <div class="absolute top-56 left-[22rem]">
+      <div class="w-2 h-2 rounded-full bg-status-online animate-pulse cursor-pointer" title="Cape Town - 12 peers"></div>
+      <div class="absolute -top-6 left-1/2 transform -translate-x-1/2 text-xs text-secondary whitespace-nowrap">12</div>
+    </div>
+    
+    <!-- Connection Lines -->
+    <svg class="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 1000 400">
+      <defs>
+        <linearGradient id="connectionGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" style="stop-color:rgb(var(--color-accent-primary));stop-opacity:0.3" />
+          <stop offset="100%" style="stop-color:rgb(var(--color-accent-primary));stop-opacity:0.1" />
+        </linearGradient>
+      </defs>
+      
+      <!-- Sample connection lines -->
+      <line x1="128" y1="64" x2="384" y2="80" stroke="url(#connectionGradient)" stroke-width="1" opacity="0.6" />
+      <line x1="384" y1="80" x2="576" y2="80" stroke="url(#connectionGradient)" stroke-width="1" opacity="0.6" />
+      <line x1="576" y1="80" x2="544" y2="112" stroke="url(#connectionGradient)" stroke-width="1" opacity="0.6" />
+      <line x1="128" y1="64" x2="64" y2="96" stroke="url(#connectionGradient)" stroke-width="1" opacity="0.6" />
+      <line x1="544" y1="112" x2="608" y2="288" stroke="url(#connectionGradient)" stroke-width="1" opacity="0.6" />
+    </svg>
+  </div>
+</div>

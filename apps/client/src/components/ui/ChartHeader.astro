@@ -1,0 +1,21 @@
+---
+import StatusBadge from './StatusBadge.astro';
+
+interface Props {
+  title: string;
+  showLegend?: boolean;
+  className?: string;
+}
+
+const { title, showLegend = true, className = '' } = Astro.props;
+---
+
+<div class={`flex items-center justify-between ${className}`}>
+  <h3 class="text-lg font-semibold text-primary">{title}</h3>
+  {showLegend && (
+    <div class="flex items-center gap-4 text-sm">
+      <StatusBadge status="online" />
+      <StatusBadge status="offline" />
+    </div>
+  )}
+</div>

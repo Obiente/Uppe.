@@ -1,0 +1,54 @@
+---
+export interface Props {
+  title?: string;
+  headers: string[];
+  rows: Array<Array<{ text: string; color?: string; href?: string }>>;
+  variant?: 'default' | 'striped' | 'bordered';
+  class?: string;
+}
+
+const { title, headers, rows, variant = 'default', class: className = '' } = Astro.props;
+
+// Base table classes with modern styling
+const tableClasses = "w-full border-collapse";
+const headerRowClasses = "bg-bg-elevated border-b-2 border-border-primary";
+const headerCellClasses = "px-6 py-4 text-left text-sm font-semibold text-primary tracking-wider";
+const rowClasses = variant === 'striped' ? 'even:bg-bg-secondary hover:bg-bg-elevated transition-colors duration-200' : 'hover:bg-bg-elevated transition-colors duration-200';
+const cellClasses = "px-6 py-4 text-sm text-primary border-b border-border-subtle";
+
+const containerClasses = variant === 'bordered' 
+  ? `bg-bg-secondary rounded-2xl p-6 border-2 border-border-primary shadow-lg ${className}`
+  : `bg-bg-secondary rounded-2xl p-6 border border-border-subtle shadow-md ${className}`;
+---
+
+<div class={containerClasses}>
+  {title && <h3 class="text-xl font-semibold text-primary mb-6">{title}</h3>}
+  <div class="overflow-x-auto rounded-xl border border-border-subtle">
+    <table class={tableClasses}>
+      <thead class={headerRowClasses}>
+        <tr>
+          {headers.map((header) => (
+            <th class={headerCellClasses}>{header}</th>
+          ))}
+        </tr>
+      </thead>
+      <tbody>
+        {rows.map((row, i) => (
+          <tr class={rowClasses}>
+            {row.map((cell) => (
+              <td class={cellClasses}>
+                {cell.href ? (
+                  <a href={cell.href} class={`${cell.color ? `text-status-${cell.color}` : 'text-interactive-primary'} hover:underline transition-colors duration-200`}>
+                    {cell.text}
+                  </a>
+                ) : (
+                  <span class={cell.color ? `text-status-${cell.color}` : 'text-primary'}>{cell.text}</span>
+                )}
+              </td>
+            ))}
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+</div>

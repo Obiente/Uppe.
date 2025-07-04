@@ -1,0 +1,21 @@
+---
+import StatusIndicator from './StatusIndicator.astro';
+
+interface Props {
+  className?: string;
+}
+
+const { className = '' } = Astro.props;
+
+const legendItems = [
+  { status: 'online' as const, label: 'Online' },
+  { status: 'warning' as const, label: 'Slow' },
+  { status: 'error' as const, label: 'Error' }
+];
+---
+
+<div class={`flex items-center gap-4 text-sm ${className}`}>
+  {legendItems.map(item => (
+    <StatusIndicator status={item.status} label={item.label} animated={true} />
+  ))}
+</div>

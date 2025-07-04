@@ -1,0 +1,19 @@
+---
+import StatusIndicator from './StatusIndicator.astro';
+
+interface Props {
+  items: Array<{
+    status: 'online' | 'offline' | 'warning' | 'error';
+    label: string;
+  }>;
+  className?: string;
+}
+
+const { items, className = '' } = Astro.props;
+---
+
+<div class={`flex items-center gap-4 ${className}`}>
+  {items.map(item => (
+    <StatusIndicator status={item.status} label={item.label} />
+  ))}
+</div>

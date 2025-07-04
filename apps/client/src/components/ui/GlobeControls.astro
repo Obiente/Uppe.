@@ -1,0 +1,28 @@
+---
+import Button from './Button.astro';
+
+interface Props {
+  className?: string;
+}
+
+const { className = '' } = Astro.props;
+---
+
+<div class={`flex gap-2 ${className}`}>
+  <Button 
+    variant="secondary" 
+    size="sm" 
+    className="bg-surface-overlay hover:bg-surface-elevated text-primary transition-colors"
+    onclick="pauseGlobe()"
+  >
+    ⏸️ Pause
+  </Button>
+  <Button 
+    variant="secondary" 
+    size="sm" 
+    className="bg-surface-overlay hover:bg-surface-elevated text-primary transition-colors"
+    onclick="resetGlobe()"
+  >
+    🔄 Reset
+  </Button>
+</div>

@@ -1,0 +1,30 @@
+---
+interface Props {
+	value: string | number;
+	label: string;
+	color?: 'primary' | 'success' | 'warning' | 'error';
+	class?: string;
+}
+
+const { value, label, color = 'primary', class: className } = Astro.props;
+
+const colorClasses = {
+	primary: 'bg-accent-primary',
+	success: 'bg-status-online',
+	warning: 'bg-status-warning',
+	error: 'bg-status-error'
+};
+
+const containerClasses = `text-center ${className || ''}`;
+const indicatorClasses = `w-2 h-2 rounded-full ${colorClasses[color]}`;
+const valueClasses = 'text-2xl font-bold text-primary';
+const labelClasses = 'text-sm font-medium text-secondary';
+---
+
+<div class={containerClasses}>
+	<div class="flex items-center justify-between mb-2">
+		<span class={labelClasses}>{label}</span>
+		<div class={indicatorClasses}></div>
+	</div>
+	<div class={valueClasses}>{value}</div>
+</div>

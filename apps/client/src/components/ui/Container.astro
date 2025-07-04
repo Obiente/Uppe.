@@ -4,6 +4,7 @@ interface Props {
   size?: 'sm' | 'md' | 'lg' | 'xl' | 'full';
   padding?: 'sm' | 'md' | 'lg' | 'xl';
   children?: any;
+  [key: string]: any;
 }
 
 const { className = '', size = 'xl', padding = 'md', children } = Astro.props;

@@ -1,0 +1,24 @@
+---
+export interface Props {
+  class?: string;
+  variant?: "default" | "elevated" | "outlined";
+  [key: string]: any;
+}
+
+const { class: className = '', variant = "default", ...rest } = Astro.props;
+
+const baseClasses = "rounded-2xl overflow-hidden transition-all duration-300";
+
+// Variant classes for different card styles
+const variantClasses = {
+  default: "bg-secondary border border-primary shadow-md hover:shadow-lg",
+  elevated: "bg-tertiary border border-secondary shadow-lg",
+  outlined: "bg-transparent border-2 border-border-primary hover:border-border-focus",
+};
+
+const cardClasses = `${baseClasses} ${variantClasses[variant]} ${className}`;
+---
+
+<div class={cardClasses} {...rest}>
+  <slot />
+</div>

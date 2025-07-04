@@ -1,0 +1,14 @@
+---
+interface Props {
+  startLabel?: string;
+  endLabel?: string;
+  className?: string;
+}
+
+const { startLabel = '24 hours ago', endLabel = 'Now', className = '' } = Astro.props;
+---
+
+<div class={`flex justify-between text-xs text-tertiary ${className}`}>
+  <span>{startLabel}</span>
+  <span>{endLabel}</span>
+</div>

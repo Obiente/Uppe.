@@ -1,0 +1,74 @@
+---
+export interface Props {
+  buttons: Array<{
+    text: string;
+    value: string;
+    active?: boolean;
+    href?: string;
+  }>;
+  variant?: 'default' | 'pills' | 'outlined' | 'compact';
+  size?: 'sm' | 'md' | 'lg';
+  className?: string;
+}
+
+const { buttons, variant = 'default', size = 'md', className = '' } = Astro.props;
+
+// Size classes
+const sizeClasses = {
+  sm: 'px-3 py-1.5 text-sm',
+  md: 'px-4 py-2 text-base',
+  lg: 'px-5 py-3 text-lg'
+};
+
+// Variant classes
+const variantClasses = {
+  default: 'rounded-lg',
+  pills: 'rounded-full',
+  outlined: 'rounded-lg border border-border-subtle',
+  compact: 'rounded-md'
+};
+
+// Container styles
+const containerClasses = {
+  default: 'flex items-center gap-2',
+  pills: 'flex items-center gap-2',
+  outlined: 'flex items-center border border-border-subtle rounded-xl overflow-hidden',
+  compact: 'flex items-center gap-1'
+};
+
+const activeClasses = variant === 'outlined' 
+  ? 'bg-interactive-primary text-inverse border-interactive-primary'
+  : 'bg-interactive-primary text-inverse';
+
+const inactiveClasses = variant === 'outlined'
+  ? 'text-primary hover:bg-bg-elevated border-transparent'
+  : 'text-primary hover:bg-bg-elevated';
+---
+
+<div class={`${containerClasses[variant]} ${className}`}>
+  {buttons.map((button) => (
+    button.href ? (
+      <a 
+        href={button.href}
+        class={`${sizeClasses[size]} ${variantClasses[variant]} transition-all duration-200 ${
+          button.active 
+            ? activeClasses
+            : inactiveClasses
+        }`}
+      >
+        {button.text}
+      </a>
+    ) : (
+      <button 
+        class={`${sizeClasses[size]} ${variantClasses[variant]} transition-all duration-200 ${
+          button.active 
+            ? activeClasses
+            : inactiveClasses
+        }`}
+        data-value={button.value}
+      >
+        {button.text}
+      </button>
+    )
+  ))}
+</div>

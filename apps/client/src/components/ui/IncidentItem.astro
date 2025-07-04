@@ -1,0 +1,41 @@
+---
+import Badge from './Badge.astro';
+
+interface Props {
+	title: string;
+	description: string;
+	status: 'resolved' | 'ongoing' | 'investigating';
+	time: string;
+	duration: string;
+	class?: string;
+}
+
+const { title, description, status, time, duration, class: className } = Astro.props;
+
+const statusVariants = {
+	resolved: 'success' as const,
+	ongoing: 'error' as const,
+	investigating: 'warning' as const
+};
+
+const itemClasses = `border border-border-subtle rounded-lg p-4 hover:bg-surface-tertiary transition-colors ${className || ''}`;
+const titleClasses = 'text-primary font-medium';
+const descriptionClasses = 'text-tertiary text-sm mt-1';
+const metaClasses = 'flex items-center gap-4 text-xs text-tertiary';
+---
+
+<div class={itemClasses}>
+	<div class="flex items-start justify-between mb-2">
+		<div class="flex-1">
+			<h4 class={titleClasses}>{title}</h4>
+			<p class={descriptionClasses}>{description}</p>
+		</div>
+		<Badge variant={statusVariants[status]} size="sm">
+			{status.toUpperCase()}
+		</Badge>
+	</div>
+	<div class={metaClasses}>
+		<span>{time}</span>
+		<span>Duration: {duration}</span>
+	</div>
+</div>

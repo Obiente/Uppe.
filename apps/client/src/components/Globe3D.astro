@@ -1,0 +1,242 @@
+---
+import Card from './ui/Card.astro';
+import Heading from './ui/Heading.astro';
+import Paragraph from './ui/Paragraph.astro';
+import GlobeLegend from './ui/GlobeLegend.astro';
+import GlobeContainer from './ui/GlobeContainer.astro';
+import GlobeControls from './ui/GlobeControls.astro';
+import GlobeStats from './ui/GlobeStats.astro';
+import GlobeInstructions from './ui/GlobeInstructions.astro';
+
+interface Props {
+	peerData: Array<{
+		id: string;
+		location: string;
+		latitude: number;
+		longitude: number;
+		ping: number;
+		status: 'online' | 'timeout' | 'error';
+		lastCheck: string;
+	}>;
+	interactive?: boolean;
+}
+
+const { peerData, interactive = true } = Astro.props;
+
+// Calculate stats
+const onlinePeers = peerData.filter(p => p.status === 'online').length;
+const slowPeers = peerData.filter(p => p.status === 'timeout').length;
+const errorPeers = peerData.filter(p => p.status === 'error').length;
+
+const getStatusColor = (status: string) => {
+	switch (status) {
+		case 'online': return 'var(--color-status-online)';
+		case 'timeout': return 'var(--color-status-warning)';
+		case 'error': return 'var(--color-status-error)';
+		default: return 'var(--color-tertiary)';
+	}
+};
+
+// Convert lat/lng to 3D coordinates on a sphere
+const convertToSphere = (lat: number, lng: number, radius: number = 100) => {
+	const phi = (90 - lat) * (Math.PI / 180);
+	const theta = (lng + 180) * (Math.PI / 180);
+	
+	const x = -(radius * Math.sin(phi) * Math.cos(theta));
+	const z = radius * Math.sin(phi) * Math.sin(theta);
+	const y = radius * Math.cos(phi);
+	
+	return { x, y, z };
+};
+---
+
+<Card class="p-6 animate-slide-up">
+	<div class="flex items-center justify-between mb-6">
+		<div>
+			<Heading as="h3" size="xl">Global Peer Network</Heading>
+			<Paragraph class="text-secondary text-sm">Interactive 3D visualization of monitoring peers</Paragraph>
+		</div>
+		<GlobeLegend />
+	</div>
+
+	<!-- 3D Globe Container -->
+	<GlobeContainer interactive={interactive}>
+		<!-- Globe Sphere -->
+		<div class="globe-sphere w-full h-full relative animate-globe-3d will-animate gpu-accelerated">
+			<!-- Globe Base -->
+			<div class="absolute inset-0 rounded-full bg-gradient-to-br from-border-subtle to-surface-elevated opacity-60"></div>
+			
+			<!-- Grid Lines -->
+			<div class="absolute inset-0 rounded-full border-4 border-border-subtle opacity-30"></div>
+			<div class="absolute inset-4 rounded-full border-2 border-border-subtle opacity-20"></div>
+			<div class="absolute inset-8 rounded-full border border-border-subtle opacity-10"></div>
+			
+			<!-- Longitude Lines -->
+			<div class="absolute inset-0 rounded-full" style="
+				background: radial-gradient(ellipse at center, 
+					transparent 48%, 
+					hsl(248deg, 21%, 26%) 49%, 
+					hsl(248deg, 21%, 26%) 51%, 
+					transparent 52%),
+				radial-gradient(ellipse at center, 
+					transparent 48%, 
+					hsl(248deg, 21%, 26%) 49%, 
+					hsl(248deg, 21%, 26%) 51%, 
+					transparent 52%);
+				background-size: 100% 50%, 50% 100%;
+				opacity: 0.3;
+			"></div>
+			
+			<!-- Peer Dots -->
+			{peerData.map((peer, index) => {
+				const coords = convertToSphere(peer.latitude, peer.longitude);
+				const isVisible = coords.z > 0; // Only show front-facing peers
+				const scale = Math.max(0.5, (coords.z + 100) / 200); // Perspective scaling
+				
+				return (
+					<div
+						class={`absolute w-3 h-3 rounded-full border-2 border-surface-primary transition-all duration-300 ${
+							isVisible ? 'opacity-100' : 'opacity-20'
+						} hover:scale-150 cursor-pointer animate-status-pulse`}
+						style={`
+							background-color: ${getStatusColor(peer.status)};
+							left: ${50 + (coords.x / 100) * 40}%;
+							top: ${50 - (coords.y / 100) * 40}%;
+							transform: scale(${scale});
+							z-index: ${Math.round(coords.z + 100)};
+							animation-delay: ${index * 0.1}s;
+						`}
+						title={`${peer.location} - ${peer.status} - ${peer.ping}ms`}
+						data-peer-id={peer.id}
+					>
+						<!-- Ping indicator -->
+						<div class="absolute -top-6 left-1/2 transform -translate-x-1/2 text-xs text-primary whitespace-nowrap opacity-0 hover:opacity-100 transition-opacity">
+							{peer.ping}ms
+						</div>
+					</div>
+				);
+			})}
+			
+			<!-- Connection Lines -->
+			<svg class="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 320 320">
+				<defs>
+					<pattern id="connectionDots" patternUnits="userSpaceOnUse" width="8" height="8">
+						<rect width="8" height="8" fill="none"/>
+						<circle cx="4" cy="4" r="1" fill="hsl(267deg, 57%, 78%)" opacity="0.6"/>
+					</pattern>
+				</defs>
+				<!-- Example curved connection lines -->
+				{peerData.slice(0, 5).map((peer, index) => {
+					const nextPeer = peerData[(index + 1) % Math.min(5, peerData.length)];
+					if (!nextPeer) return null;
+					
+					const coords1 = convertToSphere(peer.latitude, peer.longitude);
+					const coords2 = convertToSphere(nextPeer.latitude, nextPeer.longitude);
+					
+					const x1 = 160 + (coords1.x / 100) * 128;
+					const y1 = 160 - (coords1.y / 100) * 128;
+					const x2 = 160 + (coords2.x / 100) * 128;
+					const y2 = 160 - (coords2.y / 100) * 128;
+					
+					return (
+						<path
+							d={`M ${x1} ${y1} Q ${(x1 + x2) / 2} ${(y1 + y2) / 2 - 20} ${x2} ${y2}`}
+							stroke="url(#connectionDots)"
+							stroke-width="2"
+							fill="none"
+							opacity="0.4"
+							class="animate-shimmer"
+						/>
+					);
+				})}
+			</svg>
+		</div>
+		
+		<!-- Center Glow -->
+		<div class="absolute inset-0 rounded-full bg-gradient-to-br from-accent-primary/20 to-status-online/20 animate-glow"></div>
+		
+		<!-- Controls -->
+		{interactive && (
+			<div class="absolute bottom-4 left-4">
+				<GlobeControls />
+			</div>
+		)}
+		
+		<!-- Stats Overlay -->
+		<div class="absolute top-4 right-4 animate-slide-left">
+			<GlobeStats 
+				onlinePeers={onlinePeers}
+				slowPeers={slowPeers}
+				errorPeers={errorPeers}
+			/>
+		</div>
+	</GlobeContainer>
+
+	<!-- Controls and Info -->
+	<div class="mt-6">
+		<GlobeInstructions peerCount={peerData.length} />
+	</div>
+</Card>
+
+<script>
+	let isGlobeRunning = true;
+	let globeElement: HTMLElement | null = null;
+	
+	function pauseGlobe() {
+		const globe = document.querySelector('.globe-sphere') as HTMLElement;
+		if (globe) {
+			if (isGlobeRunning) {
+				globe.style.animationPlayState = 'paused';
+				isGlobeRunning = false;
+			} else {
+				globe.style.animationPlayState = 'running';
+				isGlobeRunning = true;
+			}
+		}
+	}
+	
+	function resetGlobe() {
+		const globe = document.querySelector('.globe-sphere') as HTMLElement;
+		if (globe) {
+			globe.style.animation = 'none';
+			setTimeout(() => {
+				globe.style.animation = 'globe3d 30s linear infinite';
+				isGlobeRunning = true;
+			}, 10);
+		}
+	}
+	
+	// Make globe interactive
+	document.addEventListener('DOMContentLoaded', () => {
+		const globeContainer = document.getElementById('globe-container');
+		if (globeContainer) {
+			let isDragging = false;
+			let rotationX = 0;
+			let rotationY = 0;
+			
+			globeContainer.addEventListener('mousedown', (e) => {
+				isDragging = true;
+				const globe = globeContainer.querySelector('.globe-sphere') as HTMLElement;
+				if (globe) {
+					globe.style.animationPlayState = 'paused';
+				}
+			});
+			
+			document.addEventListener('mousemove', (e) => {
+				if (isDragging) {
+					rotationY += e.movementX * 0.5;
+					rotationX -= e.movementY * 0.5;
+					
+					const globe = globeContainer.querySelector('.globe-sphere') as HTMLElement;
+					if (globe) {
+						globe.style.transform = `rotateY(${rotationY}deg) rotateX(${rotationX}deg)`;
+					}
+				}
+			});
+			
+			document.addEventListener('mouseup', () => {
+				isDragging = false;
+			});
+		}
+	});
+</script>

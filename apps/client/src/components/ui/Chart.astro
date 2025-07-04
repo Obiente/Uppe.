@@ -1,0 +1,37 @@
+---
+export interface Props {
+  title: string;
+  data?: Array<{ value: number; label: string; color?: string }>;
+  height?: string;
+  className?: string;
+}
+
+const { title, data = [], height = 'h-64', className = '' } = Astro.props;
+
+// Generate default data if none provided
+const chartData = data.length > 0 ? data : Array.from({ length: 24 }).map((_, i) => {
+  const value = Math.random() * 80 + 20;
+  const color = value > 70 ? 'bg-error' : value > 40 ? 'bg-warning' : 'bg-success';
+  return {
+    value,
+    label: `${i}:00`,
+    color
+  };
+});
+---
+
+<div class={`bg-surface rounded-lg p-6 border border-outline ${className}`}>
+  <h3 class="text-lg font-semibold text mb-6">{title}</h3>
+  <div class={`${height} flex items-end justify-between gap-1`}>
+    {chartData.map((item) => (
+      <div class="flex-1 flex flex-col items-center">
+        <div
+          class={`w-full rounded-t ${item.color} hover:opacity-80 transition-opacity cursor-pointer`}
+          style={`height: ${item.value}%`}
+          title={`${item.label} - ${Math.round(item.value * 3)}ms`}
+        ></div>
+        <div class="text-xs text-secondary mt-1">{item.label}</div>
+      </div>
+    ))}
+  </div>
+</div>

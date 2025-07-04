@@ -1,20 +1,24 @@
 /* Theme utility classes that map to our design system */
 
+/* @theme inline {
+  --color-primary: var(--color-accent-primary); 
+} */
+
 @layer utilities {
   /* Background colors */
-  .bg-surface-primary {
+  .bg-primary {
     background-color: var(--color-bg-primary);
   }
-  .bg-surface-secondary {
+  .bg-secondary {
     background-color: var(--color-bg-secondary);
   }
-  .bg-surface-tertiary {
+  .bg-tertiary {
     background-color: var(--color-bg-tertiary);
   }
-  .bg-surface-elevated {
+  .bg-elevated {
     background-color: var(--color-bg-elevated);
   }
-  .bg-surface-overlay {
+  .bg-overlay {
     background-color: var(--color-bg-overlay);
   }
   
@@ -31,22 +35,45 @@
   .text-inverse {
     color: var(--color-text-inverse);
   }
-  .text-disabled {
-    color: var(--color-text-disabled);
-  }
   
   /* Border colors */
-  .border-border-subtle {
+  .border-subtle {
     border-color: var(--color-border-subtle);
   }
-  .border-border-default {
-    border-color: var(--color-border-default);
+  .border-primary {
+    border-color: var(--color-border-primary);
   }
-  .border-border-strong {
-    border-color: var(--color-border-strong);
+  .border-secondary {
+    border-color: var(--color-border-secondary);
   }
-  .border-border-focus {
+  .border-focus {
     border-color: var(--color-border-focus);
+  }
+  
+  /* Interactive colors */
+  .bg-interactive-primary {
+    background-color: var(--color-interactive-primary);
+  }
+  .bg-interactive-primary-hover {
+    background-color: var(--color-interactive-primary-hover);
+  }
+  .bg-interactive-secondary {
+    background-color: var(--color-interactive-secondary);
+  }
+  .bg-interactive-secondary-hover {
+    background-color: var(--color-interactive-secondary-hover);
+  }
+  .bg-interactive-danger {
+    background-color: var(--color-interactive-danger);
+  }
+  .bg-interactive-danger-hover {
+    background-color: var(--color-interactive-danger-hover);
+  }
+  .text-interactive-primary {
+    color: var(--color-interactive-primary);
+  }
+  .text-interactive-danger {
+    color: var(--color-interactive-danger);
   }
   
   /* Accent colors */
@@ -62,14 +89,23 @@
   .bg-accent-secondary-hover {
     background-color: var(--color-accent-secondary-hover);
   }
+  .bg-accent-tertiary {
+    background-color: var(--color-accent-tertiary);
+  }
   .text-accent-primary {
     color: var(--color-accent-primary);
   }
   .text-accent-secondary {
     color: var(--color-accent-secondary);
   }
+  .text-accent-tertiary {
+    color: var(--color-accent-tertiary);
+  }
   
   /* Status colors */
+  .bg-status-success {
+    background-color: var(--color-status-success);
+  }
   .bg-status-online {
     background-color: var(--color-status-online);
   }
@@ -85,6 +121,9 @@
   .bg-status-neutral {
     background-color: var(--color-status-neutral);
   }
+  .text-status-success {
+    color: var(--color-status-success);
+  }
   .text-status-online {
     color: var(--color-status-online);
   }
@@ -99,6 +138,9 @@
   }
   .text-status-neutral {
     color: var(--color-status-neutral);
+  }
+  .border-status-success {
+    border-color: var(--color-status-success);
   }
   .border-status-online {
     border-color: var(--color-status-online);

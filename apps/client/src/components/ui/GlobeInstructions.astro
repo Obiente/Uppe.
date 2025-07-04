@@ -1,0 +1,17 @@
+---
+interface Props {
+  peerCount: number;
+  className?: string;
+}
+
+const { peerCount, className = '' } = Astro.props;
+---
+
+<div class={`flex items-center justify-between text-sm ${className}`}>
+  <div class="text-secondary">
+    Click and drag to rotate • Scroll to zoom • Hover dots for details
+  </div>
+  <div class="text-accent-primary">
+    {peerCount} peers monitoring globally
+  </div>
+</div>

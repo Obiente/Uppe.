@@ -1,0 +1,91 @@
+---
+import Badge from './Badge.astro';
+import Button from './Button.astro';
+
+interface Props {
+  alert: {
+    id: string;
+    type: 'down' | 'slow' | 'recovered' | 'network';
+    monitor: string;
+    message: string;
+    timestamp: string;
+    severity: 'high' | 'medium' | 'low';
+    acknowledged: boolean;
+  };
+  className?: string;
+}
+
+const { alert, className = '' } = Astro.props;
+
+const getAlertBg = (type: string) => {
+  switch (type) {
+    case 'down': return 'border-status-error/30 bg-status-error/5';
+    case 'slow': return 'border-status-warning/30 bg-status-warning/5';
+    case 'recovered': return 'border-status-online/30 bg-status-online/5';
+    case 'network': return 'border-accent-primary/30 bg-accent-primary/5';
+    default: return 'border-border-subtle bg-surface-secondary';
+  }
+};
+
+const getAlertColor = (type: string) => {
+  switch (type) {
+    case 'down': return 'text-status-error';
+    case 'slow': return 'text-status-warning';
+    case 'recovered': return 'text-status-online';
+    case 'network': return 'text-accent-primary';
+    default: return 'text-secondary';
+  }
+};
+
+const getAlertIcon = (type: string) => {
+  switch (type) {
+    case 'down': return 'M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z';
+    case 'slow': return 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z';
+    case 'recovered': return 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z';
+    case 'network': return 'M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0';
+    default: return 'M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z';
+  }
+};
+
+const getAlertVariant = (type: string) => {
+  switch (type) {
+    case 'down': return 'error' as const;
+    case 'slow': return 'warning' as const;
+    case 'recovered': return 'success' as const;
+    case 'network': return 'info' as const;
+    default: return 'neutral' as const;
+  }
+};
+---
+
+<div class={`border rounded-lg p-4 ${getAlertBg(alert.type)} ${alert.acknowledged ? 'opacity-60' : ''} ${className}`}>
+  <div class="flex items-start gap-3">
+    <div class={`flex-shrink-0 ${getAlertColor(alert.type)}`}>
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d={getAlertIcon(alert.type)}/>
+      </svg>
+    </div>
+    <div class="flex-1 min-w-0">
+      <div class="flex items-center gap-2 mb-1">
+        <h4 class="text-primary font-medium">{alert.monitor}</h4>
+        <Badge variant={getAlertVariant(alert.type)} size="sm">
+          {alert.type.toUpperCase()}
+        </Badge>
+        {alert.severity === 'high' && (
+          <Badge variant="error" size="sm">
+            HIGH
+          </Badge>
+        )}
+      </div>
+      <p class="text-tertiary text-sm mb-2">{alert.message}</p>
+      <div class="flex items-center justify-between">
+        <span class="text-tertiary text-xs">{alert.timestamp}</span>
+        {!alert.acknowledged && (
+          <Button variant="secondary" size="sm">
+            Acknowledge
+          </Button>
+        )}
+      </div>
+    </div>
+  </div>
+</div>

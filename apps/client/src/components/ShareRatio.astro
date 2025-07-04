@@ -1,181 +1,167 @@
 ---
-import Card from './ui/Card.astro';
-import Heading from './ui/Heading.astro';
-import ProgressBar from './ui/ProgressBar.astro';
-import StatusBadge from './ui/StatusBadge.astro';
-import Metric from './ui/Metric.astro';
+import Card from "./ui/Card.astro";
+import CardBody from "./ui/CardBody.astro";
+import Grid from "./ui/Grid.astro";
+import Heading from "./ui/Heading.astro";
+import ProgressBar from "./ui/ProgressBar.astro";
+import StatusBadge from "./ui/StatusBadge.astro";
+import Metric from "./ui/Metric.astro";
+import Alert from "./ui/Alert.astro";
 
 interface Props {
-	shareRatio: number; // 0-1 scale, where 1 is perfect balance
-	monitoringForOthers: number; // checks per day
-	receivingFromOthers: number; // checks per day
-	contributionScore: number; // 0-100 score
+  shareRatio: number; // 0-1 scale, where 1 is perfect balance
+  monitoringForOthers: number; // checks per day
+  receivingFromOthers: number; // checks per day
+  contributionScore: number; // 0-100 score
 }
 
-const { shareRatio, monitoringForOthers, receivingFromOthers, contributionScore } = Astro.props;
+const {
+  shareRatio,
+  monitoringForOthers,
+  receivingFromOthers,
+  contributionScore,
+} = Astro.props;
 
 // Calculate Monitor Ratio (MR) - how much you contribute vs consume
 const monitorRatio = shareRatio;
 const maxPeerAllocation = Math.floor(contributionScore / 10); // Simple calculation
 
-const getRatioColor = (ratio: number) => {
-	if (ratio >= 0.8) return 'text-status-online';
-	if (ratio >= 0.5) return 'text-status-warning';
-	return 'text-status-error';
-};
-
-const getRatioBackground = (ratio: number) => {
-	if (ratio >= 0.8) return 'bg-status-online';
-	if (ratio >= 0.5) return 'bg-status-warning';
-	return 'bg-status-error';
-};
-
 const getRatioStatus = (ratio: number) => {
-	if (ratio >= 0.8) return 'Excellent';
-	if (ratio >= 0.5) return 'Good';
-	return 'Needs Improvement';
+  if (ratio >= 0.8) return "Excellent";
+  if (ratio >= 0.5) return "Good";
+  return "Needs Improvement";
 };
 
 const getProgressVariant = (ratio: number) => {
-	if (ratio >= 0.8) return 'success' as const;
-	if (ratio >= 0.5) return 'warning' as const;
-	return 'error' as const;
+  if (ratio >= 0.8) return "success" as const;
+  if (ratio >= 0.5) return "warning" as const;
+  return "error" as const;
+};
+
+const getStatusVariant = (ratio: number) => {
+  if (ratio >= 0.8) return "online" as const;
+  if (ratio >= 0.5) return "degraded" as const;
+  return "offline" as const;
 };
 ---
 
-<Card class="p-6 animate-slide-up">
-	<div class="flex items-center justify-between mb-6">
-		<Heading as="h3" size="lg">Monitor Ratio (MR)</Heading>
-		<div class="flex items-center gap-2">
-			<div class={`w-3 h-3 rounded-full ${getRatioBackground(monitorRatio)} animate-status-pulse`}></div>
-			<span class={`text-sm font-medium ${getRatioColor(monitorRatio)}`}>
-				{getRatioStatus(monitorRatio)}
-			</span>
-		</div>
-	</div>
+<Card>
+  <CardBody class="border-b border-border-subtle">
+    <div class="flex items-center justify-between">
+      <Heading as="h3" size="lg">Monitor Ratio (MR)</Heading>
+      <StatusBadge
+        status={getStatusVariant(monitorRatio)}
+        showIndicator={true}
+      />
+    </div>
+  </CardBody>
 
-	<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-		<div class="text-center animate-scale-in animate-delay-100">
-			<div class="text-3xl font-bold text-primary mb-2">
-				{monitoringForOthers.toLocaleString()}
-			</div>
-			<div class="text-tertiary text-sm">Checks/day for others</div>
-		</div>
-		<div class="text-center animate-scale-in animate-delay-200">
-			<div class="text-3xl font-bold text-primary mb-2">
-				{receivingFromOthers.toLocaleString()}
-			</div>
-			<div class="text-tertiary text-sm">Checks/day from others</div>
-		</div>
-	</div>
+  <CardBody>
+    <Grid cols="2" gap="6">
+      <Metric
+        label="Checks/day for others"
+        value={monitoringForOthers.toLocaleString()}
+        variant="card"
+        size="md"
+        color="primary"
+      />
+      <Metric
+        label="Checks/day from others"
+        value={receivingFromOthers.toLocaleString()}
+        variant="card"
+        size="md"
+        color="primary"
+      />
+    </Grid>
 
-	<!-- Monitor Ratio Visual -->
-	<div class="mb-6">
-		<div class="flex justify-between text-sm text-tertiary mb-2">
-			<span>Monitor Ratio</span>
-			<span>{Math.round(monitorRatio * 100)}%</span>
-		</div>
-		<div class="w-full bg-border-subtle rounded-full h-3 overflow-hidden">
-			<div
-				class={`h-3 rounded-full transition-all duration-1000 ease-out ${getRatioBackground(monitorRatio)}`}
-				style={`width: ${monitorRatio * 100}%; animation: progressFill 2s ease-out;`}
-			></div>
-		</div>
-	</div>
+    <!-- Monitor Ratio Progress -->
+    <CardBody>
+      <ProgressBar
+        label="Monitor Ratio"
+        value={Math.round(monitorRatio * 100)}
+        variant={getProgressVariant(monitorRatio)}
+        valueText={`${Math.round(monitorRatio * 100)}%`}
+        size="lg"
+      />
+    </CardBody>
+    <Grid cols="2">
+      <!-- Peer Allocation -->
+      <Card variant="outlined">
+        <CardBody padding="sm">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-primary font-medium">Max Peer Allocation</span>
+            <span class="text-accent-primary text-lg font-bold"
+              >{maxPeerAllocation} peers</span
+            >
+          </div>
+          <p class="text-secondary text-sm">
+            {
+              contributionScore >= 80
+                ? "Excellent contribution! You can assign the maximum number of peers."
+                : contributionScore >= 60
+                  ? "Good contribution. Consider monitoring more to increase your allocation."
+                  : "Low contribution. Monitor more services to increase your peer allocation."
+            }
+          </p>
+        </CardBody>
+      </Card>
 
-	<!-- Peer Allocation -->
-	<div class="bg-surface-tertiary rounded-lg p-4 mb-4 animate-slide-up animate-delay-300">
-		<div class="flex items-center justify-between mb-2">
-			<span class="text-primary font-medium">Max Peer Allocation</span>
-			<span class="text-accent-primary text-lg font-bold">{maxPeerAllocation} peers</span>
-		</div>
-		<div class="text-tertiary text-sm">
-			{contributionScore >= 80 ? 'Excellent contribution! You can assign the maximum number of peers.' :
-			 contributionScore >= 60 ? 'Good contribution. Consider monitoring more to increase your allocation.' :
-			 'Low contribution. Monitor more services to increase your peer allocation.'}
-		</div>
-	</div>
+      <!-- Contribution Score -->
+      <Card variant="outlined">
+        <CardBody padding="sm">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-primary font-medium">Contribution Score</span>
+            <span class="text-accent-primary text-lg font-bold"
+              >{contributionScore}/100</span
+            >
+          </div>
+          <p class="text-secondary text-sm">
+            Higher scores unlock more peer allocations and priority during
+            network congestion.
+          </p>
+        </CardBody>
+      </Card>
+    </Grid>
 
-	<!-- Contribution Score -->
-	<div class="bg-surface-tertiary rounded-lg p-4 animate-slide-up animate-delay-500">
-		<div class="flex items-center justify-between mb-2">
-			<span class="text-primary font-medium">Contribution Score</span>
-			<span class="text-accent-primary text-lg font-bold">{contributionScore}/100</span>
-		</div>
-		<div class="text-tertiary text-sm">
-			Higher scores unlock more peer allocations and priority during network congestion.
-		</div>
-	</div>
+    <!-- Contribution Impact Warning -->
+    {
+      monitorRatio < 0.5 && (
+        <Alert variant="error" class="mb-6">
+          <div>
+            <Heading as="h4" size="base" class="mb-2">
+              Low Contribution Warning
+            </Heading>
+            <p class="text-sm mb-3">
+              Your Monitor Ratio is below optimal levels. This means you're
+              consuming more monitoring resources than you're contributing to
+              the network.
+            </p>
+            <ul class="space-y-1 text-sm">
+              <li>• Reduced peer allocation for your services</li>
+              <li>• Lower priority in peer selection</li>
+              <li>• Potential service quality limitations</li>
+            </ul>
+          </div>
+        </Alert>
+      )
+    }
 
-	<!-- Tips -->
-	<div class="mt-4 pt-4 border-t border-border-subtle animate-fade-in animate-delay-700">
-		<div class="text-xs text-tertiary">
-			<div class="flex items-center gap-2">
-				<span class="text-status-warning">↗</span>
-				<span class="text-tertiary">Join public clusters to contribute to the network</span>
-			</div>
-			<div class="flex items-center gap-2">
-				<span class="text-status-warning">↗</span>
-				<span class="text-tertiary">Maintain stable uptime for reliable peer service</span>
-			</div>
-		</div>
-	</div>
-</div>
-			💡 <span class="font-medium">Tip:</span> Maintain a high MR to maximize your service coverage and network benefits
-		</div>
-	</div>
-
-	<!-- Contribution Impact Warning -->
-	{monitorRatio < 0.5 && (
-		<div class="mb-6 p-4 bg-rose-pine-love/10 border border-rose-pine-love rounded-lg animate-warning-shake">
-			<div class="flex items-start gap-3">
-				<div class="flex-shrink-0 w-5 h-5 mt-0.5">
-					<svg class="w-5 h-5 text-rose-pine-love" fill="currentColor" viewBox="0 0 20 20">
-						<path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
-					</svg>
-				</div>
-				<div>
-					<h4 class="text-rose-pine-text font-medium mb-2">Low Contribution Warning</h4>
-					<p class="text-rose-pine-subtle text-sm mb-3">
-						Your Monitor Ratio is below optimal levels. This means you're consuming more monitoring resources than you're contributing to the network.
-					</p>
-					<div class="space-y-2 text-sm">
-						<div class="flex items-center gap-2">
-							<span class="text-rose-pine-love">•</span>
-							<span class="text-rose-pine-subtle">Reduced peer allocation for your services</span>
-						</div>
-						<div class="flex items-center gap-2">
-							<span class="text-rose-pine-love">•</span>
-							<span class="text-rose-pine-subtle">Lower priority in peer selection</span>
-						</div>
-						<div class="flex items-center gap-2">
-							<span class="text-rose-pine-love">•</span>
-							<span class="text-rose-pine-subtle">Potential service quality limitations</span>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
-	)}
-
-	<!-- Contribution Recommendations -->
-	{monitorRatio < 0.8 && (
-		<div class="mb-6 p-4 bg-rose-pine-gold/10 border border-rose-pine-gold rounded-lg animate-slide-up">
-			<h4 class="text-rose-pine-text font-medium mb-2">Improve Your Monitor Ratio</h4>
-			<div class="space-y-2 text-sm">
-				<div class="flex items-center gap-2">
-					<span class="text-rose-pine-gold">↗</span>
-					<span class="text-rose-pine-subtle">Increase bandwidth allocation for peer monitoring</span>
-				</div>
-				<div class="flex items-center gap-2">
-					<span class="text-rose-pine-gold">↗</span>
-					<span class="text-rose-pine-subtle">Join public clusters to contribute to the network</span>
-				</div>
-				<div class="flex items-center gap-2">
-					<span class="text-rose-pine-gold">↗</span>
-					<span class="text-rose-pine-subtle">Maintain stable uptime for reliable peer service</span>
-				</div>
-			</div>
-		</div>
-	)}
-</div>
+    <!-- Contribution Recommendations -->
+    {
+      monitorRatio < 0.8 && (
+        <Alert variant="warning">
+          <div>
+            <Heading as="h4" size="base" class="mb-2">
+              Improve Your Monitor Ratio
+            </Heading>
+            <ul class="space-y-1 text-sm">
+              <li>• Increase bandwidth allocation for peer monitoring</li>
+              <li>• Join public clusters to contribute to the network</li>
+              <li>• Maintain stable uptime for reliable peer service</li>
+            </ul>
+          </div>
+        </Alert>
+      )
+    }
+  </CardBody>
+</Card>

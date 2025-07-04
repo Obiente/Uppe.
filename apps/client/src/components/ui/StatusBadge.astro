@@ -1,0 +1,34 @@
+---
+import Badge from './Badge.astro';
+
+export interface Props {
+  status: 'online' | 'offline' | 'degraded' | 'maintenance' | 'unknown';
+  showIndicator?: boolean;
+  size?: 'sm' | 'md' | 'lg';
+  class?: string;
+  [key: string]: any;
+}
+
+const { status, showIndicator = true, size = 'md', class: className = '', ...rest } = Astro.props;
+
+const statusConfig = {
+  online: { variant: 'success' as const, text: 'Online' },
+  offline: { variant: 'error' as const, text: 'Offline' },
+  degraded: { variant: 'warning' as const, text: 'Degraded' },
+  maintenance: { variant: 'info' as const, text: 'Maintenance' },
+  unknown: { variant: 'neutral' as const, text: 'Unknown' }
+};
+
+const config = statusConfig[status] || statusConfig.unknown;
+
+const indicatorSizes = {
+  sm: 'w-1.5 h-1.5',
+  md: 'w-2 h-2',
+  lg: 'w-2.5 h-2.5'
+};
+---
+
+<Badge variant={config.variant} size={size} class={className} {...rest}>
+  {showIndicator && <span class={`inline-block rounded-full bg-current mr-1.5 ${indicatorSizes[size]} ${status === 'online' ? 'animate-pulse' : ''}`}></span>}
+  {config.text}
+</Badge>

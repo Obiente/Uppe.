@@ -8,7 +8,7 @@ export const spacing = {
   "3xl": "3rem",
   "4xl": "4rem",
   "5xl": "6rem",
-};
+} as const;
 
 export const typography = {
   sizes: {
@@ -33,7 +33,7 @@ export const typography = {
     normal: "1.5",
     relaxed: "1.75",
   },
-};
+} as const;
 
 export const borderRadius = {
   sm: "0.25rem",
@@ -42,4 +42,4 @@ export const borderRadius = {
   lg: "1rem",
   xl: "1.5rem",
   full: "9999px",
-};
+} as const;

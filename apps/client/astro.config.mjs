@@ -8,7 +8,7 @@ import tailwindcss from '@tailwindcss/vite';
 
 // https://astro.build/config
 export default defineConfig({
-  integrations: [sentry(), spotlightjs()],
+  // integrations: [sentry(), spotlightjs()],
 
   vite: {
     plugins: [tailwindcss()]

@@ -1,0 +1,61 @@
+---
+import MetricCard from "./ui/MetricCard.astro";
+
+interface Props {
+  totalMonitors: number;
+  onlineMonitors: number;
+  offlineMonitors: number;
+  avgResponseTime: number;
+  avgUptime: number;
+}
+
+const {
+  totalMonitors,
+  onlineMonitors,
+  offlineMonitors,
+  avgResponseTime,
+  avgUptime,
+} = Astro.props;
+---
+<!-- TODO: grid component -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+  <MetricCard
+    title="Total Monitors"
+    value={totalMonitors.toString()}
+    icon="chart"
+    change="+4 this week"
+    changeType="neutral"
+  />
+
+  <MetricCard
+  title="Online"
+  value={onlineMonitors.toString()}
+  icon="network"
+  change="+1 since yesterday"
+  changeType="positive"
+  />
+
+  <MetricCard
+    title="Offline"
+    value={offlineMonitors.toString()}
+    icon="alert"
+    change="+1 since yesterday"
+	changeType="negative"
+  />
+
+  <MetricCard
+    title="Avg Response"
+    value={`${avgResponseTime}ms`}
+    icon="lightning"
+    change="-56ms since yesterday"
+    changeType="negative"
+  />
+
+  <MetricCard
+    title="Avg Uptime"
+    value={`${avgUptime}%`}
+    icon="network"
+    change="+3.4% this month"
+    changeType="positive"
+  />
+</div>

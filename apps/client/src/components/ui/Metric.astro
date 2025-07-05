@@ -4,6 +4,7 @@ import CardBody from "./CardBody.astro";
 import Heading from "./Heading.astro";
 import Paragraph from "./Paragraph.astro";
 import { Icon } from "./index";
+import { ICONS } from "../../lib/design-system/icons";
 
 export interface Props {
   label: string;
@@ -38,9 +39,9 @@ const sizeConfig = {
 const config = sizeConfig[size];
 
 const trendIcons = {
-  up: "heroicons:arrow-trending-up",
-  down: "heroicons:arrow-trending-down",
-  stable: "heroicons:minus",
+  up: 'TRENDING_UP' as const,
+  down: 'TRENDING_DOWN' as const,
+  stable: 'DECREASE' as const,
 };
 
 const trendColors = {
@@ -79,7 +80,7 @@ const variantClasses = {
             )}
           </div>
           {trend && (
-            <Icon name={trendIcons[trend]} size="5" class={trendColors[trend]} />
+            <Icon icon={trendIcons[trend]} class={trendColors[trend]} />
           )}
         </div>
       </div>
@@ -96,7 +97,7 @@ const variantClasses = {
             </Paragraph>
           )}
           {trend && (
-            <Icon name={trendIcons[trend]} size="5" class={trendColors[trend]} />
+            <Icon icon={trendIcons[trend]} class={trendColors[trend]} />
           )}
         </div>
         <Paragraph  size={config.labelSize} color="secondary">

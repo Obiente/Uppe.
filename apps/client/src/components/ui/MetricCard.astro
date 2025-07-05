@@ -1,11 +1,12 @@
 ---
+import type { ICONS } from '$lib/design-system';
 import Card from './Card.astro';
 import Icon from './Icon.astro';
 
 export interface Props {
   title: string;
   value: string;
-  icon: string; // Iconify icon name
+  icon: keyof typeof ICONS; // Iconify icon name
   change?: string;
   changeType?: 'positive' | 'negative' | 'neutral';
   variant?: 'default' | 'gradient' | 'minimal';
@@ -45,7 +46,7 @@ const style = variantStyles[variant];
   <div class="p-6">
     <div class="flex items-center justify-between mb-4">
       <div class={`${style.iconBg} p-3 rounded-xl shadow-lg`}>
-        <Icon name={icon} size="lg" class={style.iconColor} />
+        <Icon icon={icon} class={style.iconColor} />
       </div>
       <div class="text-right">
         <div class="text-3xl font-bold text-primary mb-1">{value}</div>

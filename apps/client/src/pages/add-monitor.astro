@@ -139,6 +139,7 @@ import {
                   </Paragraph>
                 </FormGroup>
                 <Toggle
+                  id="fallbackMonitoring"
                   label="Fallback Monitoring"
                   description="Continue monitoring even when your node is offline"
                   checked={true}
@@ -151,11 +152,13 @@ import {
               <Heading level={2} class="mb-4">Alert Settings</Heading>
               <div class="space-y-4">
                 <Toggle
+                  id="emailAlerts"
                   label="Email Alerts"
                   description="Send email when monitor goes down"
                   checked={true}
                 />
                 <Toggle
+                  id="webhookNotifications"
                   label="Webhook Notifications"
                   description="Send POST request to webhook URL"
                   checked={false}
@@ -179,7 +182,7 @@ import {
                 type="submit"
                 class="flex items-center gap-2"
               >
-                <Icon name="heroicons:plus" size="4" />
+                <Icon icon="ADD"/>
                 Create Monitor
               </Button>
             </div>

@@ -157,25 +157,25 @@ const monitorRatio = {
 				<MetricCard 
 					title="Current Status" 
 					value={serviceData.status}
-					icon="chart"
+					icon="ANALYTICS"
 					changeType="neutral"
 				/>
 				<MetricCard 
 					title="Uptime (24h)" 
 					value={`${serviceData.uptime}%`}
-					icon="chart"
+					icon="ANALYTICS"
 					changeType="positive"
 				/>
 				<MetricCard 
 					title="Response Time" 
 					value={`${serviceData.avgResponseTime}ms`}
-					icon="lightning"
+					icon="PERFORMANCE"
 					changeType="neutral"
 				/>
 				<MetricCard 
 					title="Monitoring Peers" 
 					value={serviceData.monitoringPeers.toString()}
-					icon="network"
+					icon="ANALYTICS"
 					changeType="positive"
 				/>
 			</Grid>

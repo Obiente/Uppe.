@@ -1,5 +1,6 @@
 ---
 import Icon  from './Icon.astro';
+import { ICONS } from '../../lib/design-system/icons';
 
 interface Props {
   status: 'online' | 'offline' | 'warning' | 'error' | 'unknown';
@@ -19,32 +20,32 @@ const sizeClasses = {
   lg: { dot: 'w-4 h-4', text: 'text-base', container: 'gap-2.5', icon: 'w-5 h-5' }
 };
 
-// Status configurations
+//   status configurations
 const statusConfig = {
   online: { 
     color: 'bg-status-success', 
     textColor: 'text-status-success',
-    icon: 'heroicons:check'
+    icon: 'CONFIRM' as const
   },
   offline: { 
     color: 'bg-status-error', 
     textColor: 'text-status-error',
-    icon: 'heroicons:x-mark'
+    icon: 'CLOSE' as const
   },
   warning: { 
     color: 'bg-status-warning', 
     textColor: 'text-status-warning',
-    icon: 'heroicons:exclamation-triangle'
+    icon: 'WARNING' as const
   },
   error: { 
     color: 'bg-status-error', 
     textColor: 'text-status-error',
-    icon: 'heroicons:x-mark'
+    icon: 'CLOSE' as const
   },
   unknown: { 
     color: 'bg-text-tertiary', 
     textColor: 'text-tertiary',
-    icon: 'heroicons:question-mark-circle'
+    icon: 'HELP' as const
   }
 };
 
@@ -57,7 +58,7 @@ const sizeConfig = sizeClasses[size];
     <div class={`${sizeConfig.dot} rounded-full ${config.color} ${animated && status === 'online' ? 'animate-pulse' : ''}`}></div>
   )}
   {variant === 'icon' && (
-    <Icon name={config.icon} size={size === 'sm' ? '3' : size === 'md' ? '4' : '5'} class={config.textColor} />
+    <Icon icon={config.icon} class={config.textColor} />
   )}
   {variant === 'badge' && (
     <div class={`${sizeConfig.dot} rounded-full ${config.color} ${animated ? 'animate-pulse' : ''} shadow-lg`}></div>

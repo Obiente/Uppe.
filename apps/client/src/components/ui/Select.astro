@@ -1,5 +1,6 @@
 ---
 import { Icon } from './index';
+import { ICONS } from '../../lib/design-system/icons';
 
 export interface Props {
   value?: string | number;
@@ -52,6 +53,6 @@ const classes = `${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} 
     <slot />
   </select>
   <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-    <Icon name="heroicons:chevron-down" size="5" class="text-tertiary" />
+    <Icon icon="EXPAND" class="text-tertiary" />
   </div>
 </div>

@@ -134,17 +134,17 @@ const metaDescription = `${statusPage.description} - Current uptime: ${statusPag
 					<MetricCard 
 						title="Service URL" 
 						value={statusPage.url}
-						icon="globe"
+						icon="GLOBAL"
 					/>
 					<MetricCard 
 						title="Response Time" 
 						value={`${statusPage.avgResponseTime}ms`}
-						icon="lightning"
+						icon="PERFORMANCE"
 					/>
 					<MetricCard 
 						title="Monitoring Locations" 
 						value={statusPage.monitoringPeers.toString()}
-						icon="network"
+						icon="PERFORMANCE"
 					/>
 				</Grid>
 			</Section>

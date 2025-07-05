@@ -28,13 +28,6 @@ const variantClasses = {
 
 const alertClasses = `${baseClasses} ${variantClasses[variant]} ${className}`;
 
-const icons = {
-  success: '✓',
-  warning: '⚠',
-  error: '✕',
-  info: 'ℹ'
-};
-
 const iconColors = {
   success: 'text-status-success',
   warning: 'text-status-warning',
@@ -46,7 +39,7 @@ const iconColors = {
 <div class={alertClasses} {...rest}>
   <div class="flex items-start gap-4">
     <div class="flex-shrink-0">
-      <span class={`text-2xl ${iconColors[variant]}`}>{icons[variant]}</span>
+      <span class={`text-2xl ${iconColors[variant]}`}>"variant]"</span>
     </div>
     <div class="flex-1">
       {title && (

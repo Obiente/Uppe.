@@ -1,89 +1,152 @@
 ---
-import Badge from './Badge.astro';
-import Button from './Button.astro';
-import Icon from './Icon.astro';
+import Badge from "./Badge.astro";
+import Button from "./Button.astro";
+import Icon from "./Icon.astro";
+import Heading from "./Heading.astro";
+import Paragraph from "./Paragraph.astro";
+import SeverityIndicator from "./SeverityIndicator.astro";
+import { ICONS } from "$lib/design-system/icons";
 
 interface Props {
   alert: {
     id: string;
-    type: 'down' | 'slow' | 'recovered' | 'network';
+    type: "down" | "slow" | "recovered" | "network";
     monitor: string;
     message: string;
     timestamp: string;
-    severity: 'high' | 'medium' | 'low';
+    severity: "high" | "medium" | "low";
     acknowledged: boolean;
   };
   className?: string;
 }
 
-const { alert, className = '' } = Astro.props;
+const { alert, className = "" } = Astro.props;
 
-const getAlertBg = (type: string) => {
+const getAlertStyles = (type: string) => {
   switch (type) {
-    case 'down': return 'border-status-error/30 bg-status-error/5';
-    case 'slow': return 'border-status-warning/30 bg-status-warning/5';
-    case 'recovered': return 'border-status-online/30 bg-status-online/5';
-    case 'network': return 'border-accent-primary/30 bg-accent-primary/5';
-    default: return 'border-border-subtle bg-surface-secondary';
+    case "down":
+      return {
+        container: "bg-status-error/5 border-l-4 border-l-status-error",
+        icon: "text-status-error bg-status-error/10",
+        dot: "bg-status-error",
+      };
+    case "slow":
+      return {
+        container: "bg-status-warning/5 border-l-4 border-l-status-warning",
+        icon: "text-status-warning bg-status-warning/10",
+        dot: "bg-status-warning",
+      };
+    case "recovered":
+      return {
+        container: "bg-status-success/5 border-l-4 border-l-status-success",
+        icon: "text-status-success bg-status-success/10",
+        dot: "bg-status-success",
+      };
+    case "network":
+      return {
+        container: "bg-accent-primary/5 border-l-4 border-l-accent-primary",
+        icon: "text-accent-primary bg-accent-primary/10",
+        dot: "bg-accent-primary",
+      };
+    default:
+      return {
+        container: "bg-surface-secondary border-l-4 border-l-border-subtle",
+        icon: "text-secondary bg-surface-tertiary",
+        dot: "bg-border-subtle",
+      };
   }
 };
 
-const getAlertColor = (type: string) => {
+const getAlertIcon = (type: string): keyof typeof ICONS => {
   switch (type) {
-    case 'down': return 'text-status-error';
-    case 'slow': return 'text-status-warning';
-    case 'recovered': return 'text-status-online';
-    case 'network': return 'text-accent-primary';
-    default: return 'text-secondary';
-  }
-};
-
-const getAlertIcon = (type: string) => {
-  switch (type) {
-    case 'down': return 'heroicons:exclamation-triangle';
-    case 'slow': return 'heroicons:clock';
-    case 'recovered': return 'heroicons:check-circle';
-    case 'network': return 'heroicons:wifi';
-    default: return 'heroicons:information-circle';
+    case "down":
+      return "WARNING";
+    case "slow":
+      return "PENDING";
+    case "recovered":
+      return "SUCCESS";
+    case "network":
+      return "NETWORK";
+    default:
+      return "INFO";
   }
 };
 
 const getAlertVariant = (type: string) => {
   switch (type) {
-    case 'down': return 'error' as const;
-    case 'slow': return 'warning' as const;
-    case 'recovered': return 'success' as const;
-    case 'network': return 'info' as const;
-    default: return 'neutral' as const;
+    case "down":
+      return "error" as const;
+    case "slow":
+      return "warning" as const;
+    case "recovered":
+      return "success" as const;
+    case "network":
+      return "info" as const;
+    default:
+      return "neutral" as const;
   }
 };
+const alertStyles = getAlertStyles(alert.type);
 ---
 
-<div class={`border rounded-lg p-4 ${getAlertBg(alert.type)} ${alert.acknowledged ? 'opacity-60' : ''} ${className}`}>
-  <div class="flex items-start gap-3">
-    <div class={`flex-shrink-0 ${getAlertColor(alert.type)}`}>
-      <Icon name={getAlertIcon(alert.type)} size="md" />
+<div
+  class={`
+  ${alertStyles.container} 
+  ${alert.acknowledged ? "opacity-60" : ""} 
+  ${className}
+  rounded-lg p-4 transition-all duration-200 hover:shadow-sm
+`}
+>
+  <!-- Alert Header -->
+  <div class="flex items-start gap-4">
+    <!-- Status Icon -->
+    <div
+      class={`
+      ${alertStyles.icon}
+      rounded-full p-2 flex-shrink-0
+    `}
+    >
+      <Icon icon={getAlertIcon(alert.type)} class="w-4 h-4" />
     </div>
+
+    <!-- Alert Content -->
     <div class="flex-1 min-w-0">
-      <div class="flex items-center gap-2 mb-1">
-        <h4 class="text-primary font-medium">{alert.monitor}</h4>
-        <Badge variant={getAlertVariant(alert.type)} size="sm">
-          {alert.type.toUpperCase()}
-        </Badge>
-        {alert.severity === 'high' && (
-          <Badge variant="error" size="sm">
-            HIGH
+      <!-- Title Row -->
+      <div class="flex items-center justify-between gap-3 mb-2">
+        <div class="flex items-center gap-2 min-w-0">
+          <Heading level={4} class="text-primary font-semibold truncate">
+            {alert.monitor}
+          </Heading>
+
+          <span class={`w-2 h-2 rounded-full ${alertStyles.dot} flex-shrink-0`}
+          ></span>
+          <Badge variant={getAlertVariant(alert.type)} size="sm">
+            {alert.type.toUpperCase()}
           </Badge>
-        )}
+        </div>
+
+        <!-- Badges -->
+
+        <SeverityIndicator severity={alert.severity} />
       </div>
-      <p class="text-tertiary text-sm mb-2">{alert.message}</p>
+
+      <!-- Message -->
+      <Paragraph class="text-secondary text-sm mb-3 leading-relaxed">
+        {alert.message}
+      </Paragraph>
+
+      <!-- Footer -->
       <div class="flex items-center justify-between">
-        <span class="text-tertiary text-xs">{alert.timestamp}</span>
-        {!alert.acknowledged && (
-          <Button variant="secondary" size="sm">
-            Acknowledge
-          </Button>
-        )}
+        <Paragraph class="text-tertiary text-xs">
+          {alert.timestamp}
+        </Paragraph>
+        {
+          !alert.acknowledged && (
+            <Button variant="secondary" size="sm" class="text-xs">
+              Acknowledge
+            </Button>
+          )
+        }
       </div>
     </div>
   </div>

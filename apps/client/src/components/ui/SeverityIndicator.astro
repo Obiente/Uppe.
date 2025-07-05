@@ -1,0 +1,94 @@
+---
+import Icon from "./Icon.astro";
+import { ICONS } from "../../lib/design-system/icons";
+
+interface Props {
+  severity: "high" | "medium" | "low";
+  size?: "sm" | "md" | "lg";
+  className?: string;
+}
+
+const { severity, size = "sm", className = "" } = Astro.props;
+
+const getSeverityStyles = (severity: string) => {
+  switch (severity) {
+    case "high":
+      return {
+        text: "text-status-error",
+        bg: "bg-status-error/10",
+        border: "border-status-error/20",
+      };
+    case "medium":
+      return {
+        text: "text-status-warning",
+        bg: "bg-status-warning/10",
+        border: "border-status-warning/20",
+      };
+    case "low":
+      return {
+        text: "text-accent-primary",
+        bg: "bg-accent-primary/10",
+        border: "border-accent-primary/20",
+      };
+    default:
+      return {
+        text: "text-secondary",
+        bg: "bg-surface-secondary",
+        border: "border-border-subtle",
+      };
+  }
+};
+
+const getSeverityIcon = (severity: string): keyof typeof ICONS => {
+  switch (severity) {
+    case "high":
+      return "WARNING";
+    case "medium":
+      return "INFO";
+    case "low":
+      return "DECREASE";
+    default:
+      return "INFO";
+  }
+};
+
+const getSizeClasses = (size: string) => {
+  switch (size) {
+    case "sm":
+      return {
+        container: "px-2 py-1 text-xs",
+        icon: "w-auto h-min",
+      };
+    case "md":
+      return {
+        container: "px-3 py-1.5 text-sm",
+        icon: "w-4 h-4",
+      };
+    case "lg":
+      return {
+        container: "px-4 py-2 text-base",
+        icon: "w-5 h-5",
+      };
+    default:
+      return {
+        container: "px-2 py-1 text-xs",
+        icon: "w-3 h-3",
+      };
+  }
+};
+
+const severityStyles = getSeverityStyles(severity);
+const sizeClasses = getSizeClasses(size);
+---
+
+<div
+  class={`
+  ${severityStyles.bg} ${severityStyles.border} ${severityStyles.text}
+  ${sizeClasses.container}
+  rounded-md border flex items-center gap-2 font-medium
+  ${className}
+`}
+>
+  <span class="uppercase tracking-wide">{severity}</span>
+  <Icon icon={getSeverityIcon(severity)} class={sizeClasses.icon} />
+</div>

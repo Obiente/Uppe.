@@ -11,23 +11,30 @@ import AlertCenter from "$components/AlertCenter.astro";
 import IncidentList from "$components/IncidentList.astro";
 import Layout from "$layouts/Layout.astro";
 
-import ActionCard from '../components/ui/ActionCard.astro';
-import Section from '../components/ui/Section.astro';
-import Grid from '../components/ui/Grid.astro';
+import ActionCard from "../components/ui/ActionCard.astro";
+import Section from "../components/ui/Section.astro";
+import Grid from "../components/ui/Grid.astro";
 
 // Import mock data
-import { mockMonitors, mockDetailedMonitors } from '../mock/monitors';
-import { mockGlobalPingData } from '../mock/network';
-import { mockIncidents } from '../mock/incidents';
-import { mockAlerts } from '../mock/alerts';
-import { mockUptimeData, mockHours, mockNetworkStats } from '../mock/stats';
+import { mockMonitors, mockDetailedMonitors } from "../mock/monitors";
+import { mockGlobalPingData } from "../mock/network";
+import { mockIncidents } from "../mock/incidents";
+import { mockAlerts } from "../mock/alerts";
+import { mockUptimeData, mockHours, mockNetworkStats } from "../mock/stats";
 
 // Calculate stats from mock data
 const totalMonitors = mockMonitors.length;
-const onlineMonitors = mockMonitors.filter(m => m.status === 'online').length;
-const offlineMonitors = mockMonitors.filter(m => m.status === 'offline').length;
-const avgResponseTime = Math.round(mockMonitors.reduce((acc, m) => acc + m.responseTime, 0) / totalMonitors);
-const avgUptime = Math.round(mockMonitors.reduce((acc, m) => acc + m.uptime, 0) / totalMonitors * 10) / 10;
+const onlineMonitors = mockMonitors.filter((m) => m.status === "online").length;
+const offlineMonitors = mockMonitors.filter(
+  (m) => m.status === "offline"
+).length;
+const avgResponseTime = Math.round(
+  mockMonitors.reduce((acc, m) => acc + m.responseTime, 0) / totalMonitors
+);
+const avgUptime =
+  Math.round(
+    (mockMonitors.reduce((acc, m) => acc + m.uptime, 0) / totalMonitors) * 10
+  ) / 10;
 
 const {
   shareRatio,
@@ -41,17 +48,17 @@ const {
   bandwidthUsed,
   bandwidthLimit,
   checksPerformedToday,
-  checksReceivedToday
+  checksReceivedToday,
 } = mockNetworkStats;
 ---
 
 <Layout>
   <Header />
-  
+
   <main class="min-h-screen">
     <!-- Hero Section -->
     <Section>
-      <Hero 
+      <Hero
         title="Decentralized Uptime Monitoring"
         description="Monitor your services with our peer-to-peer network. Get real-time alerts, detailed analytics, and guaranteed 100% coverage even when your node is offline."
         actionText="Add Your First Monitor"
@@ -82,7 +89,7 @@ const {
           checksPerformedToday={checksPerformedToday}
           checksReceivedToday={checksReceivedToday}
         />
-        
+
         <ShareRatio
           shareRatio={shareRatio}
           monitoringForOthers={monitoringForOthers}
@@ -91,7 +98,7 @@ const {
         />
       </Grid>
     </Section>
-    
+
     <!-- Global Ping Map -->
     <Section>
       <GlobalPingMap
@@ -100,26 +107,22 @@ const {
       />
     </Section>
 
-    <!-- Monitor Overview -->
-    <Section>
-      <MonitorOverview monitors={mockDetailedMonitors} />
-    </Section>
-
-    <!-- Alerts and Uptime Chart -->
+    <!-- Alerts and Monitor Overview  -->
     <Section>
       <Grid cols="2">
+        <MonitorOverview monitors={mockDetailedMonitors} />
         <AlertCenter alerts={mockAlerts} />
-        
-        <UptimeChart
-          hours={mockHours}
-          uptimeData={mockUptimeData}
-        />
       </Grid>
     </Section>
 
     <!-- Recent Incidents -->
     <Section>
+      <Grid cols="2">
+
+      <UptimeChart hours={mockHours} uptimeData={mockUptimeData} />
+
       <IncidentList recentIncidents={mockIncidents} />
+      </Grid>
     </Section>
 
     <!-- Quick Actions -->

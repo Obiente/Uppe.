@@ -1,0 +1,39 @@
+---
+export interface Props {
+  variant?: 'primary' | 'secondary' | 'success' | 'warning' | 'error';
+  size?: 'sm' | 'md' | 'lg' | 'xl';
+  className?: string;
+}
+
+const {
+  variant = 'primary',
+  size = 'md',
+  className = ''
+} = Astro.props;
+
+const variantClasses = {
+  primary: 'bg-accent-primary/10',
+  secondary: 'bg-secondary/10',
+  success: 'bg-status-success/10',
+  warning: 'bg-status-warning/10',
+  error: 'bg-status-error/10'
+};
+
+const sizeClasses = {
+  sm: 'w-10 h-10 p-2',
+  md: 'w-12 h-12 p-3',
+  lg: 'w-16 h-16 p-4',
+  xl: 'w-20 h-20 p-5'
+};
+
+const classes = [
+  'rounded-full flex items-center justify-center',
+  variantClasses[variant],
+  sizeClasses[size],
+  className
+].filter(Boolean).join(' ');
+---
+
+<div class={classes}>
+  <slot />
+</div>

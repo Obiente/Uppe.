@@ -1,0 +1,35 @@
+---
+import Paragraph from "./Paragraph.astro";
+
+interface Props {
+  uptimeHistory: boolean[];
+  className?: string;
+}
+
+const { uptimeHistory, className = "" } = Astro.props;
+
+const uptimeDays = uptimeHistory.filter(Boolean).length;
+---
+
+<div class={`flex items-center gap-2 ${className}`}>
+  <Paragraph class="text-tertiary text-xs font-medium flex-shrink-0">
+    30 days:
+  </Paragraph>
+  <div class="flex items-center gap-0.5 flex-1">
+    {
+      uptimeHistory.map((isUp, index) => (
+        <div
+          class={`w-full h-4 rounded-sm transition-all duration-200 ${
+            isUp
+              ? "bg-status-success hover:bg-status-success/80"
+              : "bg-status-error hover:bg-status-error/80"
+          }`}
+          title={`Day ${index + 1}: ${isUp ? "Up" : "Down"}`}
+        />
+      ))
+    }
+  </div>
+  <Paragraph class="text-tertiary text-xs flex-shrink-0">
+    {uptimeDays}/30 days
+  </Paragraph>
+</div>

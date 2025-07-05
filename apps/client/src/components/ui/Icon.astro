@@ -2,10 +2,11 @@
 export const prerender = true;
 import { ICONS, getIcon } from "$lib/design-system";
 export interface Props {
+  size?: string;
   icon: keyof typeof ICONS;
   class?: string;
 }
-const { icon, class: className = "" }: Props = Astro.props;
+const { icon, class: className = "", size = "20" } = Astro.props;
 import { getIconData, iconToSVG, iconToHTML, replaceIDs } from "@iconify/utils";
 
 if (!icon) {
@@ -22,7 +23,8 @@ if (!iconData) {
 }
 
 const renderData = iconToSVG(iconData, {
-  height: "auto",
+  width: "auto",
+  height: size,
 });
 const svg = iconToHTML(replaceIDs(renderData.body), renderData.attributes);
 ---

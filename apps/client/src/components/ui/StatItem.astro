@@ -1,0 +1,29 @@
+---
+import Stack from './Stack.astro';
+import Heading from './Heading.astro';
+import Paragraph from './Paragraph.astro';
+
+interface Props {
+  value: string | number;
+  label: string;
+  align?: 'left' | 'center' | 'right';
+  className?: string;
+}
+
+const { value, label, align = 'center', className = '' } = Astro.props;
+
+const alignClasses = {
+  left: 'text-left',
+  center: 'text-center',
+  right: 'text-right',
+};
+---
+
+<div class={`${alignClasses[align]} ${className}`}>
+  <Heading level={4} size="xl" color="primary" class="font-bold mb-1">
+    {value}
+  </Heading>
+  <Paragraph size="xs" color="secondary">
+    {label}
+  </Paragraph>
+</div>

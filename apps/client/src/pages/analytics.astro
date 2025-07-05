@@ -14,15 +14,16 @@ import {
   ProgressBar, 
   CircularProgress, 
   ButtonGroup,
-  Button
+  Button,
+  Flex
 } from "$ui";
 
 // Mock data
 const performanceMetrics = [
-  { title: "Avg Response", value: "145ms", icon: "PERFORMANCE", change: "↓ 12ms from last week", changeType: "positive" as const },
-  { title: "Uptime", value: "99.2%", icon: "ANALYTICS", change: "↑ 0.3% from last week", changeType: "positive" as const },
-  { title: "Incidents", value: "3", icon: "ALERT", change: "↑ 2 from last week", changeType: "negative" as const },
-  { title: "Peer Nodes", value: "23", icon: "NETWORK", change: "↑ 5 from last week", changeType: "positive" as const }
+  { title: "Avg Response", value: "145ms", icon: "PERFORMANCE" as const, change: "↓ 12ms from last week", changeType: "positive" as const },
+  { title: "Uptime", value: "99.2%", icon: "ANALYTICS" as const, change: "↑ 0.3% from last week", changeType: "positive" as const },
+  { title: "Incidents", value: "3", icon: "WARNING" as const, change: "↑ 2 from last week", changeType: "negative" as const },
+  { title: "Peer Nodes", value: "23", icon: "NETWORK" as const, change: "↑ 5 from last week", changeType: "positive" as const }
 ];
 
 const timeRangeButtons = [
@@ -84,14 +85,13 @@ const monitorTableRows = [
       <Paragraph class="text-secondary">Deep dive into your monitoring data and P2P network performance</Paragraph>
     </Section>
 
-    <!-- Time Range Selector -->
     <Section>
       <Card>
         <CardBody>
-          <div class="flex items-center justify-between">
+          <Flex align="center" justify="between">
             <Heading level={2}>Time Range</Heading>
             <ButtonGroup buttons={timeRangeButtons} />
-          </div>
+          </Flex>
         </CardBody>
       </Card>
     </Section>
@@ -122,7 +122,7 @@ const monitorTableRows = [
         <Card>
           <CardBody>
             <Heading level={3} class="mb-6">Peer Distribution</Heading>
-            <div class="space-y-4">
+            <Flex direction="col" gap="4">
               {peerDistribution.map((item) => (
                 <ProgressBar 
                   label={item.label}
@@ -132,7 +132,7 @@ const monitorTableRows = [
                   valueText={item.valueText}
                 />
               ))}
-            </div>
+            </Flex>
           </CardBody>
         </Card>
 
@@ -159,16 +159,15 @@ const monitorTableRows = [
       />
     </Section>
 
-    <!-- Export Options -->
     <Section>
       <Card>
         <CardBody>
           <Heading level={3} class="mb-4">Export Data</Heading>
-          <div class="flex items-center gap-4">
+          <Flex align="center" gap="4">
             <Button variant="primary">Export CSV</Button>
             <Button variant="secondary">Export JSON</Button>
             <Button variant="secondary">Generate Report</Button>
-          </div>
+          </Flex>
         </CardBody>
       </Card>
     </Section>

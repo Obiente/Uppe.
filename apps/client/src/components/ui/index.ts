@@ -2,6 +2,8 @@
 export { default as Section } from './Section.astro';
 export { default as Container } from './Container.astro';
 export { default as Grid } from './Grid.astro';
+export { default as Flex } from './Flex.astro';
+export { default as Stack } from './Stack.astro';
 
 // Cards
 export { default as Card } from './Card.astro';
@@ -24,6 +26,7 @@ export { default as Label } from './Label.astro';
 
 // Buttons
 export { default as Button } from './Button.astro';
+export { default as IconButton } from './IconButton.astro';
 export { default as ButtonGroup } from './ButtonGroup.astro';
 
 // Feedback & Status
@@ -37,6 +40,7 @@ export { default as CircularProgress } from './CircularProgress.astro';
 
 // Icons & Media
 export { default as Icon } from './Icon.astro';
+export { default as IconContainer } from './IconContainer.astro';
 export { default as Logo } from './Logo.astro';
 
 // Data Display
@@ -45,6 +49,7 @@ export { default as Metric } from './Metric.astro';
 export { default as MetricCard } from './MetricCard.astro';
 export { default as MetricDisplay } from './MetricDisplay.astro';
 export { default as HealthMetric } from './HealthMetric.astro';
+export { default as StatItem } from './StatItem.astro';
 export { default as UptimeGrid } from './UptimeGrid.astro';
 
 // Charts & Visualizations

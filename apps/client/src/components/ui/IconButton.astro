@@ -1,0 +1,56 @@
+---
+import Icon from './Icon.astro';
+import { ICONS } from '../../lib/design-system/icons';
+
+interface Props {
+  icon: keyof typeof ICONS;
+  variant?: 'primary' | 'secondary' | 'ghost';
+  size?: 'sm' | 'md' | 'lg';
+  href?: string;
+  target?: string;
+  className?: string;
+  [key: string]: any;
+}
+
+const { 
+  icon, 
+  variant = 'ghost', 
+  size = 'md', 
+  href, 
+  target, 
+  className = '',
+  ...rest 
+} = Astro.props;
+
+const baseClasses = 'inline-flex items-center justify-center transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none';
+
+const variantClasses = {
+  primary: 'text-white bg-primary hover:bg-primary-dark focus:ring-primary',
+  secondary: 'text-secondary bg-surface hover:bg-surface-hover focus:ring-border',
+  ghost: 'text-secondary hover:text-primary hover:bg-surface-hover focus:ring-border',
+};
+
+const sizeClasses = {
+  sm: 'h-8 w-8 rounded-md',
+  md: 'h-10 w-10 rounded-lg',
+  lg: 'h-12 w-12 rounded-lg',
+};
+
+const iconSizes = {
+  sm: 'w-4 h-4',
+  md: 'w-5 h-5',
+  lg: 'w-6 h-6',
+};
+
+const classes = `${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${className}`;
+const Tag = href ? 'a' : 'button';
+---
+
+<Tag 
+  class={classes}
+  href={href}
+  target={target}
+  {...rest}
+>
+  <Icon icon={icon} class={iconSizes[size]} />
+</Tag>

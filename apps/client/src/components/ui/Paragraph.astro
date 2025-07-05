@@ -4,6 +4,7 @@ export interface Props {
   color?: 'primary' | 'secondary' | 'tertiary';
   leading?: 'tight' | 'normal' | 'relaxed' | 'loose';
   weight?: 'normal' | 'medium' | 'semibold';
+  align?: 'left' | 'center' | 'right' | 'justify';
   class?: string;
   [key: string]: any;
 }
@@ -13,6 +14,7 @@ const {
   color = 'primary',
   leading = 'normal',
   weight = 'normal',
+  align = 'left',
   class: className = '',
   ...rest
 } = Astro.props;
@@ -48,7 +50,15 @@ const weightClasses = {
   semibold: 'font-semibold'
 };
 
-const classes = `${sizeClasses[size]} ${colorClasses[color]} ${leadingClasses[leading]} ${weightClasses[weight]} ${className}`;
+// Alignment classes
+const alignClasses = {
+  left: 'text-left',
+  center: 'text-center',
+  right: 'text-right',
+  justify: 'text-justify'
+};
+
+const classes = `${sizeClasses[size]} ${colorClasses[color]} ${leadingClasses[leading]} ${weightClasses[weight]} ${alignClasses[align]} ${className}`;
 ---
 
 <p class={classes} {...rest}>

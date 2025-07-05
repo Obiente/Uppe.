@@ -1,0 +1,26 @@
+---
+import Icon from './Icon.astro';
+import { ICONS } from '../../lib/design-system/icons';
+
+interface Props {
+  icon: keyof typeof ICONS;
+  value: string;
+  label?: string;
+  valueColor?: string;
+  className?: string;
+}
+
+const { icon, value, label, valueColor = 'text-secondary', className = '' } = Astro.props;
+---
+
+<div class={`flex items-center gap-1.5 ${className}`}>
+  <Icon icon={icon} class="w-4 h-4 text-secondary" />
+  <span class={`font-medium ${valueColor}`}>
+    {value}
+  </span>
+  {label && (
+    <span class="text-secondary text-sm">
+      {label}
+    </span>
+  )}
+</div>

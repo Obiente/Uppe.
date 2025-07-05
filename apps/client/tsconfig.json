@@ -7,6 +7,7 @@
 		"paths": {
 			"$components": ["src/components"],
 			"$components/*": ["src/components/*"],
+			"$lib/*": ["src/lib/*"],
 			"$ui": ["src/components/ui"],
 			"$layouts/*": ["src/layouts/*"],
 			"$mock/*": ["src/mock/*"],

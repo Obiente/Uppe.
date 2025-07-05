@@ -14,11 +14,11 @@
     "@spotlightjs/astro": "^3.2.5",
     "@tailwindcss/vite": "^4.1.10",
     "astro": "^5.11.0",
-    "tailwindcss": "^4.1.10"
+    "tailwindcss": "^4.1.10",
+    "@iconify-json/heroicons": "^1.2.2",
+    "@iconify/utils": "^2.3.0"
   },
   "devDependencies": {
-    "@iconify-json/heroicons": "^1.2.2",
-    "@iconify/utils": "^2.3.0",
     "typescript": "^5.8.3"
   }
 }

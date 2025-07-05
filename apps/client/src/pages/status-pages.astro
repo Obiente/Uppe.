@@ -11,7 +11,11 @@ import {
   Button,
   MetricDisplay,
   StatusPageCard,
-  Icon
+  Icon,
+  IconContainer,
+  Flex,
+  Stack,
+  Container
 } from "$ui";
 
 // Mock data for public status pages
@@ -58,62 +62,65 @@ const statusPages = [
 <Layout title="Public Status Pages - PeerUP">
 	<Header />
 	
-	<main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-		<Section>
-			<div class="flex items-center justify-between mb-4">
-				<div>
-					<Heading level={1} class="mb-2">Public Status Pages</Heading>
-					<Paragraph class="text-secondary">Create and manage public status pages for your services</Paragraph>
-				</div>
-				<Button variant="primary">
-					Create New Page
-				</Button>
-			</div>
+	<main class="min-h-screen">
+		<Container>
+			<Section>
+				<Flex align="center" justify="between" className="mb-4">
+					<Stack gap="2">
+						<Heading level={1}>Public Status Pages</Heading>
+						<Paragraph color="secondary">Create and manage public status pages for your services</Paragraph>
+					</Stack>
+					<Button variant="primary">
+						Create New Page
+					</Button>
+				</Flex>
+			</Section>
 			
 			<!-- Quick Stats -->
-			<Grid cols="4" class="mb-8">
-				<Card>
-					<CardBody>
-						<MetricDisplay 
-							value={statusPages.length}
-							label="Total Pages"
-							color="primary"
-						/>
-					</CardBody>
-				</Card>
-				<Card>
-					<CardBody>
-						<MetricDisplay 
-							value={statusPages.filter(p => p.isActive).length}
-							label="Active Pages"
-							color="success"
-						/>
-					</CardBody>
-				</Card>
-				<Card>
-					<CardBody>
-						<MetricDisplay 
-							value={statusPages.reduce((sum, p) => sum + p.visits, 0).toLocaleString()}
-							label="Total Visits"
-							color="warning"
-						/>
-					</CardBody>
-				</Card>
-				<Card>
-					<CardBody>
-						<MetricDisplay 
-							value={`${(statusPages.reduce((sum, p) => sum + p.uptime, 0) / statusPages.length).toFixed(1)}%`}
-							label="Avg. Uptime"
-							color="primary"
-						/>
-					</CardBody>
-				</Card>
-			</Grid>
-		</Section>
+			<Section>
+				<Grid cols="4" gap="4">
+					<Card>
+						<CardBody>
+							<MetricDisplay 
+								value={statusPages.length}
+								label="Total Pages"
+								color="primary"
+							/>
+						</CardBody>
+					</Card>
+					<Card>
+						<CardBody>
+							<MetricDisplay 
+								value={statusPages.filter(p => p.isActive).length}
+								label="Active Pages"
+								color="success"
+							/>
+						</CardBody>
+					</Card>
+					<Card>
+						<CardBody>
+							<MetricDisplay 
+								value={statusPages.reduce((sum, p) => sum + p.visits, 0).toLocaleString()}
+								label="Total Visits"
+								color="warning"
+							/>
+						</CardBody>
+					</Card>
+					<Card>
+						<CardBody>
+							<MetricDisplay 
+								value={`${(statusPages.reduce((sum, p) => sum + p.uptime, 0) / statusPages.length).toFixed(1)}%`}
+								label="Avg. Uptime"
+								color="primary"
+							/>
+						</CardBody>
+					</Card>
+				</Grid>
+			</Section>
 
 		<!-- Status Pages List -->
 		<Section>
-			<div class="space-y-4">
+			<Grid cols="2" gap="4">
 				{statusPages.map((page) => (
 					<StatusPageCard
 						title={page.title}
@@ -126,25 +133,26 @@ const statusPages = [
 						created={page.created}
 					/>
 				))}
-			</div>
+			</Grid>
 		</Section>
 
 		<!-- Create First Page CTA -->
 		<Section>
 			<Card>
-				<CardBody>
-					<div class="text-center py-8">
-						<div class="bg-accent-primary/10 p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+				<CardBody padding="xl">
+					<Stack align="center" gap="4">
+						<IconContainer variant="primary" size="lg">
 							<Icon icon="DASHBOARD" class="text-accent-primary" />
-						</div>
-						<Heading level={3} class="mb-2">Ready to go public?</Heading>
-						<Paragraph class="text-secondary mb-4">Create your first public status page and keep your users informed about your service status.</Paragraph>
+						</IconContainer>
+						<Heading level={3}>Ready to go public?</Heading>
+						<Paragraph color="secondary" align="center">Create your first public status page and keep your users informed about your service status.</Paragraph>
 						<Button variant="primary" size="lg">
 							Create Status Page
 						</Button>
-					</div>
+					</Stack>
 				</CardBody>
 			</Card>
 		</Section>
+		</Container>
 	</main>
 </Layout>

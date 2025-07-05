@@ -1,0 +1,29 @@
+---
+import { 
+  Section, 
+  Container, 
+  Icon,
+  Paragraph,
+  Flex
+} from '$ui';
+---
+
+<Section padding="lg">
+  <Container>
+    <div class="border-t border-border-subtle pt-8 pb-6">
+      <Flex justify="between" align="center" className="flex-col sm:flex-row gap-4">
+        <Flex align="center" gap="3">
+          <div class="w-10 h-10 bg-accent-primary rounded-xl flex items-center justify-center shadow-lg">
+            <Icon icon="TRENDING_UP" class="w-5 h-5 text-inverse" />
+          </div>
+          <Paragraph size="lg" weight="semibold">
+            uppe<span class="text-accent-primary">.</span>
+          </Paragraph>
+        </Flex>
+        <Paragraph size="base" color="secondary" weight="medium">
+          Uptime by everyone. For everyone. ↗️
+        </Paragraph>
+      </Flex>
+    </div>
+  </Container>
+</Section>

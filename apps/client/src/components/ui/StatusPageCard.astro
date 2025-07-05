@@ -1,119 +1,190 @@
 ---
-import Card from './Card.astro';
-import CardBody from './CardBody.astro';
-import Heading from './Heading.astro';
-import Badge from './Badge.astro';
-import Button from './Button.astro';
-import Grid from './Grid.astro';
-import Icon from './Icon.astro';
+import Card from "./Card.astro";
+import CardBody from "./CardBody.astro";
+import Heading from "./Heading.astro";
+import Paragraph from "./Paragraph.astro";
+import Badge from "./Badge.astro";
+import Button from "./Button.astro";
+import Icon from "./Icon.astro";
+import Flex from "./Flex.astro";
+import Stack from "./Stack.astro";
+import CircularProgress from "./CircularProgress.astro";
+import IconButton from "./IconButton.astro";
+import Grid from "./Grid.astro";
+import MetricItem from "./MetricItem.astro";
+import StatusIndicator from "./StatusIndicator.astro";
 
 interface Props {
-	title: string;
-	slug: string;
-	isActive: boolean;
-	services: string[];
-	uptime: number;
-	visits: number;
-	lastIncident: string;
-	created: string;
+  title: string;
+  slug: string;
+  isActive: boolean;
+  services: string[];
+  uptime: number;
+  visits: number;
+  lastIncident: string;
+  created: string;
 }
 
-const { title, slug, isActive, services, uptime, visits, lastIncident, created } = Astro.props;
+const {
+  title,
+  slug,
+  isActive,
+  services,
+  uptime,
+  visits,
+  lastIncident,
+  created,
+} = Astro.props;
 
-const statusIndicatorClasses = `w-4 h-4 rounded-full ${isActive ? 'bg-status-online animate-pulse' : 'bg-surface-disabled'}`;
-const titleClasses = 'text-lg font-semibold text-primary mb-1';
-const metaClasses = 'flex items-center gap-4 text-sm text-secondary';
-const statValueClasses = 'text-xl font-bold text-primary';
-const statLabelClasses = 'text-xs text-secondary';
-const footerClasses = 'flex items-center justify-between pt-4 border-t border-border-subtle';
-const footerMetaClasses = 'flex items-center gap-4 text-sm text-secondary';
-const statusTextClasses = isActive ? 'text-status-online' : 'text-surface-disabled';
-const iconButtonClasses = 'text-secondary hover:text-primary transition-colors';
+// Format date for better display
+const formatDate = (dateString: string) => {
+  const date = new Date(dateString);
+  return date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+};
+
+// Format months ago for incident display
+const formatMonthsAgo = (dateString: string) => {
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffInMonths =
+    (now.getFullYear() - date.getFullYear()) * 12 +
+    now.getMonth() -
+    date.getMonth();
+
+  if (diffInMonths < 1) return "Recent";
+  if (diffInMonths === 1) return "1 month ago";
+  return `${diffInMonths} months ago`;
+};
+
+const getUptimeVariant = (uptime: number) => {
+  if (uptime >= 99) return "success";
+  if (uptime >= 95) return "warning";
+  return "error";
+};
+
+const getStatusDotClass = (isActive: boolean) => {
+  return isActive ? "bg-status-success" : "bg-status-error";
+};
+
+const getDomain = () => {
+  return `status.peerup.com/${slug}`;
+};
 ---
 
-<Card>
-	<CardBody>
-		<div class="flex items-center justify-between mb-4">
-			<div class="flex items-center gap-4">
-				<div class="flex-shrink-0">
-					<div class={statusIndicatorClasses}></div>
-				</div>
-				<div>
-					<Heading as="h3" class={titleClasses}>{title}</Heading>
-					<div class={metaClasses}>
-						<span>status.peerup.com/{slug}</span>
-						<span>•</span>
-						<span>{services.length} services</span>
-						<span>•</span>
-						<span>{uptime}% uptime</span>
-					</div>
-				</div>
-			</div>
-			<div class="flex items-center gap-2">
-				<Button 
-					variant="secondary" 
-					size="sm"
-					href={`/public/${slug}`}
-					target="_blank"
-				>
-					View
-				</Button>
-				<Button variant="secondary" size="sm">
-					Edit
-				</Button>
-				<Button variant="secondary" size="sm">
-					Settings
-				</Button>
-			</div>
-		</div>
-		
-		<Grid cols="4" class="mb-4">
-			<div class="text-center">
-				<div class={statValueClasses}>{visits}</div>
-				<div class={statLabelClasses}>Total Visits</div>
-			</div>
-			<div class="text-center">
-				<div class={statValueClasses}>{services.length}</div>
-				<div class={statLabelClasses}>Services</div>
-			</div>
-			<div class="text-center">
-				<div class={statValueClasses}>{uptime}%</div>
-				<div class={statLabelClasses}>Uptime</div>
-			</div>
-			<div class="text-center">
-				<div class={statValueClasses}>
-					{new Date(lastIncident).toLocaleDateString()}
-				</div>
-				<div class={statLabelClasses}>Last Incident</div>
-			</div>
-		</Grid>
-		
-		<!-- Services List -->
-		<div class="flex flex-wrap gap-2 mb-4">
-			{services.map(service => (
-				<Badge variant="secondary" class="bg-accent-secondary text-accent-primary">
-					{service}
-				</Badge>
-			))}
-		</div>
-		
-		<!-- Quick Actions -->
-		<div class={footerClasses}>
-			<div class={footerMetaClasses}>
-				<span>Created: {new Date(created).toLocaleDateString()}</span>
-				<span>•</span>
-				<span class={statusTextClasses}>
-					{isActive ? 'Active' : 'Inactive'}
-				</span>
-			</div>
-			<div class="flex items-center gap-2">
-				<button class={iconButtonClasses}>
-					<Icon icon="COPY" />
-				</button>
-				<button class={iconButtonClasses}>
-					<Icon icon="EXTERNAL_LINK" />
-				</button>
-			</div>
-		</div>
-	</CardBody>
+<Card class="hover:shadow-sm transition-all duration-200">
+  <CardBody>
+    <Flex align="center" justify="between">
+      <Flex align="center" gap="2">
+        <StatusIndicator
+          status={isActive ? "online" : "offline"}
+          size="sm"
+          variant="dot"
+          className="text-status-success"
+        />
+
+        <Heading level={3} size="base">
+          {title}
+        </Heading>
+      </Flex>
+      <Badge variant="neutral" size="sm">
+        Jan {new Date(created).getDate()}
+      </Badge>
+    </Flex>
+
+    <!-- Main content: Two-column grid -->
+    <Grid cols="2" gap="4" className="mt-4">
+      <!-- Left column: Uptime circle -->
+      <Stack align="center" gap="1">
+        <CircularProgress
+          percentage={uptime}
+          label="Uptime"
+          variant={getUptimeVariant(uptime)}
+          size="md"
+        />
+
+        <Flex align="center" gap="1" className="mt-1">
+          <Icon icon="GLOBAL" class="text-tertiary w-4 h-4" />
+          <Paragraph color="tertiary" size="xs" class="font-mono">
+            {getDomain()}
+          </Paragraph>
+        </Flex>
+      </Stack>
+
+      <!-- Right column: Stats using MetricItem -->
+      <Stack gap="3">
+        <MetricItem
+          icon="ANALYTICS"
+          value={visits.toString()}
+          label="total visits"
+        />
+
+        <MetricItem
+          icon="DASHBOARD"
+          value={services.length.toString()}
+          label="services monitored"
+        />
+
+        <MetricItem
+          icon="WARNING"
+          value={formatMonthsAgo(lastIncident)}
+          label="last incident"
+        />
+      </Stack>
+    </Grid>
+
+    <!-- Services Section -->
+    <div class="mt-4">
+      <Paragraph size="xs" weight="medium" color="secondary" class="mb-1">
+        Services
+      </Paragraph>
+      <Flex wrap="wrap" gap="2">
+        {
+          services.map((service) => (
+            <Badge variant="secondary">{service}</Badge>
+          ))
+        }
+      </Flex>
+    </div>
+
+    <!-- Footer: Status & Actions -->
+    <Flex
+      justify="between"
+      align="center"
+      className="mt-4 pt-3 border-t border-border-subtle"
+    >
+      <Flex align="center" gap="2">
+        <Icon
+          icon={isActive ? "SUCCESS" : "WARNING"}
+          class={`w-4 h-4 ${isActive ? "text-status-success" : "text-status-warning"}`}
+        />
+        <Paragraph
+          size="sm"
+          class={isActive ? "text-status-success" : "text-status-warning"}
+        >
+          {
+            isActive
+              ? "All systems operational"
+              : "Service degradation reported"
+          }
+        </Paragraph>
+      </Flex>
+
+      <Flex gap="2">
+        <IconButton
+          icon="COPY"
+          variant="ghost"
+          size="sm"
+          ariaLabel="Copy status page URL"
+        />
+        <IconButton
+          icon="EXTERNAL_LINK"
+          variant="ghost"
+          size="sm"
+          ariaLabel="View status page"
+          href={`/public/${slug}`}
+        />
+        <Button variant="secondary" size="sm"> Edit </Button>
+      </Flex>
+    </Flex>
+  </CardBody>
 </Card>

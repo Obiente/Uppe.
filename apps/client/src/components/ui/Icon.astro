@@ -2,11 +2,10 @@
 export const prerender = true;
 import { ICONS, getIcon } from "$lib/design-system";
 export interface Props {
-  size?: string;
   icon: keyof typeof ICONS;
   class?: string;
 }
-const { icon, class: className = "", size = "20" } = Astro.props;
+const { icon, class: className = "" } = Astro.props;
 import { getIconData, iconToSVG, iconToHTML, replaceIDs } from "@iconify/utils";
 
 if (!icon) {
@@ -22,11 +21,12 @@ if (!iconData) {
   throw new Error(`Icon '${iconName}' not found in pack '${iconPack}'.`);
 }
 
-const renderData = iconToSVG(iconData, {
-  width: "auto",
-  height: size,
+const renderData = iconToSVG(iconData, {});
+const svg = iconToHTML(replaceIDs(renderData.body), {
+  ...renderData.attributes,
+  width: '100%',
+  height: '100%',
 });
-const svg = iconToHTML(replaceIDs(renderData.body), renderData.attributes);
 ---
 
-<span class={className} set:html={svg} />
+<span class={`size-6 ${className}`} set:html={svg} />

@@ -1,0 +1,66 @@
+---
+import { 
+  Section, 
+  Container, 
+  Heading, 
+  Paragraph,
+  Button,
+  Flex,
+  Stack,
+  Icon
+} from '$ui';
+---
+
+<Section padding="xl">
+  <Container>
+    <Stack align="center" gap="12">
+      <!-- Main CTA Statement -->
+      <Stack align="center" gap="6">
+        <Heading level={2} size="5xl" weight="bold" class="text-center max-w-4xl">
+          Ready to join the movement?
+        </Heading>
+        <Paragraph size="xl" align="center" weight="medium" color="secondary" leading="relaxed" class="max-w-3xl">
+          The internet needs more people like you — people who care about resilience, privacy, and community ownership. 
+          <strong class="text-accent-primary">Start monitoring with Uppe. today.</strong>
+        </Paragraph>
+      </Stack>
+
+      <!-- Call to Action -->
+      <Stack align="center" gap="6">
+        <Flex gap="4" className="justify-center">
+          <Button variant="primary" size="lg" href="/join">
+            <Flex align="center" gap="2">
+              <Icon icon="NETWORK" class="w-5 h-5" />
+              Join the Network
+            </Flex>
+          </Button>
+          <Button variant="outline" size="lg" href="/github">
+            <Flex align="center" gap="2">
+              <Icon icon="EXTERNAL_LINK" class="w-5 h-5" />
+              View on GitHub
+            </Flex>
+          </Button>
+        </Flex>
+        
+        <Stack align="center" gap="2">
+          <Paragraph size="sm" color="tertiary" align="center">
+            Free forever • No tracking • Open source
+          </Paragraph>
+          <Paragraph size="sm" color="tertiary" align="center">
+            <strong class="text-accent-secondary">1,623 peers online right now</strong>
+          </Paragraph>
+        </Stack>
+      </Stack>
+
+      <!-- Final Statement -->
+      <Stack align="center" gap="4" className="pt-8 border-t border-border-secondary">
+        <Paragraph size="lg" weight="medium" align="center" class="max-w-2xl">
+          <strong class="text-accent-primary">Uppe.</strong> — Because the internet belongs to everyone.
+        </Paragraph>
+        <Paragraph size="base" color="secondary" align="center">
+          Built by the community, for the community.
+        </Paragraph>
+      </Stack>
+    </Stack>
+  </Container>
+</Section>

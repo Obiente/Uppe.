@@ -43,10 +43,10 @@ const style = variantStyles[variant];
 ---
 
 <Card variant={style.cardVariant} class={className}>
-  <div class="p-6">
+  <div class="p-4">
     <div class="flex items-center justify-between mb-4">
-      <div class={`${style.iconBg} p-3 rounded-xl shadow-lg`}>
-        <Icon icon={icon} class={style.iconColor} />
+      <div class={`${style.iconBg} w-12 h-12 p-2 rounded-xl shadow-lg flex items-center justify-center`}>
+        <Icon icon={icon} class={`w-6 h-6 ${style.iconColor}`} />
       </div>
       <div class="text-right">
         <div class="text-3xl font-bold text-primary mb-1">{value}</div>

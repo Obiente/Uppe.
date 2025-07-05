@@ -1,0 +1,122 @@
+---
+import { Stack, Flex, Paragraph, Icon } from '$ui';
+import type { ICONS } from '$lib/design-system';
+
+type StatColor = 'warning' | 'error' | 'info';
+
+interface Stat {
+  text: string;
+  desc: string;
+  source: string;
+  icon: keyof typeof ICONS;
+  color: StatColor;
+}
+
+const stats: Stat[] = [
+  { text: "81% of organizations", desc: " report network monitoring blind spots", source: "Dimensional Research", icon: "WARNING", color: "warning" },
+  { text: "$5,600 per minute", desc: " average cost of IT downtime", source: "Gartner Research", icon: "TRENDING_DOWN", color: "error" },
+  { text: "67% of security teams", desc: " lack complete visibility", source: "Ponemon Institute", icon: "WARNING", color: "warning" },
+  { text: "11% of annual revenues", desc: " lost to unscheduled downtime", source: "Siemens 2024", icon: "TRENDING_DOWN", color: "error" },
+  { text: "70% of enterprises", desc: " run AI workloads in unstable environments", source: "Gartner Report", icon: "NETWORK", color: "info" }
+];
+
+const colorMap: Record<StatColor, string> = {
+  warning: 'text-status-warning',
+  error: 'text-status-error', 
+  info: 'text-status-info'
+};
+---
+
+<Stack align="center" gap="2" className="max-w-lg mx-auto">
+  <div class="transition-all duration-300" data-carousel="container">
+    {stats.map((stat, i) => (
+      <div 
+        class={`${i === 0 ? 'block' : 'hidden'} transition-opacity duration-300`}
+        data-stat-item={i}
+      >
+        <Flex align="center" gap="2">
+          <Icon icon={stat.icon} class={`w-5 h-5 ${colorMap[stat.color]}`} />
+          <Paragraph size="base" color="secondary" weight="medium">
+            <strong class={colorMap[stat.color]}>{stat.text}</strong>
+            <span>{stat.desc}</span>
+          </Paragraph>
+        </Flex>
+      </div>
+    ))}
+  </div>
+  
+  <Paragraph 
+    size="sm" 
+    color="tertiary" 
+    align="center" 
+    className="transition-opacity duration-300" 
+    data-stat="source"
+  >
+    Source: {stats[0].source}
+  </Paragraph>
+  
+  <Flex gap="2" className="mt-2">
+    {stats.map((_, i) => (
+      <button 
+        class={`w-2 h-2 rounded-full transition-all duration-300 hover:scale-125 ${i === 0 ? 'bg-accent-primary' : 'bg-border-secondary'}`}
+        data-index={i}
+      />
+    ))}
+  </Flex>
+</Stack>
+
+<script>
+  const stats = [
+    { text: "81% of organizations", desc: " report network monitoring blind spots", source: "Dimensional Research", icon: "WARNING", color: "warning" },
+    { text: "$5,600 per minute", desc: " average cost of IT downtime", source: "Gartner Research", icon: "TRENDING_DOWN", color: "error" },
+    { text: "67% of security teams", desc: " lack complete visibility", source: "Ponemon Institute", icon: "WARNING", color: "warning" },
+    { text: "11% of annual revenues", desc: " lost to unscheduled downtime", source: "Siemens 2024", icon: "TRENDING_DOWN", color: "error" },
+    { text: "70% of enterprises", desc: " run AI workloads in unstable environments", source: "Gartner Report", icon: "NETWORK", color: "info" }
+  ];
+
+  let currentIndex = 0;
+
+  function updateStats() {
+    const container = document.querySelector('[data-carousel="container"]');
+    const sourceEl = document.querySelector('[data-stat="source"]');
+    
+    if (!container || !sourceEl) return;
+    
+    // Hide all stat items
+    container.querySelectorAll('[data-stat-item]').forEach(item => {
+      item.classList.add('hidden');
+      item.classList.remove('block');
+    });
+    
+    // Show current stat item
+    const currentItem = container.querySelector(`[data-stat-item="${currentIndex}"]`);
+    if (currentItem) {
+      currentItem.classList.remove('hidden');
+      currentItem.classList.add('block');
+    }
+    
+    // Update source
+    sourceEl.textContent = `Source: ${stats[currentIndex].source}`;
+    
+    // Update dots
+    document.querySelectorAll('[data-index]').forEach((dot, i) => {
+      dot.className = `w-2 h-2 rounded-full transition-all duration-300 hover:scale-125 ${i === currentIndex ? 'bg-accent-primary' : 'bg-border-secondary'}`;
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    // Dot navigation
+    document.querySelectorAll('[data-index]').forEach((dot, i) => {
+      dot.addEventListener('click', () => {
+        currentIndex = i;
+        updateStats();
+      });
+    });
+    
+    // Auto advance
+    setInterval(() => {
+      currentIndex = (currentIndex + 1) % stats.length;
+      updateStats();
+    }, 5000);
+  });
+</script>

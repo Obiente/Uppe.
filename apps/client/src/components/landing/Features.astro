@@ -1,0 +1,59 @@
+---
+import { 
+  Section, 
+  Container, 
+  Heading, 
+  Paragraph,
+  Icon,
+  Stack
+} from '$ui';
+---
+
+<Section padding="xl">
+  <Container>
+    <Stack gap="16">
+      <Stack align="center" gap="6">
+        <Heading level={2} size="5xl" weight="bold" class="text-center">
+          How do you want to participate?
+        </Heading>
+        <Paragraph size="xl" color="secondary" align="center" weight="medium" class="max-w-5xl leading-relaxed">
+          <strong class="text-accent-primary text-2xl">Uppe.</strong> grows stronger with every peer. 
+          Join the network by hosting your own monitoring node, or use our community service to get started. 
+          <strong class="text-accent-secondary">Every new peer makes the internet more resilient.</strong>
+        </Paragraph>
+      </Stack>
+
+      <div class="grid gap-6 md:grid-cols-3">
+        <Stack align="center" gap="4" className="p-6 rounded-lg border border-border-secondary bg-bg-secondary/50">
+          <Icon icon="NETWORK" class="text-accent-primary w-12 h-12" />
+          <Heading level={4} size="xl" weight="semibold" class="text-center">
+            Host Your Own Node
+          </Heading>
+          <Paragraph size="base" color="secondary" align="center">
+            Run Uppe. on your server and become a peer in the network. Also works on PCs and phones!
+          </Paragraph>
+        </Stack>
+        
+        <Stack align="center" gap="4" className="p-6 rounded-lg border border-border-secondary bg-bg-secondary/50">
+          <Icon icon="GLOBAL" class="text-status-success w-12 h-12" />
+          <Heading level={4} size="xl" weight="semibold" class="text-center">
+            Use Community Service
+          </Heading>
+          <Paragraph size="base" color="secondary" align="center">
+            Get started with our hosted monitoring service. Free with generous limits for the community.
+          </Paragraph>
+        </Stack>
+        
+        <Stack align="center" gap="4" className="p-6 rounded-lg border border-border-secondary bg-bg-secondary/50">
+          <Icon icon="SUCCESS" class="text-status-info w-12 h-12" />
+          <Heading level={4} size="xl" weight="semibold" class="text-center">
+            Enterprise Deployment
+          </Heading>
+          <Paragraph size="base" color="secondary" align="center">
+            Deploy your own private monitoring cluster. Complete control and enterprise-grade privacy.
+          </Paragraph>
+        </Stack>
+      </div>
+    </Stack>
+  </Container>
+</Section>

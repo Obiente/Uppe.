@@ -1,0 +1,126 @@
+---
+import { 
+  Section, 
+  Container, 
+  Grid, 
+  Heading, 
+  Paragraph, 
+  Button,
+  Icon,
+  Flex,
+  Stack,
+  MetricCard,
+  Logo
+} from '$ui';
+import StatsCarousel from './StatsCarousel.astro';
+
+interface Props {
+  networkStats: {
+    totalPeers: number;
+    onlinePeers: number;
+    checksPerHour: string;
+    coverage: string;
+  };
+}
+
+const { networkStats } = Astro.props;
+---
+
+<Section padding="xl">
+  <Container>
+    <Stack align="center" gap="12">
+      <!-- Main Hero Statement -->
+      <Stack align="center" gap="8">
+        <Logo size="lg" variant="gradient" title="Uppe." />
+        
+        <Stack align="center" gap="4">
+          <Heading level={1} size="5xl" weight="bold" class="text-center max-w-6xl">
+            The internet is watching.
+            <br />
+            <span class="text-accent-primary">You should be too.</span>
+          </Heading>
+          
+          <Paragraph size="xl" color="secondary" align="center" weight="medium" class="max-w-4xl leading-relaxed">
+            Stop relying on single points of failure. <strong class="text-accent-primary">Uppe.</strong> distributes uptime monitoring across thousands of peers worldwide. 
+            <strong class="text-primary">When one fails, thousands continue.</strong>
+          </Paragraph>
+        </Stack>
+        
+        <!-- Compelling Hook -->
+        <StatsCarousel />
+      </Stack>
+
+      <!-- Quick Action -->
+      <Stack gap="6">
+        <Flex gap="4" className="justify-center">
+          <Button variant="primary" size="lg" href="/dashboard">
+            <Flex align="center" gap="2">
+              <Icon icon="NETWORK" class="w-5 h-5" />
+              Start Monitoring
+            </Flex>
+          </Button>
+          <Button variant="outline" size="lg" href="/demo">
+            <Flex align="center" gap="2">
+              <Icon icon="INFO" class="w-5 h-5" />
+              See it in Action
+            </Flex>
+          </Button>
+        </Flex>
+        
+        <Paragraph size="sm" color="tertiary" align="center">
+          No signup required • Always free • Open source
+        </Paragraph>
+      </Stack>
+
+      <!-- Live Network Evidence -->
+      <Stack gap="6" className="w-full max-w-6xl">
+        <Stack align="center" gap="3">
+          <Flex align="center" gap="3">
+            <div class="w-3 h-3 rounded-full bg-status-success animate-pulse"></div>
+            <Heading level={3} size="2xl" weight="semibold" class="text-accent-secondary">
+              Live Network Status
+            </Heading>
+          </Flex>
+          <Paragraph size="base" color="secondary" weight="medium" class="text-center">
+            Right now, <strong class="text-accent-primary">{networkStats.onlinePeers.toLocaleString()} peers</strong> are monitoring the internet
+          </Paragraph>
+        </Stack>
+        
+        <Grid cols="2" gap="4" className="lg:grid-cols-4">
+          <MetricCard 
+            title="Active Peers" 
+            value={networkStats.totalPeers.toLocaleString()} 
+            icon="NETWORK" 
+            variant="minimal"
+            change="+12% this week"
+            changeType="positive"
+          />
+          <MetricCard 
+            title="Online Now" 
+            value={networkStats.onlinePeers.toLocaleString()} 
+            icon="SUCCESS" 
+            variant="minimal"
+            change="98.7% uptime"
+            changeType="positive"
+          />
+          <MetricCard 
+            title="Checks/Hour" 
+            value={networkStats.checksPerHour} 
+            icon="TRENDING_UP" 
+            variant="minimal"
+            change="24/7 monitoring"
+            changeType="neutral"
+          />
+          <MetricCard 
+            title="Global Coverage" 
+            value={networkStats.coverage} 
+            icon="GLOBAL" 
+            variant="minimal"
+            change="50+ countries"
+            changeType="positive"
+          />
+        </Grid>
+      </Stack>
+    </Stack>
+  </Container>
+</Section>

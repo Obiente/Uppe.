@@ -12,18 +12,18 @@ const {
 } = Astro.props;
 
 const variantClasses = {
-  primary: 'bg-accent-primary/10',
-  secondary: 'bg-secondary/10',
-  success: 'bg-status-success/10',
-  warning: 'bg-status-warning/10',
-  error: 'bg-status-error/10'
+  primary: 'bg-gradient-to-br from-accent-primary to-accent-primary/80 text-white shadow-lg',
+  secondary: 'bg-gradient-to-br from-accent-secondary to-accent-secondary/80 text-white shadow-lg',
+  success: 'bg-gradient-to-br from-status-success to-status-success/80 text-white shadow-lg',
+  warning: 'bg-gradient-to-br from-status-warning to-status-warning/80 text-white shadow-lg',
+  error: 'bg-gradient-to-br from-status-error to-status-error/80 text-white shadow-lg'
 };
 
 const sizeClasses = {
-  sm: 'w-10 h-10 p-2',
-  md: 'w-12 h-12 p-3',
-  lg: 'w-16 h-16 p-4',
-  xl: 'w-20 h-20 p-5'
+  sm: 'w-10 h-10 p-1.5',
+  md: 'w-12 h-12 p-2',
+  lg: 'w-16 h-16 p-3',
+  xl: 'w-20 h-20 p-4'
 };
 
 const classes = [

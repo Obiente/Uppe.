@@ -56,23 +56,19 @@ const getSizeClasses = (size: string) => {
   switch (size) {
     case "sm":
       return {
-        container: "px-2 py-1 text-xs",
-        icon: "w-auto h-min",
+        container: "px-2 py-1 h-min text-xs",
       };
     case "md":
       return {
-        container: "px-3 py-1.5 text-sm",
-        icon: "w-4 h-4",
+        container: "px-3 py-1.5 h-min text-sm",
       };
     case "lg":
       return {
-        container: "px-4 py-2 text-base",
-        icon: "w-5 h-5",
+        container: "px-4 py-2 h-min text-base",
       };
     default:
       return {
-        container: "px-2 py-1 text-xs",
-        icon: "w-3 h-3",
+        container: "px-2 h-min py-1 text-xs",
       };
   }
 };
@@ -90,5 +86,5 @@ const sizeClasses = getSizeClasses(size);
 `}
 >
   <span class="uppercase tracking-wide">{severity}</span>
-  <Icon icon={getSeverityIcon(severity)} class={sizeClasses.icon} />
+  <Icon icon={getSeverityIcon(severity)}  />
 </div>

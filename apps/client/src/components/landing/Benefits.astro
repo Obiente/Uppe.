@@ -1,0 +1,96 @@
+---
+import { Section, Container, Heading, Paragraph, Stack, Flex, Icon } from "$ui";
+
+interface Benefit {
+  title: string;
+  description: string;
+}
+
+interface Props {
+  benefits: Benefit[];
+}
+
+const { benefits } = Astro.props;
+---
+
+<Section padding="xl">
+  <Container>
+    <Stack gap="16">
+      <Stack align="center" gap="6">
+        <Heading level={2} size="5xl" weight="bold" class="text-center">
+          What is Uppe.?
+        </Heading>
+        <Paragraph
+          size="xl"
+          color="secondary"
+          align="center"
+          weight="medium"
+          class="max-w-5xl leading-relaxed"
+        >
+          <strong class="text-accent-primary text-2xl">Uppe.</strong> is peer-to-peer
+          uptime monitoring. Instead of relying on a single company's servers, your
+          monitoring is distributed across
+          <strong class="text-accent-secondary"
+            >thousands of peers worldwide</strong
+          >. When one fails, thousands continue watching.
+        </Paragraph>
+      </Stack>
+
+      <!-- Benefits Flow -->
+      <Stack gap="12">
+        <div class="space-y-10">
+          {
+            benefits.map((benefit, index) => (
+              <div class="max-w-4xl mx-auto">
+                <Flex
+                  gap="8"
+                  align="start"
+                  className={`${index % 2 === 1 ? "flex-row-reverse text-right" : ""}`}
+                >
+                  <div class="flex-shrink-0">
+                    <div class="w-20 h-20 rounded-2xl bg-gradient-to-br from-accent-primary/10 to-accent-secondary/10 border border-accent-primary/20 flex items-center justify-center">
+                      <Icon
+                        icon="SUCCESS"
+                        class="w-10 h-10 text-accent-primary"
+                      />
+                    </div>
+                  </div>
+                  <Stack gap="0" className="flex-1">
+                    <Heading
+                      level={3}
+                      size="3xl"
+                      weight="bold"
+                      class="text-primary"
+                    >
+                      {benefit.title}
+                    </Heading>
+                    <Paragraph
+                      color="secondary"
+                      size="lg"
+                      leading="relaxed"
+                      weight="medium"
+                      class="max-w-2xl"
+                    >
+                      {benefit.description}
+                    </Paragraph>
+                  </Stack>
+                </Flex>
+              </div>
+            ))
+          }
+        </div>
+
+        <!-- Summary Statement -->
+        <Stack align="center" gap="4" className="pt-8">
+          <Paragraph size="lg" weight="medium" align="center" class="max-w-3xl">
+            This isn't just monitoring software — it's a new way to think about
+            internet infrastructure.
+            <strong class="text-accent-primary"
+              >Built by the community, owned by the community.</strong
+            >
+          </Paragraph>
+        </Stack>
+      </Stack>
+    </Stack>
+  </Container>
+</Section>

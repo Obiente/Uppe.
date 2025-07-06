@@ -22,7 +22,7 @@ export const components = {
     base: 'inline-flex items-center font-medium rounded-full',
     variants: {
       primary: 'bg-accent-primary text-inverse',
-      secondary: 'bg-surface-secondary text-primary border border-border-subtle',
+      secondary: 'bg-surface-secondary text-primary border border-primary',
       success: 'bg-status-online text-inverse',
       warning: 'bg-status-warning text-inverse',
       error: 'bg-status-error text-inverse',
@@ -41,7 +41,7 @@ export const components = {
     base: 'inline-flex items-center justify-center font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed',
     variants: {
       primary: 'bg-accent-primary text-inverse hover:bg-accent-primary-hover focus:ring-accent-primary',
-      secondary: 'bg-surface-secondary border border-border-subtle text-primary hover:bg-surface-elevated focus:ring-border-subtle',
+      secondary: 'bg-surface-secondary border border-primary text-primary hover:bg-surface-elevated focus:ring-border-primary',
       danger: 'bg-status-error text-inverse hover:opacity-90 focus:ring-status-error'
     },
     sizes: {
@@ -53,8 +53,8 @@ export const components = {
   
   // Card component
   card: {
-    base: 'p-6 bg-surface-secondary border border-border-primary rounded-lg overflow-hidden',
-    header: 'px-6 py-4 border-b border-border-primary',
+    base: 'p-6 bg-surface-secondary border border-primary rounded-lg overflow-hidden',
+    header: 'px-6 py-4 border-b border-primary',
     title: 'text-xl font-semibold text-primary',
     body: 'px-6 py-4'
   },
@@ -63,10 +63,10 @@ export const components = {
   form: {
     label: 'block text-sm font-medium text-primary mb-2',
     labelInline: 'text-sm text-primary',
-    input: 'w-full px-3 py-2 bg-surface-secondary border border-border-subtle rounded-lg text-primary placeholder-text-tertiary focus:outline-none focus:ring-2 focus:ring-border-focus focus:border-transparent transition-colors',
-    select: 'w-full px-3 py-2 bg-surface-secondary border border-border-subtle rounded-lg text-primary focus:outline-none focus:ring-2 focus:ring-border-focus focus:border-transparent transition-colors',
-    textarea: 'w-full px-3 py-2 bg-surface-secondary border border-border-subtle rounded-lg text-primary placeholder-text-tertiary focus:outline-none focus:ring-2 focus:ring-border-focus focus:border-transparent transition-colors resize-vertical',
-    checkbox: 'w-4 h-4 text-border-focus bg-surface-secondary border-border-subtle rounded focus:ring-border-focus focus:ring-2'
+    input: 'w-full px-3 py-2 bg-surface-secondary border border-primary rounded-lg text-primary placeholder-text-tertiary focus:outline-none focus:ring-2 focus:ring-border-focus focus:border-transparent transition-colors',
+    select: 'w-full px-3 py-2 bg-surface-secondary border border-primary rounded-lg text-primary focus:outline-none focus:ring-2 focus:ring-border-focus focus:border-transparent transition-colors',
+    textarea: 'w-full px-3 py-2 bg-surface-secondary border border-primary rounded-lg text-primary placeholder-text-tertiary focus:outline-none focus:ring-2 focus:ring-border-focus focus:border-transparent transition-colors resize-vertical',
+    checkbox: 'w-4 h-4 text-border-focus bg-surface-secondary border-primary rounded focus:ring-border-focus focus:ring-2'
   },
   
   // Alert component
@@ -138,7 +138,7 @@ export const components = {
     base: 'w-full border-collapse',
     header: 'bg-surface-elevated',
     headerCell: 'px-4 py-3 text-left text-sm font-medium text-secondary',
-    row: 'border-b border-border-subtle',
+    row: 'border-b border-primary',
     cell: 'px-4 py-3 text-sm text-primary',
     footer: 'bg-surface-elevated'
   }

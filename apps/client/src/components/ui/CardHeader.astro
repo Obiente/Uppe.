@@ -9,9 +9,9 @@ const { class: className = '', variant = 'default', ...rest } = Astro.props;
 
 // Variant classes
 const variantClasses = {
-  default: 'px-6 py-4 border-b border-border-subtle',
+  default: 'px-6 py-4 border-b border-primary',
   highlight: 'px-6 py-4 border-b-2 border-interactive-primary bg-interactive-primary/5',
-  subtle: 'px-6 py-4 border-b border-border-subtle/50'
+  subtle: 'px-6 py-4 border-b border-primary/50'
 };
 
 const headerClasses = `${variantClasses[variant]} ${className}`;

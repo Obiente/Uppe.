@@ -27,8 +27,8 @@ const colorMap: Record<StatColor, string> = {
 };
 ---
 
-<Stack align="center" gap="2" className="max-w-lg mx-auto">
-  <div class="transition-all duration-300" data-carousel="container">
+<Stack align="center" gap="2">
+  <span class="transition-all duration-300" data-carousel="container">
     {stats.map((stat, i) => (
       <div 
         class={`${i === 0 ? 'block' : 'hidden'} transition-opacity duration-300`}
@@ -43,7 +43,7 @@ const colorMap: Record<StatColor, string> = {
         </Flex>
       </div>
     ))}
-  </div>
+  </span>
   
   <Paragraph 
     size="sm" 

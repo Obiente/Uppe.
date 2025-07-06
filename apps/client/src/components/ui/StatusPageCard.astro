@@ -75,16 +75,25 @@ const getDomain = () => {
   <CardBody>
     <Flex align="center" justify="between">
       <Flex align="center" gap="2">
-        <StatusIndicator
-          status={isActive ? "online" : "offline"}
-          size="sm"
-          variant="dot"
-          className="text-status-success"
-        />
-
-        <Heading level={3} size="base">
-          {title}
-        </Heading>
+        <Stack gap="1">
+          <Flex align="center" gap="2">
+            <StatusIndicator
+              status={isActive ? "online" : "offline"}
+              size="sm"
+              variant="dot"
+              className="text-status-success"
+            />
+            <Heading level={3} size="base" class="leading-none">
+              {title}
+            </Heading>
+          </Flex>
+          <Flex align="center" gap="1">
+            <Icon icon="GLOBAL" class="text-tertiary w-4 h-4" />
+            <Paragraph color="tertiary" size="xs" class="font-mono">
+              {getDomain()}
+            </Paragraph>
+          </Flex>
+        </Stack>
       </Flex>
       <Badge variant="neutral" size="sm">
         Jan {new Date(created).getDate()}
@@ -92,48 +101,41 @@ const getDomain = () => {
     </Flex>
 
     <!-- Main content: Two-column grid -->
-    <Grid cols="2" gap="4" className="mt-4">
+    <Stack gap="2" className="mt-2">
       <!-- Left column: Uptime circle -->
-      <Stack align="center" gap="1">
+      <Grid cols="1" gap="4" class="mt-4 md:grid-cols-2">
         <CircularProgress
           percentage={uptime}
           label="Uptime"
           variant={getUptimeVariant(uptime)}
           size="md"
         />
+        <Stack gap="3" className="my-auto">
+          <MetricItem
+            icon="ANALYTICS"
+            value={visits.toString()}
+            label="total visits"
+          />
 
-        <Flex align="center" gap="1" className="mt-1">
-          <Icon icon="GLOBAL" class="text-tertiary w-4 h-4" />
-          <Paragraph color="tertiary" size="xs" class="font-mono">
-            {getDomain()}
-          </Paragraph>
-        </Flex>
-      </Stack>
+          <MetricItem
+            icon="DASHBOARD"
+            value={services.length.toString()}
+            label="services monitored"
+          />
+
+          <MetricItem
+            icon="WARNING"
+            value={formatMonthsAgo(lastIncident)}
+            label="last incident"
+          />
+        </Stack>
+      </Grid>
 
       <!-- Right column: Stats using MetricItem -->
-      <Stack gap="3">
-        <MetricItem
-          icon="ANALYTICS"
-          value={visits.toString()}
-          label="total visits"
-        />
-
-        <MetricItem
-          icon="DASHBOARD"
-          value={services.length.toString()}
-          label="services monitored"
-        />
-
-        <MetricItem
-          icon="WARNING"
-          value={formatMonthsAgo(lastIncident)}
-          label="last incident"
-        />
-      </Stack>
-    </Grid>
+    </Stack>
 
     <!-- Services Section -->
-    <div class="mt-4">
+    <Stack className="mt-4">
       <Paragraph size="xs" weight="medium" color="secondary" class="mb-1">
         Services
       </Paragraph>
@@ -144,7 +146,7 @@ const getDomain = () => {
           ))
         }
       </Flex>
-    </div>
+    </Stack>
 
     <!-- Footer: Status & Actions -->
     <Flex
@@ -175,6 +177,7 @@ const getDomain = () => {
           variant="ghost"
           size="sm"
           ariaLabel="Copy status page URL"
+          className="my-auto"
         />
         <IconButton
           icon="EXTERNAL_LINK"
@@ -182,6 +185,7 @@ const getDomain = () => {
           size="sm"
           ariaLabel="View status page"
           href={`/public/${slug}`}
+          className="my-auto"
         />
         <Button variant="secondary" size="sm"> Edit </Button>
       </Flex>

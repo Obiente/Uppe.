@@ -22,9 +22,9 @@ const {
 } = Astro.props;
 
 const sizeMap = {
-  'sm': { container: 'w-20 h-20', text: 'text-lg', subtext: 'text-xs' },
-  'md': { container: 'w-28 h-28', text: 'text-2xl', subtext: 'text-xs' },
-  'lg': { container: 'w-36 h-36', text: 'text-3xl', subtext: 'text-sm' }
+  'sm': { container: 'w-20 h-20', text: 'text-sm', subtext: 'text-xs' },
+  'md': { container: 'w-28 h-28', text: 'text-xl', subtext: 'text-sm' },
+  'lg': { container: 'w-36 h-36', text: 'text-2xl', subtext: 'text-base' }
 };
 
 const variantClasses = {
@@ -65,7 +65,7 @@ const strokeDasharray = (percentage / 100) * circumference;
     </svg>
     <div class="absolute inset-0 flex items-center justify-center">
       <div class="text-center">
-        <div class={`${sizeMap[size].text} font-bold text-primary`}>{percentage}%</div>
+        <div class={`${sizeMap[size].text} font-bold text-primary `}>{percentage}%</div>
         <div class={`${sizeMap[size].subtext} text-secondary`}>{label}</div>
       </div>
     </div>

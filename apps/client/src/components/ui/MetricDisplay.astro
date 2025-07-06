@@ -15,10 +15,10 @@ const colorClasses = {
 	error: 'bg-status-error'
 };
 
-const containerClasses = `text-center ${className || ''}`;
+const containerClasses = `${className || ''}`;
 const indicatorClasses = `w-2 h-2 rounded-full ${colorClasses[color]}`;
 const valueClasses = 'text-2xl font-bold text-primary';
-const labelClasses = 'text-sm font-medium text-secondary';
+const labelClasses = 'text-sm font-medium text-secondary leading-none';
 ---
 
 <div class={containerClasses}>

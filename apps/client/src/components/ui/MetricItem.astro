@@ -13,14 +13,10 @@ interface Props {
 const { icon, value, label, valueColor = 'text-secondary', className = '' } = Astro.props;
 ---
 
-<div class={`flex items-center gap-1.5 ${className}`}>
+<div class={`flex items-center gap-2 ${className}`}>
   <Icon icon={icon} class="w-4 h-4 text-secondary" />
-  <span class={`font-medium ${valueColor}`}>
+  <span class={`font-medium text-sm leading-none ${valueColor}`}>
     {value}
+    {label && <span class="text-tertiary text-sm ml-0.5">{label}</span>}
   </span>
-  {label && (
-    <span class="text-secondary text-sm">
-      {label}
-    </span>
-  )}
 </div>

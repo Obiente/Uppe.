@@ -7,9 +7,17 @@ import _Button from "./ui/Button.astro";
 
 interface Props {
   title?: string;
+  links?: { href: string; label: string }[];
 }
 
-const { title = "PeerUP" } = Astro.props;
+const { title = "PeerUP", links = [
+  { href: "/dashboard", label: "Dashboard" },
+  { href: "/analytics", label: "Analytics" },
+  { href: "/network-map", label: "Network" },
+  { href: "/status-pages", label: "Status Pages" },
+  { href: "/add-monitor", label: "Add Monitor" },
+  { href: "/settings", label: "Settings" }
+] } = Astro.props;
 ---
 
 <header class="bg-surface-primary border-b border-primary">
@@ -19,13 +27,10 @@ const { title = "PeerUP" } = Astro.props;
         <div class="flex-shrink-0">
           <Logo title={title} />
         </div>
-        <nav class="ml-8 flex items-center space-x-6">
-          <NavLink href="/dashboard">Dashboard</NavLink>
-          <NavLink href="/analytics">Analytics</NavLink>
-          <NavLink href="/network-map">Network</NavLink>
-          <NavLink href="/status-pages">Status Pages</NavLink>
-          <NavLink href="/add-monitor">Add Monitor</NavLink>
-          <NavLink href="/settings">Settings</NavLink>
+        <nav class="ml-8 items-center space-x-6 hidden lg:flex">
+          {links.map(link => (
+            <NavLink href={link.href}>{link.label}</NavLink>
+          ))}
         </nav>
       </div>
       <div class="flex items-center space-x-4">
@@ -34,7 +39,47 @@ const { title = "PeerUP" } = Astro.props;
           label="Network: Online"
           animated={true}
         />
+        <button
+          id="mobile-menu-toggle"
+          class="p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white block lg:hidden"
+          aria-expanded="false"
+        >
+          <span class="sr-only">Open main menu</span>
+          <!-- Hamburger icon -->
+          <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <div id="mobile-menu" class="hidden lg:hidden">
+      <div class="pt-2 pb-3 space-x-6">
+          {links.map(link => (
+            <NavLink href={link.href}>{link.label}</NavLink>
+          ))}
       </div>
     </div>
   </Container>
 </header>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const toggleButton = document.getElementById('mobile-menu-toggle');
+    const mobileMenu = document.getElementById('mobile-menu');
+    
+    if (toggleButton && mobileMenu) {
+      toggleButton.addEventListener('click', function() {
+        const isExpanded = toggleButton.getAttribute('aria-expanded') === 'true';
+        
+        if (isExpanded) {
+          mobileMenu.classList.add('hidden');
+          toggleButton.setAttribute('aria-expanded', 'false');
+        } else {
+          mobileMenu.classList.remove('hidden');
+          toggleButton.setAttribute('aria-expanded', 'true');
+        }
+      });
+    }
+  });
+</script>

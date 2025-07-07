@@ -13,7 +13,7 @@ export function initTheme(): void {
   
   try {
     // Apply theme from preferences if available, otherwise use default
-    const savedTheme = localStorage.getItem('peerup-theme');
+    const savedTheme = localStorage.getItem('Uppe.-theme');
     
     // Currently only rosePineTheme is fully implemented
     // In the future, this will be extended to support multiple themes
@@ -35,7 +35,7 @@ export function setTheme(themeName: string): void {
     console.log(`Theme switching to ${themeName} (not yet implemented)`);
     
     // Store preference for future visits
-    localStorage.setItem('peerup-theme', themeName);
+    localStorage.setItem('Uppe.-theme', themeName);
     
     // Future implementation will load the appropriate theme
     // and update DOM variables accordingly

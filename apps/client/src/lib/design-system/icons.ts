@@ -1,5 +1,5 @@
 /**
- * Centralized icon definitions for the PeerUP application
+ * Centralized icon definitions for the Uppe. application
  *
  * This file contains all the icons used throughout the application,
  * making it easy to switch icon libraries or update icon names consistently.

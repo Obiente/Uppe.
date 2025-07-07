@@ -1,40 +1,48 @@
 ---
-import Container from "./ui/Container.astro";
-import Logo from "./ui/Logo.astro";
-import NavLink from "./ui/NavLink.astro";
-import StatusIndicator from "./ui/StatusIndicator.astro";
-import IconButton from "./ui/IconButton.astro";
-import Icon from "./ui/Icon.astro";
+import {
+  Flex,
+  Container,
+  Logo,
+  NavLink,
+  StatusIndicator,
+  IconButton,
+  Icon,
+} from "$ui";
 
 interface Props {
   title?: string;
   links?: { href: string; label: string }[];
 }
 
-const { title = "Uppe.", links = [
-  { href: "/dashboard", label: "Dashboard" },
-  { href: "/analytics", label: "Analytics" },
-  { href: "/network-map", label: "Network" },
-  { href: "/status-pages", label: "Status Pages" },
-  { href: "/add-monitor", label: "Add Monitor" },
-  { href: "/settings", label: "Settings" }
-] } = Astro.props;
+const {
+  title = "Uppe.",
+  links = [
+    { href: "/dashboard", label: "Dashboard" },
+    { href: "/analytics", label: "Analytics" },
+    { href: "/network-map", label: "Network" },
+    { href: "/status-pages", label: "Status Pages" },
+    { href: "/add-monitor", label: "Add Monitor" },
+    { href: "/settings", label: "Settings" },
+  ],
+} = Astro.props;
 ---
 
 <header class="bg-surface-primary border-b border-primary">
-  <Container>
-    <div class="flex items-center justify-between h-16">
-      <div class="flex items-center">
+  <Container padding="lg" class="">
+    <Flex justify="between" align="center">
+      <Flex align="center">
         <div class="flex-shrink-0">
           <Logo title={title} />
         </div>
         <nav class="ml-8 items-center space-x-6 hidden lg:flex">
-          {links.map(link => (
-            <NavLink href={link.href}>{link.label}</NavLink>
-          ))}
+          {
+            links.map((link) => (
+              <NavLink href={link.href}>{link.label}</NavLink>
+            ))
+          }
         </nav>
-      </div>
-      <div class="flex items-center space-x-4">
+      </Flex>
+      <Flex align="center">
         <StatusIndicator
           status="online"
           label="Network: Online"
@@ -45,22 +53,31 @@ const { title = "Uppe.", links = [
           icon="MENU"
           variant="ghost"
           size="md"
-          className="block lg:hidden"
+          class="block lg:hidden"
           aria-expanded="false"
           aria-label="Toggle mobile menu"
         />
-      </div>
-    </div>
+      </Flex>
+    </Flex>
   </Container>
 
   <!-- Mobile menu overlay -->
-  <div id="mobile-menu-overlay" class="fixed inset-0 z-40 lg:hidden opacity-0 invisible transition-all duration-300 ease-in-out"></div>
-  
+  <div
+    id="mobile-menu-overlay"
+    class="fixed inset-0 z-40 lg:hidden opacity-0 invisible transition-all duration-300 ease-in-out"
+  >
+  </div>
+
   <!-- Mobile menu sidebar -->
-  <div id="mobile-menu" class="fixed top-0 left-0 h-full w-80 bg-primary border-r border-primary shadow-2xl z-50 lg:hidden transform -translate-x-full transition-transform duration-300 ease-in-out">
+  <div
+    id="mobile-menu"
+    class="fixed top-0 left-0 h-full w-80 bg-primary border-r border-primary shadow-2xl z-50 lg:hidden transform -translate-x-full transition-transform duration-300 ease-in-out"
+  >
     <div class="flex flex-col h-full">
       <!-- Header section with logo and close button -->
-      <div class="flex items-center justify-between p-4 border-b border-primary">
+      <div
+        class="flex items-center justify-between p-4 border-b border-primary"
+      >
         <Logo title={title} />
         <IconButton
           id="mobile-menu-close"
@@ -73,99 +90,89 @@ const { title = "Uppe.", links = [
 
       <!-- Navigation links -->
       <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
-        {links.map(link => (
-          <div class="block">
-            <NavLink 
-              href={link.href}
-              className="block w-full text-left px-4 py-3 text-base font-medium rounded-lg hover:bg-surface-secondary/50 transition-colors duration-200"
-            >
-              {link.label}
-            </NavLink>
-          </div>
-        ))}
+        {
+          links.map((link) => (
+            <div class="block">
+              <NavLink
+                href={link.href}
+                class="block w-full text-left px-4 py-3 text-base font-medium rounded-lg hover:bg-surface-secondary/50 transition-colors duration-200"
+              >
+                {link.label}
+              </NavLink>
+            </div>
+          ))
+        }
       </nav>
-
-      <!-- Status indicator at bottom -->
-      <div class="p-4 border-t border-primary">
-        <StatusIndicator
-          status="online"
-          label="Network: Online"
-          animated={true}
-        />
-      </div>
     </div>
   </div>
 </header>
 
 <script>
-  document.addEventListener('DOMContentLoaded', function() {
-    const toggleButton = document.getElementById('mobile-menu-toggle');
-    const closeButton = document.getElementById('mobile-menu-close');
-    const mobileMenu = document.getElementById('mobile-menu');
-    const overlay = document.getElementById('mobile-menu-overlay');
-    
+  document.addEventListener("DOMContentLoaded", function () {
+    const toggleButton = document.getElementById("mobile-menu-toggle");
+    const closeButton = document.getElementById("mobile-menu-close");
+    const mobileMenu = document.getElementById("mobile-menu");
+    const overlay = document.getElementById("mobile-menu-overlay");
+
     function openMenu() {
       if (mobileMenu && overlay) {
         // Show overlay with fade in
-        overlay.classList.remove('invisible');
-        overlay.classList.add('opacity-100');
-        overlay.classList.remove('opacity-0');
-        
+        overlay.classList.remove("invisible");
+        overlay.classList.add("opacity-100");
+        overlay.classList.remove("opacity-0");
+
         // Slide in menu from left
-        mobileMenu.classList.remove('-translate-x-full');
-        mobileMenu.classList.add('translate-x-0');
-        
-        toggleButton?.setAttribute('aria-expanded', 'true');
-        document.body.style.overflow = 'hidden'; // Prevent background scrolling
+        mobileMenu.classList.remove("-translate-x-full");
+        mobileMenu.classList.add("translate-x-0");
+
+        toggleButton?.setAttribute("aria-expanded", "true");
+        document.body.style.overflow = "hidden"; // Prevent background scrolling
       }
     }
-    
+
     function closeMenu() {
       if (mobileMenu && overlay) {
         // Hide overlay with fade out
-        overlay.classList.add('opacity-0');
-        overlay.classList.remove('opacity-100');
-        
+        overlay.classList.add("opacity-0");
+        overlay.classList.remove("opacity-100");
+
         // Slide out menu to left
-        mobileMenu.classList.add('-translate-x-full');
-        mobileMenu.classList.remove('translate-x-0');
-        
-        toggleButton?.setAttribute('aria-expanded', 'false');
-        document.body.style.overflow = ''; // Restore scrolling
-        
+        mobileMenu.classList.add("-translate-x-full");
+        mobileMenu.classList.remove("translate-x-0");
+
+        toggleButton?.setAttribute("aria-expanded", "false");
+        document.body.style.overflow = ""; // Restore scrolling
+
         // Hide overlay completely after transition
         setTimeout(() => {
-          overlay.classList.add('invisible');
+          overlay.classList.add("invisible");
         }, 300);
       }
     }
-    
+
     // Toggle menu
-    toggleButton?.addEventListener('click', function() {
-      const isExpanded = toggleButton.getAttribute('aria-expanded') === 'true';
+    toggleButton?.addEventListener("click", function () {
+      const isExpanded = toggleButton.getAttribute("aria-expanded") === "true";
       if (isExpanded) {
         closeMenu();
       } else {
         openMenu();
       }
     });
-    
-    closeButton?.addEventListener('click', closeMenu);
-    
-    // Close menu when clicking overlay
-    overlay?.addEventListener('click', closeMenu);
-    
-    // Close menu with Escape key
-    document.addEventListener('keydown', function(event) {
-      if (event.key === 'Escape') {
+
+    closeButton?.addEventListener("click", closeMenu);
+
+    overlay?.addEventListener("click", closeMenu);
+
+    document.addEventListener("keydown", function (event) {
+      if (event.key === "Escape") {
         closeMenu();
       }
     });
-    
-    // Close menu when clicking on navigation links
-    const navLinks = mobileMenu?.querySelectorAll('a');
-    navLinks?.forEach(link => {
-      link.addEventListener('click', closeMenu);
+
+    const navLinks = mobileMenu?.querySelectorAll("a");
+    navLinks?.forEach((link) => {
+      link.addEventListener("click", closeMenu);
     });
   });
 </script>

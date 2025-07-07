@@ -47,7 +47,7 @@ in
   sharedShell = mkCraneShell "shared-shell" (nodePackages ++ rustPackages);
 
   client = buildNpmPackage {
-    pname = "PeerUP-client";
+    pname = "Uppe-client";
     version = (lib.importJSON ./apps/client/package.json).version;
     nodejs = versionedNode;
 

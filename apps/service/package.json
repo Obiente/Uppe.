@@ -1,5 +1,5 @@
 {
-  "name": "@peerup/service",
+  "name": "@uppe/service",
   "scripts": {
     "dev": "cargo run dev",
     "add": "cargo add",

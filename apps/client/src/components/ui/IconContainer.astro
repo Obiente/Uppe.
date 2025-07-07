@@ -2,13 +2,13 @@
 export interface Props {
   variant?: 'primary' | 'secondary' | 'success' | 'warning' | 'error';
   size?: 'sm' | 'md' | 'lg' | 'xl';
-  className?: string;
+  class?: string;
 }
 
 const {
   variant = 'primary',
   size = 'md',
-  className = ''
+  class: className = ''
 } = Astro.props;
 
 const variantClasses = {

@@ -10,7 +10,7 @@ export interface Props {
   name?: string;
   id: string;
   size?: "sm" | "md" | "lg";
-  className?: string;
+  class?: string;
 }
 
 const {
@@ -20,7 +20,7 @@ const {
   name,
   id,
   size = "md",
-  className = "",
+  class: className = "",
 } = Astro.props;
 ---
 

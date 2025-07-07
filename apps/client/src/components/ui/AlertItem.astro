@@ -17,10 +17,10 @@ interface Props {
     severity: "high" | "medium" | "low";
     acknowledged: boolean;
   };
-  className?: string;
+  class?: string;
 }
 
-const { alert, className = "" } = Astro.props;
+const { alert, class: className = "" } = Astro.props;
 
 const getAlertStyles = (type: string) => {
   switch (type) {

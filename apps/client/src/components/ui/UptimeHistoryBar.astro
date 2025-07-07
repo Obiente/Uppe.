@@ -3,10 +3,10 @@ import Paragraph from "./Paragraph.astro";
 
 interface Props {
   uptimeHistory: boolean[];
-  className?: string;
+  class?: string;
 }
 
-const { uptimeHistory, className = "" } = Astro.props;
+const { uptimeHistory, class: className = "" } = Astro.props;
 
 const uptimeDays = uptimeHistory.filter(Boolean).length;
 ---

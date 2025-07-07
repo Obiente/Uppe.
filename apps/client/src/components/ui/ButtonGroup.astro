@@ -8,10 +8,10 @@ export interface Props {
   }>;
   variant?: 'default' | 'pills' | 'outlined' | 'compact';
   size?: 'sm' | 'md' | 'lg';
-  className?: string;
+  class?: string;
 }
 
-const { buttons, variant = 'default', size = 'md', className = '' } = Astro.props;
+const { buttons, variant = 'default', size = 'md', class: className = '' } = Astro.props;
 
 // Size classes
 const sizeClasses = {

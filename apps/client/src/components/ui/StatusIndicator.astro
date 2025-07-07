@@ -8,10 +8,10 @@ interface Props {
   size?: 'sm' | 'md' | 'lg';
   animated?: boolean;
   variant?: 'dot' | 'badge' | 'icon';
-  className?: string;
+  class?: string;
 }
 
-const { status, label, size = 'sm', animated = false, variant = 'dot', className = '' } = Astro.props;
+const { status, label, size = 'sm', animated = false, variant = 'dot', class: className = '' } = Astro.props;
 
 // Size classes
 const sizeClasses = {

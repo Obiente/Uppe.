@@ -7,10 +7,10 @@ interface Props {
   value: string | number;
   label: string;
   align?: 'left' | 'center' | 'right';
-  className?: string;
+  class?: string;
 }
 
-const { value, label, align = 'center', className = '' } = Astro.props;
+const { value, label, align = 'center', class: className = '' } = Astro.props;
 
 const alignClasses = {
   left: 'text-left',

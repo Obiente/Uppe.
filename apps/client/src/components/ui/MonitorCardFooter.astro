@@ -3,10 +3,10 @@ import Button from './Button.astro';
 
 interface Props {
   lastCheck: string;
-  className?: string;
+  class?: string;
 }
 
-const { lastCheck, className = '' } = Astro.props;
+const { lastCheck, class: className = '' } = Astro.props;
 ---
 
 <div class={`mt-4 pt-4 border-t border-primary ${className}`}>

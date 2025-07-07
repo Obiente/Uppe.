@@ -5,10 +5,10 @@ import { ICONS } from "../../lib/design-system/icons";
 interface Props {
   severity: "high" | "medium" | "low";
   size?: "sm" | "md" | "lg";
-  className?: string;
+  class?: string;
 }
 
-const { severity, size = "sm", className = "" } = Astro.props;
+const { severity, size = "sm", class: className = "" } = Astro.props;
 
 const getSeverityStyles = (severity: string) => {
   switch (severity) {

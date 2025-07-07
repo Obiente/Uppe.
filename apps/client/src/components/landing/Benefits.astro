@@ -45,7 +45,7 @@ const { benefits } = Astro.props;
                 <Flex
                   gap="8"
                   align="start"
-                  className={`${index % 2 === 1 ? "flex-row-reverse text-right" : ""}`}
+                  class={`${index % 2 === 1 ? "flex-row-reverse text-right" : ""}`}
                 >
                   <div class="flex-shrink-0">
                     <div class="w-20 h-20 rounded-2xl bg-gradient-to-br from-accent-primary/10 to-accent-secondary/10 border border-accent-primary/20 flex items-center justify-center">
@@ -55,7 +55,7 @@ const { benefits } = Astro.props;
                       />
                     </div>
                   </div>
-                  <Stack gap="0" className="flex-1">
+                  <Stack gap="0" class="flex-1">
                     <Heading
                       level={3}
                       size="3xl"
@@ -81,7 +81,7 @@ const { benefits } = Astro.props;
         </div>
 
         <!-- Summary Statement -->
-        <Stack align="center" gap="4" className="pt-8">
+        <Stack align="center" gap="4" class="pt-8">
           <Paragraph size="lg" weight="medium" align="center" class="max-w-3xl">
             This isn't just monitoring software — it's a new way to think about
             internet infrastructure.

@@ -1,10 +1,10 @@
 ---
 interface Props {
   peerCount: number;
-  className?: string;
+  class?: string;
 }
 
-const { peerCount, className = '' } = Astro.props;
+const { peerCount, class: className = '' } = Astro.props;
 ---
 
 <div class={`flex items-center justify-between text-sm ${className}`}>

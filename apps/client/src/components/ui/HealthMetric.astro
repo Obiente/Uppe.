@@ -6,10 +6,10 @@ interface Props {
   value: number;
   unit?: string;
   variant?: 'primary' | 'success' | 'warning' | 'error';
-  className?: string;
+  class?: string;
 }
 
-const { label, value, unit = '', variant = 'primary', className = '' } = Astro.props;
+const { label, value, unit = '', variant = 'primary', class: className = '' } = Astro.props;
 ---
 
 <div class={`flex items-center justify-between ${className}`}>

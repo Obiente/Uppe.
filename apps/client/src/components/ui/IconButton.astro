@@ -8,7 +8,7 @@ interface Props {
   size?: 'sm' | 'md' | 'lg';
   href?: string;
   target?: string;
-  className?: string;
+  class?: string;
   [key: string]: any;
 }
 
@@ -18,7 +18,7 @@ const {
   size = 'md', 
   href, 
   target, 
-  className = '',
+  class: className = '',
   ...rest 
 } = Astro.props;
 

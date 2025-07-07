@@ -6,10 +6,10 @@ interface Props {
     status: 'online' | 'offline' | 'warning' | 'error';
     label: string;
   }>;
-  className?: string;
+  class?: string;
 }
 
-const { items, className = '' } = Astro.props;
+const { items, class: className = '' } = Astro.props;
 ---
 
 <div class={`flex items-center gap-4 ${className}`}>

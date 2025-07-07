@@ -2,10 +2,10 @@
 interface Props {
   hours: number[];
   uptimeData: number[];
-  className?: string;
+  class?: string;
 }
 
-const { hours, uptimeData, className = '' } = Astro.props;
+const { hours, uptimeData, class: className = '' } = Astro.props;
 
 const getUptimeColor = (uptime: number) => {
   if (uptime >= 99) return 'bg-status-online';

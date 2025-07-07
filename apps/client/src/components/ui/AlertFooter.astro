@@ -3,10 +3,10 @@ import Button from './Button.astro';
 
 interface Props {
   unacknowledgedCount: number;
-  className?: string;
+  class?: string;
 }
 
-const { unacknowledgedCount, className = '' } = Astro.props;
+const { unacknowledgedCount, class: className = '' } = Astro.props;
 ---
 
 <div class={`px-6 py-4 border-t border-primary ${className}`}>

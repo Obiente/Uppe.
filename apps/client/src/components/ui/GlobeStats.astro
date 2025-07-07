@@ -3,10 +3,10 @@ interface Props {
   onlinePeers: number;
   slowPeers: number;
   errorPeers: number;
-  className?: string;
+  class?: string;
 }
 
-const { onlinePeers, slowPeers, errorPeers, className = '' } = Astro.props;
+const { onlinePeers, slowPeers, errorPeers, class: className = '' } = Astro.props;
 ---
 
 <div class={`bg-surface-overlay/80 backdrop-blur-sm rounded-lg p-3 ${className}`}>

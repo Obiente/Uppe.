@@ -2,13 +2,13 @@
 export interface Props {
   gap?: '0' | '1' | '2' | '3' | '4' | '5' | '6' | '8' | '10' | '12' | '16' | '20';
   align?: 'start' | 'center' | 'end' | 'stretch';
-  className?: string;
+  class?: string;
 }
 
 const {
   gap = '4',
   align = 'stretch',
-  className = ''
+  class: className = ''
 } = Astro.props;
 
 const gapClasses = {

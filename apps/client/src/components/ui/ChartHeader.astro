@@ -4,10 +4,10 @@ import StatusBadge from './StatusBadge.astro';
 interface Props {
   title: string;
   showLegend?: boolean;
-  className?: string;
+  class?: string;
 }
 
-const { title, showLegend = true, className = '' } = Astro.props;
+const { title, showLegend = true, class: className = '' } = Astro.props;
 ---
 
 <div class={`flex items-center justify-between ${className}`}>

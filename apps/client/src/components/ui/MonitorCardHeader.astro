@@ -8,10 +8,10 @@ interface Props {
   url: string;
   status: 'online' | 'offline' | 'warning';
   region: string;
-  className?: string;
+  class?: string;
 }
 
-const { title, url, status, region, className = '' } = Astro.props;
+const { title, url, status, region, class: className = '' } = Astro.props;
 
 const statusMap = {
   online: 'online' as const,

@@ -81,7 +81,7 @@ const getDomain = () => {
               status={isActive ? "online" : "offline"}
               size="sm"
               variant="dot"
-              className="text-status-success"
+              class="text-status-success"
             />
             <Heading level={3} size="base" class="leading-none">
               {title}
@@ -101,7 +101,7 @@ const getDomain = () => {
     </Flex>
 
     <!-- Main content: Two-column grid -->
-    <Stack gap="2" className="mt-2">
+    <Stack gap="2" class="mt-2">
       <!-- Left column: Uptime circle -->
       <Grid cols="1" gap="4" class="mt-4 md:grid-cols-2">
         <CircularProgress
@@ -110,7 +110,7 @@ const getDomain = () => {
           variant={getUptimeVariant(uptime)}
           size="md"
         />
-        <Stack gap="3" className="my-auto">
+        <Stack gap="3" class="my-auto">
           <MetricItem
             icon="ANALYTICS"
             value={visits.toString()}
@@ -135,7 +135,7 @@ const getDomain = () => {
     </Stack>
 
     <!-- Services Section -->
-    <Stack className="mt-4">
+    <Stack class="mt-4">
       <Paragraph size="xs" weight="medium" color="secondary" class="mb-1">
         Services
       </Paragraph>
@@ -152,7 +152,7 @@ const getDomain = () => {
     <Flex
       justify="between"
       align="center"
-      className="mt-4 pt-3 border-t border-primary"
+      class="mt-4 pt-3 border-t border-primary"
     >
       <Flex align="center" gap="2">
         <Icon
@@ -177,7 +177,7 @@ const getDomain = () => {
           variant="ghost"
           size="sm"
           ariaLabel="Copy status page URL"
-          className="my-auto"
+          class="my-auto"
         />
         <IconButton
           icon="EXTERNAL_LINK"
@@ -185,7 +185,7 @@ const getDomain = () => {
           size="sm"
           ariaLabel="View status page"
           href={`/public/${slug}`}
-          className="my-auto"
+          class="my-auto"
         />
         <Button variant="secondary" size="sm"> Edit </Button>
       </Flex>

@@ -5,7 +5,7 @@ export interface Props {
   justify?: 'start' | 'center' | 'end' | 'between' | 'around' | 'evenly';
   wrap?: 'nowrap' | 'wrap' | 'wrap-reverse';
   gap?: '0' | '1' | '2' | '3' | '4' | '5' | '6' | '8' | '10' | '12' | '16' | '20';
-  className?: string;
+  class?: string;
 }
 
 const {
@@ -14,7 +14,7 @@ const {
   justify = 'start',
   wrap = 'nowrap',
   gap = '0',
-  className = ''
+  class: className = ''
 } = Astro.props;
 
 const directionClasses = {

@@ -2,10 +2,10 @@
 interface Props {
   interactive?: boolean;
   children?: any;
-  className?: string;
+  class?: string;
 }
 
-const { interactive = true, children, className = '' } = Astro.props;
+const { interactive = true, children, class: className = '' } = Astro.props;
 ---
 
 <div class={`relative w-full h-96 bg-surface-primary rounded-lg overflow-hidden ${className}`}>

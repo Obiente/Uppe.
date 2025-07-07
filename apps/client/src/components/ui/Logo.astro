@@ -5,14 +5,14 @@ interface Props {
   title?: string;
   size?: "sm" | "md" | "lg";
   variant?: "default" | "gradient" | "minimal";
-  className?: string;
+  class?: string;
 }
 
 const {
   title = "Uppe.",
   size = "md",
   variant = "default",
-  className = "",
+  class: className = "",
 } = Astro.props;
 
 const sizeConfig = {

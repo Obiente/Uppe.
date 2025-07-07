@@ -52,7 +52,7 @@ const { networkStats } = Astro.props;
 
       <!-- Quick Action -->
       <Stack gap="6">
-        <Flex gap="4" className="justify-center">
+        <Flex gap="4" class="justify-center">
           <Button variant="primary" size="lg" href="/dashboard">
             <Flex align="center" gap="2">
               <Icon icon="NETWORK" class="w-5 h-5" />
@@ -73,7 +73,7 @@ const { networkStats } = Astro.props;
       </Stack>
 
       <!-- Live Network Evidence -->
-      <Stack gap="6" className="w-full max-w-6xl">
+      <Stack gap="6" class="w-full max-w-6xl">
         <Stack align="center" gap="3">
           <Flex align="center" gap="3">
             <div class="w-3 h-3 rounded-full bg-status-success animate-pulse"></div>
@@ -86,7 +86,7 @@ const { networkStats } = Astro.props;
           </Paragraph>
         </Stack>
         
-        <Grid cols="2" gap="4" className="lg:grid-cols-4">
+        <Grid cols="2" gap="4" class="lg:grid-cols-4">
           <MetricCard 
             title="Active Peers" 
             value={networkStats.totalPeers.toLocaleString()} 

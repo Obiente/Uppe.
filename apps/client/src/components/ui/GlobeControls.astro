@@ -4,17 +4,17 @@ import { Icon } from './index';
 import { ICONS } from '../../lib/design-system/icons';
 
 interface Props {
-  className?: string;
+  class?: string;
 }
 
-const { className = '' } = Astro.props;
+const { class: className = '' } = Astro.props;
 ---
 
 <div class={`flex gap-2 ${className}`}>
   <Button 
     variant="secondary" 
     size="sm" 
-    className="bg-surface-overlay hover:bg-surface-elevated text-primary transition-colors flex items-center gap-2"
+    class="bg-surface-overlay hover:bg-surface-elevated text-primary transition-colors flex items-center gap-2"
     onclick="pauseGlobe()"
   >
     <Icon icon="STOP" />
@@ -23,7 +23,7 @@ const { className = '' } = Astro.props;
   <Button 
     variant="secondary" 
     size="sm" 
-    className="bg-surface-overlay hover:bg-surface-elevated text-primary transition-colors flex items-center gap-2"
+    class="bg-surface-overlay hover:bg-surface-elevated text-primary transition-colors flex items-center gap-2"
     onclick="resetGlobe()"
   >
     <Icon icon="EXTERNAL_LINK" />

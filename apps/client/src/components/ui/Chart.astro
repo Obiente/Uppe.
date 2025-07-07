@@ -3,10 +3,10 @@ export interface Props {
   title: string;
   data?: Array<{ value: number; label: string; color?: string }>;
   height?: string;
-  className?: string;
+  class?: string;
 }
 
-const { title, data = [], height = 'h-64', className = '' } = Astro.props;
+const { title, data = [], height = 'h-64', class: className = '' } = Astro.props;
 
 // Generate default data if none provided
 const chartData = data.length > 0 ? data : Array.from({ length: 24 }).map((_, i) => {

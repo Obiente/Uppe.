@@ -2,10 +2,10 @@
 import StatusIndicator from './StatusIndicator.astro';
 
 interface Props {
-  className?: string;
+  class?: string;
 }
 
-const { className = '' } = Astro.props;
+const { class: className = '' } = Astro.props;
 
 const legendItems = [
   { status: 'online' as const, label: 'Online' },

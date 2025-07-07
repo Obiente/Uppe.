@@ -6,10 +6,10 @@ interface Props {
   location: string;
   checksPerDay: number;
   status: 'online' | 'offline' | 'warning' | 'error';
-  className?: string;
+  class?: string;
 }
 
-const { peerId, location, checksPerDay, status, className = '' } = Astro.props;
+const { peerId, location, checksPerDay, status, class: className = '' } = Astro.props;
 ---
 
 <div class={`flex items-center justify-between p-3 bg-surface-elevated rounded-lg ${className}`}>

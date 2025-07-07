@@ -2,12 +2,12 @@
 interface Props {
   href: string;
   children?: any;
-  className?: string;
+  class?: string;
   active?: boolean;
   variant?: 'default' | 'pill' | 'underline';
 }
 
-const { href, children, className = '', active = false, variant = 'default' } = Astro.props;
+const { href, children, class: className = '', active = false, variant = 'default' } = Astro.props;
 
 // Base classes
 const baseClasses = "inline-flex items-center transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-interactive-primary";

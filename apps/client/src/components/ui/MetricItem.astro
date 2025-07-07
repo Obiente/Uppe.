@@ -7,10 +7,10 @@ interface Props {
   value: string;
   label?: string;
   valueColor?: string;
-  className?: string;
+  class?: string;
 }
 
-const { icon, value, label, valueColor = 'text-secondary', className = '' } = Astro.props;
+const { icon, value, label, valueColor = 'text-secondary', class: className = '' } = Astro.props;
 ---
 
 <div class={`flex items-center gap-2 ${className}`}>

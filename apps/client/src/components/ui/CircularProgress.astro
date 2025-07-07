@@ -8,7 +8,7 @@ export interface Props {
   subtitle?: string;
   size?: 'sm' | 'md' | 'lg';
   variant?: 'primary' | 'success' | 'warning' | 'error';
-  className?: string;
+  class?: string;
 }
 
 const { 
@@ -18,7 +18,7 @@ const {
   subtitle,
   size = 'md', 
   variant = 'primary',
-  className = '' 
+  class: className = '' 
 } = Astro.props;
 
 const sizeMap = {

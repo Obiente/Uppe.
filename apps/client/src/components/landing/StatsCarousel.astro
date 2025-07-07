@@ -49,13 +49,13 @@ const colorMap: Record<StatColor, string> = {
     size="sm" 
     color="tertiary" 
     align="center" 
-    className="transition-opacity duration-300" 
+    class="transition-opacity duration-300" 
     data-stat="source"
   >
     Source: {stats[0].source}
   </Paragraph>
   
-  <Flex gap="2" className="mt-2">
+  <Flex gap="2" class="mt-2">
     {stats.map((_, i) => (
       <button 
         class={`w-2 h-2 rounded-full transition-all duration-300 hover:scale-125 ${i === 0 ? 'bg-accent-primary' : 'bg-border-secondary'}`}

@@ -1,0 +1,23 @@
+---
+export interface Props {
+  class?: string;
+  padding?: 'sm' | 'md' | 'lg' | 'xl';
+  [key: string]: any;
+}
+
+const { class: className = '', padding = 'md', ...rest } = Astro.props;
+
+// Padding classes
+const paddingClasses = {
+  sm: 'p-4',
+  md: 'p-6',
+  lg: 'p-8',
+  xl: 'p-10'
+};
+
+const bodyClasses = `${paddingClasses[padding]} ${className}`;
+---
+
+<div class={bodyClasses} {...rest}>
+  <slot />
+</div>

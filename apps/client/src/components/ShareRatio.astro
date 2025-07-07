@@ -1,0 +1,162 @@
+---
+import { Card, CardBody, Heading, StatusBadge, Grid, Metric, ProgressBar, Alert } from '$ui';
+
+
+
+interface Props {
+  shareRatio: number; // 0-1 scale, where 1 is perfect balance
+  monitoringForOthers: number; // checks per day
+  receivingFromOthers: number; // checks per day
+  contributionScore: number; // 0-100 score
+}
+
+const {
+  shareRatio,
+  monitoringForOthers,
+  receivingFromOthers,
+  contributionScore,
+} = Astro.props;
+
+// Calculate Monitor Ratio (MR) - how much you contribute vs consume
+const monitorRatio = shareRatio;
+const maxPeerAllocation = Math.floor(contributionScore / 10); // Simple calculation
+
+const getRatioStatus = (ratio: number) => {
+  if (ratio >= 0.8) return "Excellent";
+  if (ratio >= 0.5) return "Good";
+  return "Needs Improvement";
+};
+
+const getProgressVariant = (ratio: number) => {
+  if (ratio >= 0.8) return "success" as const;
+  if (ratio >= 0.5) return "warning" as const;
+  return "error" as const;
+};
+
+const getStatusVariant = (ratio: number) => {
+  if (ratio >= 0.8) return "online" as const;
+  if (ratio >= 0.5) return "degraded" as const;
+  return "offline" as const;
+};
+---
+
+<Card>
+  <CardBody class="border-b border-primary">
+    <div class="flex items-center justify-between">
+      <Heading as="h3" size="lg">Monitor Ratio (MR)</Heading>
+      <StatusBadge
+        status={getStatusVariant(monitorRatio)}
+        showIndicator={true}
+      />
+    </div>
+  </CardBody>
+
+  <CardBody>
+    <Grid cols="2" gap="6">
+      <Metric
+        label="Checks/day for others"
+        value={monitoringForOthers.toLocaleString()}
+        variant="card"
+        size="md"
+        color="primary"
+      />
+      <Metric
+        label="Checks/day from others"
+        value={receivingFromOthers.toLocaleString()}
+        variant="card"
+        size="md"
+        color="primary"
+      />
+    </Grid>
+
+    <!-- Monitor Ratio Progress -->
+    <CardBody>
+      <ProgressBar
+        label="Monitor Ratio"
+        value={Math.round(monitorRatio * 100)}
+        variant={getProgressVariant(monitorRatio)}
+        valueText={`${Math.round(monitorRatio * 100)}%`}
+        size="lg"
+      />
+    </CardBody>
+    <Grid cols="2">
+      <!-- Peer Allocation -->
+      <Card variant="outlined">
+        <CardBody padding="sm">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-primary font-medium">Max Peer Allocation</span>
+            <span class="text-accent-primary text-lg font-bold"
+              >{maxPeerAllocation} peers</span
+            >
+          </div>
+          <p class="text-secondary text-sm">
+            {
+              contributionScore >= 80
+                ? "Excellent contribution! You can assign the maximum number of peers."
+                : contributionScore >= 60
+                  ? "Good contribution. Consider monitoring more to increase your allocation."
+                  : "Low contribution. Monitor more services to increase your peer allocation."
+            }
+          </p>
+        </CardBody>
+      </Card>
+
+      <!-- Contribution Score -->
+      <Card variant="outlined">
+        <CardBody padding="sm">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-primary font-medium">Contribution Score</span>
+            <span class="text-accent-primary text-lg font-bold"
+              >{contributionScore}/100</span
+            >
+          </div>
+          <p class="text-secondary text-sm">
+            Higher scores unlock more peer allocations and priority during
+            network congestion.
+          </p>
+        </CardBody>
+      </Card>
+    </Grid>
+
+    <!-- Contribution Impact Warning -->
+    {
+      monitorRatio < 0.5 && (
+        <Alert variant="error" class="mb-6">
+          <div>
+            <Heading as="h4" size="base" class="mb-2">
+              Low Contribution Warning
+            </Heading>
+            <p class="text-sm mb-3">
+              Your Monitor Ratio is below optimal levels. This means you're
+              consuming more monitoring resources than you're contributing to
+              the network.
+            </p>
+            <ul class="space-y-1 text-sm">
+              <li>• Reduced peer allocation for your services</li>
+              <li>• Lower priority in peer selection</li>
+              <li>• Potential service quality limitations</li>
+            </ul>
+          </div>
+        </Alert>
+      )
+    }
+
+    <!-- Contribution Recommendations -->
+    {
+      monitorRatio < 0.8 && (
+        <Alert variant="warning">
+          <div>
+            <Heading as="h4" size="base" class="mb-2">
+              Improve Your Monitor Ratio
+            </Heading>
+            <ul class="space-y-1 text-sm">
+              <li>• Increase bandwidth allocation for peer monitoring</li>
+              <li>• Join public clusters to contribute to the network</li>
+              <li>• Maintain stable uptime for reliable peer service</li>
+            </ul>
+          </div>
+        </Alert>
+      )
+    }
+  </CardBody>
+</Card>

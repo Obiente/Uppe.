@@ -1,5 +1,5 @@
 [package]
-name = "service"
+name = "uppe-service"
 authors = [ 
     "veryCrunchy",
     "Jayden Andrews"

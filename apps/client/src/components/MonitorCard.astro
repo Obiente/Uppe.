@@ -1,0 +1,36 @@
+---
+import Card from './ui/Card.astro';
+import Grid from './ui/Grid.astro';
+import Metric from './ui/Metric.astro';
+import MonitorCardHeader from './ui/MonitorCardHeader.astro';
+import MonitorCardFooter from './ui/MonitorCardFooter.astro';
+
+interface Props {
+	title: string;
+	url: string;
+	status: 'online' | 'offline' | 'warning';
+	uptime: number;
+	responseTime: number;
+	lastCheck: string;
+	region: string;
+}
+
+const { title, url, status, uptime, responseTime, lastCheck, region } = Astro.props;
+---
+
+<Card class={`p-6 border-status-${status}/20 bg-status-${status}/10 hover:bg-surface-elevated transition-colors`}>
+	<MonitorCardHeader 
+		title={title}
+		url={url}
+		status={status}
+		region={region}
+	/>
+
+	<Grid cols="3" class="gap-4 text-sm">
+		<Metric label="Status" value={status.toUpperCase()} size="sm" />
+		<Metric label="Uptime" value={`${uptime}%`} size="sm" />
+		<Metric label="Response" value={`${responseTime}ms`} size="sm" />
+	</Grid>
+
+	<MonitorCardFooter lastCheck={lastCheck} />
+</Card>

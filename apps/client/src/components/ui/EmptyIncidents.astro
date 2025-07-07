@@ -1,0 +1,25 @@
+---
+import { Icon } from './index';
+
+interface Props {
+	class?: string;
+}
+
+const { class: className } = Astro.props;
+
+const containerClasses = `text-center py-12 ${className || ''}`;
+const iconContainerClasses = 'bg-status-success/20 p-6 rounded-2xl w-20 h-20 mx-auto mb-6 flex items-center justify-center';
+const iconClasses = 'w-10 h-10 text-status-success';
+const titleClasses = 'text-primary font-semibold text-lg mb-2';
+const messageClasses = 'text-secondary';
+const statusClasses = 'text-status-success text-sm mt-2 font-medium';
+---
+
+<div class={containerClasses}>
+	<div class={iconContainerClasses}>
+		<Icon icon="SUCCESS" class="text-status-success" />
+	</div>
+	<h3 class={titleClasses}>No Recent Incidents</h3>
+	<p class={messageClasses}>No incidents reported in the last 24 hours</p>
+	<p class={statusClasses}>🎉 All systems are operational</p>
+</div>

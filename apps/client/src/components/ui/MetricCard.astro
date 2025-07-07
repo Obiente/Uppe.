@@ -1,10 +1,12 @@
 ---
+import type { ICONS } from '$lib/design-system';
 import Card from './Card.astro';
+import Icon from './Icon.astro';
 
 export interface Props {
   title: string;
   value: string;
-  icon: keyof typeof iconMap;
+  icon: keyof typeof ICONS; // Iconify icon name
   change?: string;
   changeType?: 'positive' | 'negative' | 'neutral';
   variant?: 'default' | 'gradient' | 'minimal';
@@ -12,13 +14,6 @@ export interface Props {
 }
 
 const { title, value, icon, change, changeType = 'neutral', variant = 'default', class: className = '' } = Astro.props;
-
-const iconMap = {
-  'lightning': 'M13 10V3L4 14h7v7l9-11h-7z',
-  'chart': 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z',
-  'alert': 'M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z',
-  'network': 'M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0'
-};
 
 const changeColorMap = {
   'positive': 'text-status-success',
@@ -34,7 +29,7 @@ const variantStyles = {
   },
   gradient: {
     cardVariant: 'elevated' as const,
-    iconBg: 'bg-gradient-to-br from-interactive-primary to-accent-primary',
+    iconBg: 'bg-interactive-primary',
     iconColor: 'text-inverse'
   },
   minimal: {
@@ -48,12 +43,10 @@ const style = variantStyles[variant];
 ---
 
 <Card variant={style.cardVariant} class={className}>
-  <div class="p-6">
+  <div class="p-4">
     <div class="flex items-center justify-between mb-4">
-      <div class={`${style.iconBg} p-3 rounded-xl shadow-lg`}>
-        <svg class={`w-6 h-6 ${style.iconColor}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d={iconMap[icon as keyof typeof iconMap]}></path>
-        </svg>
+      <div class={`${style.iconBg} w-12 h-12 p-2 rounded-xl shadow-lg flex items-center justify-center`}>
+        <Icon icon={icon} class={`w-6 h-6 ${style.iconColor}`} />
       </div>
       <div class="text-right">
         <div class="text-3xl font-bold text-primary mb-1">{value}</div>

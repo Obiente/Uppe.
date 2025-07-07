@@ -13,16 +13,16 @@ const {
   ...rest
 } = Astro.props;
 
-const baseClasses = "inline-flex items-center font-medium rounded-full transition-all duration-200";
+const baseClasses = "inline-flex items-center font-medium rounded-full transition-all duration-200 flex-shrink-0";
 
 const variantClasses = {
   primary: "bg-primary text-inverse",
-  secondary: "bg-bg-secondary border border-border-subtle text-primary",
+  secondary: "bg-bg-secondary border border-primary text-primary",
   success: "bg-status-success text-inverse",
   warning: "bg-status-warning text-inverse",
   error: "bg-status-error text-inverse",
   info: "bg-status-info text-inverse",
-  neutral: "bg-bg-elevated text-secondary border border-border-primary"
+  neutral: "bg-bg-elevated text-secondary border border-primary"
 };
 
 // Size classes with refined spacing

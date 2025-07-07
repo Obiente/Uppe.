@@ -5,9 +5,12 @@
   "compilerOptions": {
 		"baseUrl": ".",
 		"paths": {
+			"$components": ["src/components"],
 			"$components/*": ["src/components/*"],
+			"$lib/*": ["src/lib/*"],
+			"$ui": ["src/components/ui"],
 			"$layouts/*": ["src/layouts/*"],
-			"$data/*": ["src/data/*"],
+			"$mock/*": ["src/mock/*"],
 			"$store": ["src/store.ts"]
 		},
 	}

@@ -1,115 +1,100 @@
-/* Theme utility classes that map to our design system */
+@theme {
+  --color-bg-primary: var(--color-bg-primary);
+  --color-bg-secondary: var(--color-bg-secondary);
+  --color-bg-tertiary: var(--color-bg-tertiary);
+  --color-bg-elevated: var(--color-bg-elevated);
+  --color-bg-overlay: var(--color-bg-overlay);
 
-@layer utilities {
-  /* Background colors */
-  .bg-surface-primary {
-    background-color: var(--color-bg-primary);
-  }
-  .bg-surface-secondary {
-    background-color: var(--color-bg-secondary);
-  }
-  .bg-surface-tertiary {
-    background-color: var(--color-bg-tertiary);
-  }
-  .bg-surface-elevated {
-    background-color: var(--color-bg-elevated);
-  }
-  .bg-surface-overlay {
-    background-color: var(--color-bg-overlay);
-  }
-  
-  /* Text colors */
-  .text-primary {
-    color: var(--color-text-primary);
-  }
-  .text-secondary {
-    color: var(--color-text-secondary);
-  }
-  .text-tertiary {
-    color: var(--color-text-tertiary);
-  }
-  .text-inverse {
-    color: var(--color-text-inverse);
-  }
-  .text-disabled {
-    color: var(--color-text-disabled);
-  }
-  
-  /* Border colors */
-  .border-border-subtle {
-    border-color: var(--color-border-subtle);
-  }
-  .border-border-default {
-    border-color: var(--color-border-default);
-  }
-  .border-border-strong {
-    border-color: var(--color-border-strong);
-  }
-  .border-border-focus {
-    border-color: var(--color-border-focus);
-  }
-  
-  /* Accent colors */
-  .bg-accent-primary {
-    background-color: var(--color-accent-primary);
-  }
-  .bg-accent-primary-hover {
-    background-color: var(--color-accent-primary-hover);
-  }
-  .bg-accent-secondary {
-    background-color: var(--color-accent-secondary);
-  }
-  .bg-accent-secondary-hover {
-    background-color: var(--color-accent-secondary-hover);
-  }
-  .text-accent-primary {
-    color: var(--color-accent-primary);
-  }
-  .text-accent-secondary {
-    color: var(--color-accent-secondary);
-  }
-  
-  /* Status colors */
-  .bg-status-online {
-    background-color: var(--color-status-online);
-  }
-  .bg-status-warning {
-    background-color: var(--color-status-warning);
-  }
-  .bg-status-error {
-    background-color: var(--color-status-error);
-  }
-  .bg-status-info {
-    background-color: var(--color-status-info);
-  }
-  .bg-status-neutral {
-    background-color: var(--color-status-neutral);
-  }
-  .text-status-online {
-    color: var(--color-status-online);
-  }
-  .text-status-warning {
-    color: var(--color-status-warning);
-  }
-  .text-status-error {
-    color: var(--color-status-error);
-  }
-  .text-status-info {
-    color: var(--color-status-info);
-  }
-  .text-status-neutral {
-    color: var(--color-status-neutral);
-  }
-  .border-status-online {
-    border-color: var(--color-status-online);
-  }
-  .border-status-warning {
-    border-color: var(--color-status-warning);
-  }
-  .border-status-error {
-    border-color: var(--color-status-error);
-  }
-  .border-status-info {
-    border-color: var(--color-status-info);
-  }
+  --color-text-primary: var(--color-text-primary);
+  --color-text-secondary: var(--color-text-secondary);
+  --color-text-tertiary: var(--color-text-tertiary);
+  --color-text-inverse: var(--color-text-inverse);
+
+  --color-border-primary: var(--color-border-primary);
+  --color-border-secondary: var(--color-border-secondary);
+  --color-border-focus: var(--color-border-focus);
+
+  --color-interactive-primary: var(--color-interactive-primary);
+  --color-interactive-primary-hover: var(--color-interactive-primary-hover);
+  --color-interactive-secondary: var(--color-interactive-secondary);
+  --color-interactive-secondary-hover: var(--color-interactive-secondary-hover);
+  --color-interactive-danger: var(--color-interactive-danger);
+  --color-interactive-danger-hover: var(--color-interactive-danger-hover);
+
+  --color-status-success: var(--color-status-success);
+  --color-status-warning: var(--color-status-warning);
+  --color-status-error: var(--color-status-error);
+  --color-status-info: var(--color-status-info);
+  --color-status-neutral: var(--color-status-neutral);
+
+  --color-accent-primary: var(--color-accent-primary);
+  --color-accent-secondary: var(--color-accent-secondary);
+  --color-accent-tertiary: var(--color-accent-tertiary);
+}
+
+@utility bg-* {
+  background-color: --value(--color-bg- *);
+}
+
+@utility text-* {
+  color: --value(--color-text- *);
+}
+
+@utility border-* {
+  border-color: --value(--color-border- *);
+}
+
+@utility bg-interactive-* {
+  background-color: --value(--color-interactive- *);
+}
+
+@utility text-interactive-* {
+  color: --value(--color-interactive- *);
+}
+
+@utility bg-status-* {
+  background-color: --value(--color-status- *);
+}
+
+@utility text-status-* {
+  color: --value(--color-status- *);
+}
+
+@utility bg-accent-* {
+  background-color: --value(--color-accent- *);
+}
+
+@utility text-accent-* {
+  color: --value(--color-accent- *);
+}
+
+/* Icon utilities */
+@utility icon-xs {
+  width: 0.75rem;
+  height: 0.75rem;
+}
+
+@utility icon-sm {
+  width: 1rem;
+  height: 1rem;
+}
+
+@utility icon-md {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+@utility icon-lg {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+@utility icon-xl {
+  width: 2rem;
+  height: 2rem;
+}
+
+@utility icon-2xl {
+  width: 2.5rem;
+  height: 2.5rem;
 }

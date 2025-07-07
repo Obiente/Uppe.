@@ -1,0 +1,19 @@
+---
+import { Icon } from './index';
+import { ICONS } from '../../lib/design-system/icons';
+
+interface Props {
+  class?: string;
+}
+
+const { class: className = '' } = Astro.props;
+---
+
+<div class={`text-center py-12 ${className}`}>
+  <div class="bg-status-success/20 p-6 rounded-2xl w-20 h-20 mx-auto mb-6 flex items-center justify-center">
+    <Icon icon="SUCCESS" class="text-status-success" />
+  </div>
+  <h3 class="text-primary font-semibold text-lg mb-2">No Recent Alerts</h3>
+  <p class="text-secondary">All systems are running smoothly</p>
+  <p class="text-status-success text-sm mt-2 font-medium">✨ Everything looks great!</p>
+</div>

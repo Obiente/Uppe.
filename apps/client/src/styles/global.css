@@ -1,3 +1,7 @@
 @import "tailwindcss";
 @import "./animations.css";
 @import "./theme-utilities.css";
+@import url('https://fonts.googleapis.com/css2?family=Mona+Sans:ital,wdth,wght@0,75..125,200..900;1,75..125,200..900&display=swap');
+* {
+    font-family: 'Mona Sans', sans-serif;
+  }

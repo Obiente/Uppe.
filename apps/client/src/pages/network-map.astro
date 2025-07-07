@@ -1,0 +1,129 @@
+---
+import Header from "$components/Header.astro";
+import Layout from "$layouts/Layout.astro";
+import { 
+  Section, 
+  Grid, 
+  Card, 
+  CardBody, 
+  Heading, 
+  Paragraph, 
+  MetricCard,
+  MapLegend,
+  WorldMap,
+  PeerListItem,
+  HealthMetric
+} from "$ui";
+
+const legendItems = [
+  { status: 'online' as const, label: 'Online' },
+  { status: 'warning' as const, label: 'Slow' },
+  { status: 'error' as const, label: 'Offline' }
+];
+
+const topPeers = [
+  { peerId: 'peer_a1b2c3d4', location: 'Tokyo, Japan', checksPerDay: 12450, status: 'online' as const },
+  { peerId: 'peer_e5f6g7h8', location: 'New York, USA', checksPerDay: 11230, status: 'online' as const },
+  { peerId: 'peer_i9j0k1l2', location: 'London, UK', checksPerDay: 10890, status: 'online' as const },
+  { peerId: 'peer_m3n4o5p6', location: 'Sydney, Australia', checksPerDay: 9450, status: 'online' as const },
+  { peerId: 'peer_q7r8s9t0', location: 'São Paulo, Brazil', checksPerDay: 8760, status: 'warning' as const }
+];
+
+const healthMetrics = [
+  { label: 'Consensus Rate', value: 96, unit: '%', variant: 'success' as const },
+  { label: 'Avg Latency', value: 78, unit: 'ms', variant: 'warning' as const },
+  { label: 'Redundancy', value: 8.5, unit: 'x', variant: 'primary' as const },
+  { label: 'Churn Rate', value: 1.2, unit: '%', variant: 'success' as const }
+];
+---
+
+<Layout title="Network Map - Uppe." description="Visualize the P2P monitoring network">
+  <Header title="Uppe." />
+  
+  <main class="min-h-screen">
+    <Section>
+      <Heading class="mb-2">Network Map</Heading>
+      <Paragraph class="text-secondary">Real-time visualization of the Uppe. monitoring network</Paragraph>
+    </Section>
+
+    <!-- Network Stats -->
+    <Section>
+      <Grid cols="4">
+        <MetricCard 
+          title="Total Peers" 
+          value="1,823"
+          icon="NETWORK"
+        />
+        <MetricCard 
+          title="Online Peers" 
+          value="1,647"
+          icon="ANALYTICS"
+          changeType="positive"
+        />
+        <MetricCard 
+          title="Checks/Hour" 
+          value="2.4M"
+          icon="PERFORMANCE"
+        />
+        <MetricCard 
+          title="Coverage" 
+          value="98.7%"
+          icon="GLOBAL"
+        />
+      </Grid>
+    </Section>
+
+    <!-- Network Map -->
+    <Section>
+      <Card class="mb-8">
+        <CardBody>
+          <div class="flex items-center justify-between mb-6">
+            <Heading level={2}>Global Network</Heading>
+            <MapLegend items={legendItems} />
+          </div>
+
+          <WorldMap />
+        </CardBody>
+      </Card>
+    </Section>
+
+    <!-- Peer Details -->
+    <Section>
+      <Grid cols="2">
+        <!-- Top Contributors -->
+        <Card>
+          <CardBody>
+            <Heading level={3} class="mb-4">Top Contributors</Heading>
+            <div class="space-y-4">
+              {topPeers.map(peer => (
+                <PeerListItem 
+                  peerId={peer.peerId}
+                  location={peer.location}
+                  checksPerDay={peer.checksPerDay}
+                  status={peer.status}
+                />
+              ))}
+            </div>
+          </CardBody>
+        </Card>
+
+        <!-- Network Health -->
+        <Card>
+          <CardBody>
+            <Heading level={3} class="mb-4">Network Health</Heading>
+            <div class="space-y-4">
+              {healthMetrics.map(metric => (
+                <HealthMetric 
+                  label={metric.label}
+                  value={metric.value}
+                  unit={metric.unit}
+                  variant={metric.variant}
+                />
+              ))}
+            </div>
+          </CardBody>
+        </Card>
+      </Grid>
+    </Section>
+  </main>
+</Layout>

@@ -1,0 +1,277 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Header from '../../components/Header.astro';
+import UptimeChart from '../../components/UptimeChart.astro';
+import StatusCard from '../../components/StatusCard.astro';
+import IncidentList from '../../components/IncidentList.astro';
+import AlertCenter from '../../components/AlertCenter.astro';
+import NetworkStatus from '../../components/NetworkStatus.astro';
+import GlobalPingMap from '../../components/GlobalPingMap.astro';
+import { 
+  Section, 
+  Grid, 
+  Card, 
+  CardBody, 
+  Heading, 
+  Paragraph, 
+  Badge, 
+  StatusBadge, 
+  Metric,
+  MetricCard,
+  Button
+} from "../../components/ui";
+
+export async function getStaticPaths() {
+  // In a real app, this would fetch from your API or database
+  return [
+    { params: { id: '1' } },
+    { params: { id: '2' } },
+    { params: { id: '3' } }
+  ];
+}
+
+const { id } = Astro.params;
+
+// Mock service data - in real app, this would come from API
+const serviceData = {
+	id: id,
+	name: 'Production API',
+	url: 'https://api.example.com',
+	status: 'online',
+	uptime: 99.97,
+	avgResponseTime: 142,
+	lastCheck: '2024-01-15T10:30:00Z',
+	monitoringPeers: 12,
+	checkInterval: 60,
+	created: '2024-01-01T00:00:00Z',
+	isPublic: true,
+	publicSlug: 'production-api',
+	tags: ['production', 'api', 'critical'],
+	notifications: {
+		email: true,
+		slack: true,
+		webhook: true
+	}
+};
+
+const uptimeData = [99.5, 99.8, 99.2, 99.9, 99.6, 99.7, 99.9, 99.8, 99.5, 99.3, 99.7, 99.8, 99.9, 99.6, 99.4, 99.7, 99.8, 99.9, 99.5, 99.6, 99.8, 99.7, 99.9, 99.8];
+const hours = Array.from({ length: 24 }, (_, i) => i);
+
+const recentIncidents = [
+	{
+		id: '1',
+		title: 'API Response Timeout',
+		description: 'Increased response times detected from multiple peers',
+		status: 'resolved' as const,
+		time: '2024-01-12T14:23:00Z',
+		duration: '24 minutes'
+	},
+	{
+		id: '2',
+		title: 'Service Unreachable',
+		description: 'Service completely unreachable from EU peers',
+		status: 'resolved' as const,
+		time: '2024-01-10T08:15:00Z',
+		duration: '8 minutes'
+	}
+];
+
+const peerData = [
+	{ id: '1', location: 'New York, US', latitude: 40.7128, longitude: -74.0060, ping: 45, status: 'online' as const, lastCheck: '2024-01-15T10:30:00Z' },
+	{ id: '2', location: 'London, UK', latitude: 51.5074, longitude: -0.1278, ping: 78, status: 'online' as const, lastCheck: '2024-01-15T10:30:00Z' },
+	{ id: '3', location: 'Tokyo, JP', latitude: 35.6762, longitude: 139.6503, ping: 125, status: 'online' as const, lastCheck: '2024-01-15T10:30:00Z' },
+	{ id: '4', location: 'Sydney, AU', latitude: -33.8688, longitude: 151.2093, ping: 189, status: 'timeout' as const, lastCheck: '2024-01-15T10:29:00Z' },
+	{ id: '5', location: 'São Paulo, BR', latitude: -23.5505, longitude: -46.6333, ping: 156, status: 'online' as const, lastCheck: '2024-01-15T10:30:00Z' }
+];
+
+const alerts = [
+	{
+		id: '1',
+		type: 'slow' as const,
+		monitor: serviceData.name,
+		message: 'Response time above threshold (>200ms)',
+		timestamp: '2024-01-15T10:25:00Z',
+		severity: 'medium' as const,
+		acknowledged: false
+	},
+	{
+		id: '2',
+		type: 'recovered' as const,
+		monitor: serviceData.name,
+		message: 'Service has recovered from timeout',
+		timestamp: '2024-01-15T10:20:00Z',
+		severity: 'low' as const,
+		acknowledged: true
+	}
+];
+
+const monitorRatio = {
+	contributing: 85,
+	consuming: 42,
+	ratio: 2.02,
+	status: 'excellent'
+};
+---
+
+<Layout title={`${serviceData.name} - Service Details`}>
+	<Header />
+	
+	<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+		<!-- Service Header -->
+		<Section>
+			<div class="flex items-center justify-between mb-4">
+				<div>
+					<div class="flex items-center gap-3 mb-2">
+						<Heading level={1}>{serviceData.name}</Heading>
+						<div class="flex items-center gap-2">
+							<StatusBadge status={serviceData.status as 'online' | 'offline' | 'degraded' | 'maintenance' | 'unknown'} />
+						</div>
+						{serviceData.isPublic && (						<Badge variant="primary">Public</Badge>
+					)}
+				</div>
+				<Paragraph class="text-secondary">{serviceData.url}</Paragraph>
+			</div>
+				<div class="flex items-center gap-3">
+					<Button variant="secondary" href={`/service/${serviceData.id}/edit`}>
+						Edit Service
+					</Button>
+					{serviceData.isPublic && (
+						<Button variant="primary" href={`/public/${serviceData.publicSlug}`} target="_blank">
+							View Public Page
+						</Button>
+					)}
+				</div>
+			</div>
+			
+			<!-- Service Tags -->
+			<div class="flex items-center gap-2 mb-6">
+				{serviceData.tags.map(tag => (
+					<Badge variant="secondary">{tag}</Badge>
+				))}
+			</div>
+		</Section>
+
+		<!-- Key Metrics -->
+		<Section>
+			<Grid cols="4">
+				<MetricCard 
+					title="Current Status" 
+					value={serviceData.status}
+					icon="ANALYTICS"
+					changeType="neutral"
+				/>
+				<MetricCard 
+					title="Uptime (24h)" 
+					value={`${serviceData.uptime}%`}
+					icon="ANALYTICS"
+					changeType="positive"
+				/>
+				<MetricCard 
+					title="Response Time" 
+					value={`${serviceData.avgResponseTime}ms`}
+					icon="PERFORMANCE"
+					changeType="neutral"
+				/>
+				<MetricCard 
+					title="Monitoring Peers" 
+					value={serviceData.monitoringPeers.toString()}
+					icon="ANALYTICS"
+					changeType="positive"
+				/>
+			</Grid>
+		</Section>
+
+		<!-- Charts and Network Status -->
+		<Section>
+			<Grid cols="3">
+				<div class="lg:col-span-2">
+					<UptimeChart hours={hours} uptimeData={uptimeData} />
+				</div>
+				<div>
+					<NetworkStatus 
+						connectedPeers={serviceData.monitoringPeers - 1}
+						totalPeers={serviceData.monitoringPeers}
+						networkHealth={95}
+						myNodeId="peer-123"
+						bandwidthUsed={42}
+						bandwidthLimit={100}
+						checksPerformedToday={1247}
+						checksReceivedToday={856}
+					/>
+				</div>
+			</Grid>
+		</Section>
+
+		<!-- Global Peer Map -->
+		<Section>
+			<GlobalPingMap peerData={peerData} targetUrl={serviceData.url} />
+		</Section>
+
+		<!-- Incidents and Alerts -->
+		<Section>
+			<Grid cols="2">
+				<IncidentList recentIncidents={recentIncidents} />
+				<AlertCenter alerts={alerts} />
+			</Grid>
+		</Section>
+
+		<!-- Service Configuration -->
+		<Section>
+			<Grid cols="2">
+				<Card>
+					<CardBody>
+						<Heading level={3} class="mb-4">Service Configuration</Heading>
+						<div class="space-y-4">
+							<div class="flex justify-between items-center">
+								<span class="text-secondary">Check Interval</span>
+								<span class="text font-medium">{serviceData.checkInterval}s</span>
+							</div>
+							<div class="flex justify-between items-center">
+								<span class="text-secondary">Created</span>
+								<span class="text font-medium">{new Date(serviceData.created).toLocaleDateString()}</span>
+							</div>
+							<div class="flex justify-between items-center">
+								<span class="text-secondary">Public Access</span>
+								<Badge variant={serviceData.isPublic ? "success" : "secondary"}>
+									{serviceData.isPublic ? 'Enabled' : 'Disabled'}
+								</Badge>
+							</div>
+							{serviceData.isPublic && (
+								<div class="flex justify-between items-center">
+									<span class="text-secondary">Public Slug</span>
+									<span class="text font-medium">{serviceData.publicSlug}</span>
+								</div>
+							)}
+						</div>
+					</CardBody>
+				</Card>
+
+				<Card>
+					<CardBody>
+						<Heading level={3} class="mb-4">Notification Settings</Heading>
+						<div class="space-y-4">
+							<div class="flex justify-between items-center">
+								<span class="text-secondary">Email Alerts</span>
+								<Badge variant={serviceData.notifications.email ? "success" : "secondary"}>
+									{serviceData.notifications.email ? 'Enabled' : 'Disabled'}
+								</Badge>
+							</div>
+							<div class="flex justify-between items-center">
+								<span class="text-secondary">Slack Notifications</span>
+								<Badge variant={serviceData.notifications.slack ? "success" : "secondary"}>
+									{serviceData.notifications.slack ? 'Enabled' : 'Disabled'}
+								</Badge>
+							</div>
+							<div class="flex justify-between items-center">
+								<span class="text-secondary">Webhook Alerts</span>
+								<Badge variant={serviceData.notifications.webhook ? "success" : "secondary"}>
+									{serviceData.notifications.webhook ? 'Enabled' : 'Disabled'}
+								</Badge>
+							</div>
+						</div>
+					</CardBody>
+				</Card>
+			</Grid>
+		</Section>
+	</main>
+</Layout>

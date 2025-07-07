@@ -1,0 +1,90 @@
+---
+import Icon from "./Icon.astro";
+import { ICONS } from "../../lib/design-system/icons";
+
+interface Props {
+  severity: "high" | "medium" | "low";
+  size?: "sm" | "md" | "lg";
+  class?: string;
+}
+
+const { severity, size = "sm", class: className = "" } = Astro.props;
+
+const getSeverityStyles = (severity: string) => {
+  switch (severity) {
+    case "high":
+      return {
+        text: "text-status-error",
+        bg: "bg-status-error/10",
+        border: "border-status-error/20",
+      };
+    case "medium":
+      return {
+        text: "text-status-warning",
+        bg: "bg-status-warning/10",
+        border: "border-status-warning/20",
+      };
+    case "low":
+      return {
+        text: "text-accent-primary",
+        bg: "bg-accent-primary/10",
+        border: "border-accent-primary/20",
+      };
+    default:
+      return {
+        text: "text-secondary",
+        bg: "bg-surface-secondary",
+        border: "border-primary",
+      };
+  }
+};
+
+const getSeverityIcon = (severity: string): keyof typeof ICONS => {
+  switch (severity) {
+    case "high":
+      return "WARNING";
+    case "medium":
+      return "INFO";
+    case "low":
+      return "DECREASE";
+    default:
+      return "INFO";
+  }
+};
+
+const getSizeClasses = (size: string) => {
+  switch (size) {
+    case "sm":
+      return {
+        container: "px-2 py-1 h-min text-xs",
+      };
+    case "md":
+      return {
+        container: "px-3 py-1.5 h-min text-sm",
+      };
+    case "lg":
+      return {
+        container: "px-4 py-2 h-min text-base",
+      };
+    default:
+      return {
+        container: "px-2 h-min py-1 text-xs",
+      };
+  }
+};
+
+const severityStyles = getSeverityStyles(severity);
+const sizeClasses = getSizeClasses(size);
+---
+
+<div
+  class={`
+  ${severityStyles.bg} ${severityStyles.border} ${severityStyles.text}
+  ${sizeClasses.container}
+  rounded-md border flex items-center gap-2 font-medium
+  ${className}
+`}
+>
+  <span class="uppercase tracking-wide">{severity}</span>
+  <Icon icon={getSeverityIcon(severity)}  />
+</div>

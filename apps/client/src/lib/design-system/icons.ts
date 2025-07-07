@@ -16,6 +16,7 @@ export const ICONS = {
   CONFIRM: "heroicons:check",
   CLOSE: "heroicons:x-mark",
   STOP: "heroicons:pause",
+  MENU: "heroicons:bars-3",
 
   // Status & Indicators
   SUCCESS: "heroicons:check-circle",

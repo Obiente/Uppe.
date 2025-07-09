@@ -1,7 +1,6 @@
 //! Tests for HTTP request handling
 
-use peerup::handlers::handle_probe_request;
-use peerup::protocol::ProbeRequest;
+use peerup::{handlers::handle_probe_request, protocol::ProbeRequest};
 
 #[tokio::test]
 async fn test_handle_probe_request_basic() {
@@ -16,6 +15,6 @@ async fn test_handle_probe_request_basic() {
 
     // This test might fail if httpbin.org is not available, so we'll just check
     // that the function doesn't panic
-    let _response = handle_probe_request(request).await;
+    let _response = handle_probe_request(request,).await;
     // If the function returns, the test passes (no panic)
 }

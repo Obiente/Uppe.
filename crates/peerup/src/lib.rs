@@ -19,10 +19,10 @@ pub use node::{NodeConfig, PeerNode};
 pub use protocol::{ProbeCodec, ProbeRequest, ProbeResponse, PROBE_PROTOCOL};
 
 /// PeerUP result type using anyhow for error handling
-pub type Result<T> = anyhow::Result<T>;
+pub type Result<T,> = anyhow::Result<T,>;
 
 /// The version of the PeerUP protocol
 pub const PROTOCOL_VERSION: &str = "1.0";
 
 /// Default port range for PeerUP nodes
-pub const DEFAULT_PORT_RANGE: (u16, u16) = (9000, 9010);
+pub const DEFAULT_PORT_RANGE: (u16, u16,) = (9000, 9010,);

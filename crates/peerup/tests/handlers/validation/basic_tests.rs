@@ -1,7 +1,6 @@
 //! Basic validation tests
 
-use peerup::handlers::validate_probe_request;
-use peerup::protocol::ProbeRequest;
+use peerup::{handlers::validate_probe_request, protocol::ProbeRequest};
 
 #[test]
 fn test_validate_probe_request_valid() {
@@ -14,7 +13,7 @@ fn test_validate_probe_request_valid() {
         requested_by: "peer123".to_string(),
     };
 
-    let result = validate_probe_request(&request);
+    let result = validate_probe_request(&request,);
     assert!(result.is_ok(), "Valid request should pass validation");
 }
 
@@ -29,6 +28,6 @@ fn test_validate_probe_request_invalid_method() {
         requested_by: "peer123".to_string(),
     };
 
-    let result = validate_probe_request(&request);
+    let result = validate_probe_request(&request,);
     assert!(result.is_err(), "Invalid HTTP method should fail validation");
 }

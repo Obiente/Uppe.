@@ -3,20 +3,19 @@
 use std::time::Duration;
 
 use anyhow::Result;
-use peerup::node::NodeConfig;
-use peerup::{PeerNode, ProbeRequest};
+use peerup::{node::NodeConfig, PeerNode, ProbeRequest};
 use tokio::time::sleep;
 
 #[tokio::main]
-async fn main() -> Result<()> {
+async fn main() -> Result<(),> {
     // Node 1 config: fixed port
-    let config1 = NodeConfig::builder().port_range((4001, 4001)).build();
-    let node1 = PeerNode::with_config(config1).await?;
+    let config1 = NodeConfig::builder().port_range((4001, 4001,),).build();
+    let node1 = PeerNode::with_config(config1,).await?;
     let addr1 = node1.swarm.listeners().next().cloned();
 
     // Node 2 config: fixed port
-    let config2 = NodeConfig::builder().port_range((4002, 4002)).build();
-    let mut node2 = PeerNode::with_config(config2).await?;
+    let config2 = NodeConfig::builder().port_range((4002, 4002,),).build();
+    let mut node2 = PeerNode::with_config(config2,).await?;
     let addr2 = node2.swarm.listeners().next().cloned();
 
     // Print peer IDs and addresses
@@ -24,13 +23,13 @@ async fn main() -> Result<()> {
     println!("Node2: {} {:?}", node2.peer_id(), addr2);
 
     // Node2 dials Node1
-    if let Some(addr1) = addr1 {
-        node2.swarm.dial(addr1.clone()).expect("Dial failed");
-    println!("Node2 dialing Node1 at {addr1:?}");
+    if let Some(addr1,) = addr1 {
+        node2.swarm.dial(addr1.clone(),).expect("Dial failed",);
+        println!("Node2 dialing Node1 at {addr1:?}");
     }
 
     // Let the nodes discover each other
-    sleep(Duration::from_secs(1)).await;
+    sleep(Duration::from_secs(1,),).await;
 
     // Example: Node2 sends a probe request to Node1 (stub, see note)
     let probe = ProbeRequest {
@@ -48,12 +47,12 @@ async fn main() -> Result<()> {
     println!("Node2 would send probe to Node1: {probe:?} -> {}", node1.peer_id());
 
     // Run both nodes for a short time to process events
-    let _n1 = tokio::spawn(async move { node1.run().await });
-    let _n2 = tokio::spawn(async move { node2.run().await });
+    let _n1 = tokio::spawn(async move { node1.run().await },);
+    let _n2 = tokio::spawn(async move { node2.run().await },);
 
-    sleep(Duration::from_secs(5)).await;
+    sleep(Duration::from_secs(5,),).await;
 
     // In a real test, you would shut down nodes gracefully
     println!("Done.");
-    Ok(())
+    Ok((),)
 }

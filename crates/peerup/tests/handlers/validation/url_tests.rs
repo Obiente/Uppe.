@@ -1,7 +1,6 @@
 //! URL validation tests
 
-use peerup::handlers::validate_probe_request;
-use peerup::protocol::ProbeRequest;
+use peerup::{handlers::validate_probe_request, protocol::ProbeRequest};
 
 #[test]
 fn test_validate_probe_request_invalid_url() {
@@ -14,7 +13,7 @@ fn test_validate_probe_request_invalid_url() {
         requested_by: "peer123".to_string(),
     };
 
-    let result = validate_probe_request(&request);
+    let result = validate_probe_request(&request,);
     assert!(result.is_err(), "Invalid URL scheme should fail validation");
 }
 
@@ -29,6 +28,6 @@ fn test_validate_probe_request_malformed_url() {
         requested_by: "peer123".to_string(),
     };
 
-    let result = validate_probe_request(&request);
+    let result = validate_probe_request(&request,);
     assert!(result.is_err(), "Malformed URL should fail validation");
 }

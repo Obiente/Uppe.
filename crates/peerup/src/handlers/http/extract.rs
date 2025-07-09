@@ -1,7 +1,7 @@
 //! HTTP response extraction and handling.
 
 /// Extract important response headers
-pub fn extract_response_headers(response: &reqwest::Response) -> Vec<(String, String)> {
+pub fn extract_response_headers(response: &reqwest::Response,) -> Vec<(String, String,),> {
     let mut headers = Vec::new();
 
     // Extract commonly useful headers
@@ -16,9 +16,9 @@ pub fn extract_response_headers(response: &reqwest::Response) -> Vec<(String, St
     ];
 
     for header_name in &header_names {
-        if let Some(value) = response.headers().get(*header_name) {
-            if let Ok(value_str) = value.to_str() {
-                headers.push((header_name.to_string(), value_str.to_string()));
+        if let Some(value,) = response.headers().get(*header_name,) {
+            if let Ok(value_str,) = value.to_str() {
+                headers.push((header_name.to_string(), value_str.to_string(),),);
             }
         }
     }

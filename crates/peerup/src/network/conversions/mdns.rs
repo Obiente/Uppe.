@@ -8,21 +8,21 @@ use libp2p::{mdns, PeerId};
 
 use crate::network::events::PeerUPEvent;
 
-impl From<mdns::Event> for PeerUPEvent {
-    fn from(event: mdns::Event) -> Self {
+impl From<mdns::Event,> for PeerUPEvent {
+    fn from(event: mdns::Event,) -> Self {
         match event {
-            mdns::Event::Discovered(list) => {
-                if let Some((peer_id, _)) = list.into_iter().next() {
-                    PeerUPEvent::PeerDiscovered(peer_id)
+            mdns::Event::Discovered(list,) => {
+                if let Some((peer_id, _,),) = list.into_iter().next() {
+                    PeerUPEvent::PeerDiscovered(peer_id,)
                 } else {
-                    PeerUPEvent::PeerDiscovered(PeerId::random())
+                    PeerUPEvent::PeerDiscovered(PeerId::random(),)
                 }
             },
-            mdns::Event::Expired(list) => {
-                if let Some((peer_id, _)) = list.into_iter().next() {
-                    PeerUPEvent::PeerRemoved(peer_id)
+            mdns::Event::Expired(list,) => {
+                if let Some((peer_id, _,),) = list.into_iter().next() {
+                    PeerUPEvent::PeerRemoved(peer_id,)
                 } else {
-                    PeerUPEvent::PeerRemoved(PeerId::random())
+                    PeerUPEvent::PeerRemoved(PeerId::random(),)
                 }
             },
         }

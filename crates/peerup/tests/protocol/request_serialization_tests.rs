@@ -9,13 +9,13 @@ fn test_probe_request_serialization() {
         target_url: "https://example.com".to_string(),
         method: "POST".to_string(),
         timeout: 5000,
-        headers: Some(vec![("Content-Type".to_string(), "application/json".to_string())]),
-        body: Some(r#"{"name": "John Doe"}"#.to_string()),
+        headers: Some(vec![("Content-Type".to_string(), "application/json".to_string(),)],),
+        body: Some(r#"{"name": "John Doe"}"#.to_string(),),
         requested_by: "peer123".to_string(),
     };
 
-    let serialized = serde_json::to_string(&probe_request).unwrap();
-    let deserialized: ProbeRequest = serde_json::from_str(&serialized).unwrap();
+    let serialized = serde_json::to_string(&probe_request,).unwrap();
+    let deserialized: ProbeRequest = serde_json::from_str(&serialized,).unwrap();
 
     assert_eq!(probe_request.target_url, deserialized.target_url);
     assert_eq!(probe_request.method, deserialized.method);
@@ -25,16 +25,16 @@ fn test_probe_request_serialization() {
 #[test]
 fn test_probe_request_with_headers() {
     let headers = vec![
-        ("Content-Type".to_string(), "application/json".to_string()),
-        ("Authorization".to_string(), "Bearer token123".to_string()),
-        ("User-Agent".to_string(), "PeerUP/1.0".to_string()),
+        ("Content-Type".to_string(), "application/json".to_string(),),
+        ("Authorization".to_string(), "Bearer token123".to_string(),),
+        ("User-Agent".to_string(), "PeerUP/1.0".to_string(),),
     ];
 
     let probe_request = ProbeRequest {
         target_url: "https://example.com".to_string(),
         method: "GET".to_string(),
         timeout: 5000,
-        headers: Some(headers),
+        headers: Some(headers,),
         body: None,
         requested_by: "peer123".to_string(),
     };

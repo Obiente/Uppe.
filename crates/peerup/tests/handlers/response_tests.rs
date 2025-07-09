@@ -5,12 +5,12 @@ use peerup::protocol::ProbeResponse;
 #[test]
 fn test_probe_response_fields() {
     let response = ProbeResponse {
-        status: Some(200),
+        status: Some(200,),
         duration: 150,
         error: None,
         probed_by: "peer456".to_string(),
         timestamp: 1234567890,
-        headers: Some(vec![("Content-Type".to_string(), "application/json".to_string())]),
+        headers: Some(vec![("Content-Type".to_string(), "application/json".to_string(),)],),
         body: None,
     };
 
@@ -27,7 +27,7 @@ fn test_probe_response_error() {
     let response = ProbeResponse {
         status: None,
         duration: 0,
-        error: Some("Connection timeout".to_string()),
+        error: Some("Connection timeout".to_string(),),
         probed_by: "peer456".to_string(),
         timestamp: 1234567890,
         headers: None,

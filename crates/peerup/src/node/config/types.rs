@@ -5,16 +5,16 @@
 use crate::DEFAULT_PORT_RANGE;
 
 /// Configuration options for a PeerUP node
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone,)]
 pub struct NodeConfig {
     /// The port range to listen on
-    pub port_range: (u16, u16),
+    pub port_range: (u16, u16,),
 
     /// Path to keypair file (will be generated if it doesn't exist)
-    pub keypair_path: Option<String>,
+    pub keypair_path: Option<String,>,
 
     /// Bootstrap peers to connect to
-    pub bootstrap_peers: Vec<String>,
+    pub bootstrap_peers: Vec<String,>,
 
     /// Whether to enable mDNS discovery
     pub enable_mdns: bool,
@@ -47,7 +47,7 @@ impl NodeConfig {
 }
 
 /// Builder for NodeConfig
-#[derive(Default)]
+#[derive(Default,)]
 pub struct NodeConfigBuilder {
     pub(crate) config: NodeConfig,
 }

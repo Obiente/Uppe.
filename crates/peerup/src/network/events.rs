@@ -7,34 +7,46 @@ use libp2p::{request_response, PeerId};
 use crate::protocol::{ProbeRequest, ProbeResponse};
 
 /// Events emitted by the PeerUPBehaviour
-#[derive(Debug)]
+#[derive(Debug,)]
 pub enum PeerUPEvent {
     /// Probe request was received
     ProbeRequestReceived {
         peer: PeerId,
         request: ProbeRequest,
-        channel: request_response::ResponseChannel<ProbeResponse>,
+        channel: request_response::ResponseChannel<ProbeResponse,>,
     },
     /// Probe response was received
-    ProbeResponseReceived { peer: PeerId, request_id: u64, response: ProbeResponse },
+    ProbeResponseReceived {
+        peer: PeerId,
+        request_id: u64,
+        response: ProbeResponse,
+    },
     /// Outbound probe request failed
-    OutboundProbeFailure { peer: PeerId, request_id: u64, error: request_response::OutboundFailure },
+    OutboundProbeFailure {
+        peer: PeerId,
+        request_id: u64,
+        error: request_response::OutboundFailure,
+    },
     /// Inbound probe request failed
-    InboundProbeFailure { peer: PeerId, request_id: u64, error: request_response::InboundFailure },
+    InboundProbeFailure {
+        peer: PeerId,
+        request_id: u64,
+        error: request_response::InboundFailure,
+    },
     /// A peer was discovered
-    PeerDiscovered(PeerId),
+    PeerDiscovered(PeerId,),
     /// A peer was removed from the network
-    PeerRemoved(PeerId),
+    PeerRemoved(PeerId,),
     /// The local node received a connection from a peer
-    ConnectionEstablished(PeerId),
+    ConnectionEstablished(PeerId,),
     /// The local node's connection to a peer was closed
-    ConnectionClosed(PeerId),
+    ConnectionClosed(PeerId,),
     /// Relay event
-    Relay(libp2p::relay::Event),
+    Relay(libp2p::relay::Event,),
     /// Kademlia event
-    Kademlia(libp2p::kad::Event),
+    Kademlia(libp2p::kad::Event,),
     /// Mdns event
-    Mdns(libp2p::mdns::Event),
+    Mdns(libp2p::mdns::Event,),
     /// Request/response event
-    RequestResponse(request_response::Event<ProbeRequest, ProbeResponse>),
+    RequestResponse(request_response::Event<ProbeRequest, ProbeResponse,>,),
 }

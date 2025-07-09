@@ -16,10 +16,6 @@ struct Args {
     config: Option<path::PathBuf>,
 }
 
-
-
-
-
 fn main() {
     let _ = peer::identity::main();
     let cli = Args::parse();

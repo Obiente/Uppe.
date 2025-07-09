@@ -8,22 +8,29 @@ use libp2p::{kad, PeerId};
 
 use crate::network::events::PeerUPEvent;
 
-impl From<kad::Event> for PeerUPEvent {
-    fn from(event: kad::Event) -> Self {
-        use kad::Event::*;
-        use kad::QueryResult::*;
+impl From<kad::Event,> for PeerUPEvent {
+    fn from(event: kad::Event,) -> Self {
+        use kad::{Event::*, QueryResult::*};
         match event {
-            OutboundQueryProgressed { result: GetClosestPeers(Ok(peers)), .. } => {
-                if let Some(peer_info) = peers.peers.into_iter().next() {
-                    PeerUPEvent::PeerDiscovered(peer_info.peer_id)
+            OutboundQueryProgressed {
+                result: GetClosestPeers(Ok(peers,),), ..
+            } => {
+                if let Some(peer_info,) = peers.peers.into_iter().next() {
+                    PeerUPEvent::PeerDiscovered(peer_info.peer_id,)
                 } else {
-                    PeerUPEvent::PeerDiscovered(PeerId::random())
+                    PeerUPEvent::PeerDiscovered(PeerId::random(),)
                 }
+            },
+            OutboundQueryProgressed {
+                ..
+            } => PeerUPEvent::PeerDiscovered(PeerId::random(),),
+            RoutingUpdated {
+                peer, ..
             }
-            OutboundQueryProgressed { .. } => PeerUPEvent::PeerDiscovered(PeerId::random()),
-            RoutingUpdated { peer, .. }
-            | PendingRoutablePeer { peer, .. } => PeerUPEvent::PeerDiscovered(peer),
-            _ => PeerUPEvent::PeerDiscovered(PeerId::random()),
+            | PendingRoutablePeer {
+                peer, ..
+            } => PeerUPEvent::PeerDiscovered(peer,),
+            _ => PeerUPEvent::PeerDiscovered(PeerId::random(),),
         }
     }
 }

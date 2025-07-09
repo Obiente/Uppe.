@@ -5,7 +5,7 @@
 use serde::{Deserialize, Serialize};
 
 /// A probe request to be sent to a peer
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize,)]
 pub struct ProbeRequest {
     /// The URL to probe
     pub target_url: String,
@@ -17,26 +17,26 @@ pub struct ProbeRequest {
     pub timeout: u64,
 
     /// Optional request body
-    pub body: Option<String>,
+    pub body: Option<String,>,
 
     /// Optional request headers
-    pub headers: Option<Vec<(String, String)>>,
+    pub headers: Option<Vec<(String, String,),>,>,
 
     /// Requested by (peer ID)
     pub requested_by: String,
 }
 
 /// A probe response from a peer
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize,)]
 pub struct ProbeResponse {
     /// HTTP status code
-    pub status: Option<u16>,
+    pub status: Option<u16,>,
 
     /// Duration of the request in milliseconds
     pub duration: u64,
 
     /// Error message if the probe failed
-    pub error: Option<String>,
+    pub error: Option<String,>,
 
     /// The peer that performed the probe
     pub probed_by: String,
@@ -45,7 +45,7 @@ pub struct ProbeResponse {
     pub timestamp: u64,
 
     /// Response headers (limited set)
-    pub headers: Option<Vec<(String, String)>>,
+    pub headers: Option<Vec<(String, String,),>,>,
 
-    pub body: Option<String>,
+    pub body: Option<String,>,
 }

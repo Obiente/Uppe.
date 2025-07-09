@@ -1,7 +1,7 @@
 //! Implementation methods for PeerNode.
 
 use anyhow::Result;
-use libp2p::swarm::Swarm;
+
 use libp2p::PeerId;
 use tracing::info;
 

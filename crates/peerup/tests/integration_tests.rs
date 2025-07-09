@@ -4,7 +4,7 @@
 
 use peerup::{NodeConfig, PeerNode, ProbeRequest, ProbeResponse};
 // ...existing code...
-use tracing_subscriber;
+
 
 #[tokio::test]
 async fn test_peer_node_creation() {
@@ -81,7 +81,7 @@ async fn test_node_lifecycle() {
             // Node completed successfully
         },
         Ok(Err(e)) => {
-            panic!("Node run returned error: {:?}", e);
+            panic!("Node run returned error: {e:?}");
         },
         Err(_) => {
             // Timeout occurred, which is expected for a long-running node

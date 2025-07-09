@@ -48,7 +48,7 @@ pub fn add_bootstrap_peers(
             },
             Err(e) => {
                 warn!("Failed to parse bootstrap peer address '{}': {}", peer_addr, e);
-                errors.push(format!("Invalid address '{}': {}", peer_addr, e));
+                errors.push(format!("Invalid address '{peer_addr}': {e}"));
             },
         }
     }

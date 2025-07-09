@@ -13,7 +13,7 @@ fn test_url_parsing() {
 
     for url_str in valid_urls {
         let url = Url::parse(url_str);
-        assert!(url.is_ok(), "Failed to parse URL: {}", url_str);
+        assert!(url.is_ok(), "Failed to parse URL: {url_str}");
     }
 }
 
@@ -23,7 +23,7 @@ fn test_invalid_url_parsing() {
 
     for url_str in invalid_urls {
         let url = Url::parse(url_str);
-        assert!(url.is_err(), "Should fail to parse invalid URL: {}", url_str);
+        assert!(url.is_err(), "Should fail to parse invalid URL: {url_str}");
     }
 }
 

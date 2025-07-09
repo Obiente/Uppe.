@@ -49,5 +49,5 @@ pub fn validate_multiaddr(addr: &Multiaddr) -> Result<()> {
 
 /// Create a basic multiaddr for testing
 pub fn create_test_multiaddr(port: u16) -> Multiaddr {
-    format!("/ip4/127.0.0.1/tcp/{}", port).parse().expect("Invalid multiaddr")
+    format!("/ip4/127.0.0.1/tcp/{port}").parse().expect("Invalid multiaddr")
 }

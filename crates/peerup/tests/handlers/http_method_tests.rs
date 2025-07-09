@@ -18,7 +18,7 @@ fn test_validate_probe_request_all_http_methods() {
         };
 
         let result = validate_probe_request(&request);
-        assert!(result.is_ok(), "Method {} should be valid", method);
+        assert!(result.is_ok(), "Method {method} should be valid");
     }
 }
 
@@ -37,6 +37,6 @@ fn test_validate_probe_request_case_insensitive_method() {
         };
 
         let result = validate_probe_request(&request);
-        assert!(result.is_ok(), "Method {} should be valid (case insensitive)", method);
+        assert!(result.is_ok(), "Method {method} should be valid (case insensitive)");
     }
 }

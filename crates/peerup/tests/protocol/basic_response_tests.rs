@@ -1,7 +1,6 @@
 //! Basic tests for ProbeResponse creation and validation
 
-use std::collections::HashMap;
-use std::time::Duration;
+
 
 use peerup::protocol::ProbeResponse;
 

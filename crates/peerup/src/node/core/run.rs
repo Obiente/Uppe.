@@ -3,7 +3,7 @@
 use anyhow::Result;
 use futures::StreamExt;
 use tokio::signal;
-use tracing::{error, info};
+use tracing::info;
 
 use super::peer_node::PeerNode;
 

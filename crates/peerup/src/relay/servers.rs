@@ -18,7 +18,7 @@ pub fn add_relay_servers(relay_addresses: &[String]) -> Vec<String> {
                 info!("Relay server added: {}", addr);
             },
             Err(e) => {
-                let error = format!("Invalid relay address {}: {}", relay_addr, e);
+                let error = format!("Invalid relay address {relay_addr}: {e}");
                 warn!("{}", error);
                 errors.push(error);
             },
@@ -39,7 +39,7 @@ pub fn validate_relay_addresses(addresses: &[String]) -> Result<Vec<Multiaddr>, 
                 valid_addresses.push(addr);
             },
             Err(e) => {
-                errors.push(format!("Invalid address '{}': {}", addr_str, e));
+                errors.push(format!("Invalid address '{addr_str}': {e}"));
             },
         }
     }

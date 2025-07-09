@@ -25,7 +25,7 @@ async fn main() -> Result<()> {
         loop {
             tokio::select! {
                 Some(probe) = probe_rx.recv() => {
-                    println!("Node1 received probe: {:?}", probe);
+                    println!("Node1 received probe: {probe:?}");
                     // Simulate processing and send a response
                     let response = ProbeResponse {
                         status: Some(200),
@@ -66,7 +66,7 @@ async fn main() -> Result<()> {
 
         // Wait for response
         if let Some(response) = resp_rx.recv().await {
-            println!("Node2 received response: {:?}", response);
+            println!("Node2 received response: {response:?}");
         }
     });
 

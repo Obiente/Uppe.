@@ -4,9 +4,9 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug)]
 pub enum Error {
-    ReadFailed(String),
-    WriteFailed(String),
-    ParseFailed(String),
+    ReadFailed(()),
+    WriteFailed(()),
+    ParseFailed(()),
     ConfigPathUnavailable,
 }
 
@@ -93,17 +93,8 @@ impl Config {
         };
 
         if config_path.exists() {
-            let raw_string = fs::read_to_string(&config_path).map_err(|err| {
-                Error::ReadFailed(format!("Failed to read {}: {}", config_path.display(), err))
-            })?;
-
-            toml::from_str(raw_string.as_str()).map_err(|err| {
-                Error::ParseFailed(format!(
-                    "Invalid config {}: {}",
-                    config_path.display(),
-                    err.message()
-                ))
-            })
+            let raw_string = fs::read_to_string(&config_path).map_err(|_err| Error::ReadFailed(()))?;
+            toml::from_str(raw_string.as_str()).map_err(|_err| Error::ParseFailed(()))
         } else {
             let config = Self::default();
             config.write_config(&config_path)?;
@@ -114,19 +105,13 @@ impl Config {
     /// Serialize and write a config to a file
     pub fn write_config(&self, path: &std::path::Path) -> Result<(), Error> {
         let config_str: String = toml::to_string_pretty(self)
-            .map_err(|err| Error::ParseFailed(format!("Failed to serialize config: {err}")))?;
+            .map_err(|_err| Error::ParseFailed(()))?;
 
         if let Some(parent) = path.parent() {
-            fs::create_dir_all(parent).map_err(|err| {
-                Error::WriteFailed(format!(
-                    "Failed to create config directory {}: {}",
-                    parent.display(),
-                    err
-                ))
-            })?;
+            fs::create_dir_all(parent).map_err(|_err| Error::WriteFailed(()))?;
         }
 
         std::fs::write(path, config_str)
-            .map_err(|err| Error::WriteFailed(format!("Failed to save config: {err}")))
+            .map_err(|_err| Error::WriteFailed(()))
     }
 }

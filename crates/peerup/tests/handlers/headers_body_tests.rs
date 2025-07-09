@@ -7,7 +7,7 @@ use peerup::protocol::ProbeRequest;
 
 #[test]
 fn test_validate_probe_request_too_many_headers() {
-    let headers = (0..25).map(|i| (format!("Header{}", i), format!("Value{}", i))).collect();
+    let headers = (0..25).map(|i| (format!("Header{i}"), format!("Value{i}"))).collect();
 
     let request = ProbeRequest {
         target_url: "https://example.com".to_string(),

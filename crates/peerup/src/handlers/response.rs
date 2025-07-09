@@ -52,5 +52,5 @@ pub fn build_network_error_response(
     duration: u64,
     probed_by: String,
 ) -> ProbeResponse {
-    build_error_response(format!("Network error: {}", error), duration, probed_by)
+    build_error_response(format!("Network error: {error}"), duration, probed_by)
 }

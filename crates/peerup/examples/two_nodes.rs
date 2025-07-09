@@ -26,7 +26,7 @@ async fn main() -> Result<()> {
     // Node2 dials Node1
     if let Some(addr1) = addr1 {
         node2.swarm.dial(addr1.clone()).expect("Dial failed");
-        println!("Node2 dialing Node1 at {:?}", addr1);
+    println!("Node2 dialing Node1 at {addr1:?}");
     }
 
     // Let the nodes discover each other
@@ -45,11 +45,11 @@ async fn main() -> Result<()> {
     // NOTE: You need a real API to send a probe request from node2 to node1.
     // If you have a method like node2.send_probe(peer_id, probe), call it here.
     // For now, just print what would happen:
-    println!("Node2 would send probe to Node1: {:?} -> {}", probe, node1.peer_id());
+    println!("Node2 would send probe to Node1: {probe:?} -> {}", node1.peer_id());
 
     // Run both nodes for a short time to process events
-    let n1 = tokio::spawn(async move { node1.run().await });
-    let n2 = tokio::spawn(async move { node2.run().await });
+    let _n1 = tokio::spawn(async move { node1.run().await });
+    let _n2 = tokio::spawn(async move { node2.run().await });
 
     sleep(Duration::from_secs(5)).await;
 

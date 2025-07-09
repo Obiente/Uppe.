@@ -5,7 +5,7 @@ use peerup::protocol::ProbeRequest;
 #[test]
 fn test_probe_request_creation() {
     let headers = vec![("User-Agent".to_string(), "PeerUP/1.0".to_string())];
-    
+
     let probe_request = ProbeRequest {
         target_url: "https://example.com".to_string(),
         method: "GET".to_string(),
@@ -14,7 +14,7 @@ fn test_probe_request_creation() {
         body: None,
         requested_by: "peer123".to_string(),
     };
-    
+
     assert_eq!(probe_request.target_url, "https://example.com");
     assert_eq!(probe_request.method, "GET");
     assert_eq!(probe_request.headers.as_ref().unwrap().len(), 1);
@@ -26,7 +26,7 @@ fn test_probe_request_creation() {
 #[test]
 fn test_probe_request_with_body() {
     let headers = vec![("Content-Type".to_string(), "application/json".to_string())];
-    
+
     let probe_request = ProbeRequest {
         target_url: "https://api.example.com/users".to_string(),
         method: "POST".to_string(),
@@ -35,7 +35,7 @@ fn test_probe_request_with_body() {
         body: Some(r#"{"name": "John Doe"}"#.to_string()),
         requested_by: "peer123".to_string(),
     };
-    
+
     assert_eq!(probe_request.target_url, "https://api.example.com/users");
     assert_eq!(probe_request.method, "POST");
     assert_eq!(probe_request.headers.as_ref().unwrap().len(), 1);
@@ -53,7 +53,7 @@ fn test_probe_request_default_options() {
         body: None,
         requested_by: "peer123".to_string(),
     };
-    
+
     assert_eq!(probe_request.method, "GET");
     assert!(probe_request.headers.is_none());
     assert!(probe_request.body.is_none());

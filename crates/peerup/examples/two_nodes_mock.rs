@@ -1,9 +1,12 @@
 //! Example: Two PeerUP nodes communicating with mock data in the same process.
 
-use anyhow::Result;
-use peerup::{PeerNode, node::NodeConfig, ProbeRequest, ProbeResponse};
 use std::time::Duration;
-use tokio::{sync::mpsc, time::sleep};
+
+use anyhow::Result;
+use peerup::node::NodeConfig;
+use peerup::{PeerNode, ProbeRequest, ProbeResponse};
+use tokio::sync::mpsc;
+use tokio::time::sleep;
 
 #[tokio::main]
 async fn main() -> Result<()> {

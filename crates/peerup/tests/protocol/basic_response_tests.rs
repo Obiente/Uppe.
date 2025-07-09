@@ -1,8 +1,9 @@
 //! Basic tests for ProbeResponse creation and validation
 
-use peerup::protocol::ProbeResponse;
 use std::collections::HashMap;
 use std::time::Duration;
+
+use peerup::protocol::ProbeResponse;
 
 #[test]
 fn test_probe_response_creation() {
@@ -10,14 +11,12 @@ fn test_probe_response_creation() {
         status: Some(200),
         duration: 250,
         error: None,
-        headers: Some(vec![
-            ("Content-Type".to_string(), "text/html".to_string())
-        ]),
+        headers: Some(vec![("Content-Type".to_string(), "text/html".to_string())]),
         body: None,
         probed_by: "peer123".to_string(),
         timestamp: 1234567890,
     };
-    
+
     assert_eq!(probe_response.status, Some(200));
     assert_eq!(probe_response.duration, 250);
     assert_eq!(probe_response.error, None);
@@ -37,7 +36,7 @@ fn test_probe_response_with_error() {
         probed_by: "peer123".to_string(),
         timestamp: 1234567890,
     };
-    
+
     assert_eq!(probe_response.status, None);
     assert_eq!(probe_response.duration, 0);
     assert_eq!(probe_response.error, Some("Connection refused".to_string()));

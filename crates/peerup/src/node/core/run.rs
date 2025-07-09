@@ -1,10 +1,11 @@
 //! PeerNode run loop for driving the swarm and handling events.
 
-use super::peer_node::PeerNode;
 use anyhow::Result;
-use tokio::signal;
-use tracing::{info, error};
 use futures::StreamExt;
+use tokio::signal;
+use tracing::{error, info};
+
+use super::peer_node::PeerNode;
 
 impl PeerNode {
     /// Run the node event loop, polling the swarm and handling events.

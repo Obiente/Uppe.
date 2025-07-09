@@ -9,19 +9,19 @@ use crate::DEFAULT_PORT_RANGE;
 pub struct NodeConfig {
     /// The port range to listen on
     pub port_range: (u16, u16),
-    
+
     /// Path to keypair file (will be generated if it doesn't exist)
     pub keypair_path: Option<String>,
-    
+
     /// Bootstrap peers to connect to
     pub bootstrap_peers: Vec<String>,
-    
+
     /// Whether to enable mDNS discovery
     pub enable_mdns: bool,
-    
+
     /// Whether to enable Kademlia discovery
     pub enable_kademlia: bool,
-    
+
     /// Whether to enable relay support
     pub enable_relay: bool,
 }

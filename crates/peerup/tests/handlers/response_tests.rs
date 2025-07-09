@@ -10,12 +10,10 @@ fn test_probe_response_fields() {
         error: None,
         probed_by: "peer456".to_string(),
         timestamp: 1234567890,
-        headers: Some(vec![
-            ("Content-Type".to_string(), "application/json".to_string()),
-        ]),
+        headers: Some(vec![("Content-Type".to_string(), "application/json".to_string())]),
         body: None,
     };
-    
+
     assert_eq!(response.status, Some(200));
     assert_eq!(response.duration, 150);
     assert_eq!(response.error, None);
@@ -35,7 +33,7 @@ fn test_probe_response_error() {
         headers: None,
         body: None,
     };
-    
+
     assert_eq!(response.status, None);
     assert_eq!(response.duration, 0);
     assert_eq!(response.error, Some("Connection timeout".to_string()));

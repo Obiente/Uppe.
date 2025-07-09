@@ -2,8 +2,8 @@
 //!
 //! This module provides helper functions for network operations.
 
-use libp2p::{Multiaddr, PeerId};
 use anyhow::Result;
+use libp2p::{Multiaddr, PeerId};
 
 /// Extract peer ID from multiaddr
 pub fn extract_peer_id_from_multiaddr(addr: &Multiaddr) -> Option<PeerId> {
@@ -21,35 +21,33 @@ pub fn validate_multiaddr(addr: &Multiaddr) -> Result<()> {
     // Basic validation - check if it has required components
     let mut has_transport = false;
     let mut has_peer_id = false;
-    
+
     for protocol in addr.iter() {
         match protocol {
-            libp2p::multiaddr::Protocol::Tcp(_) |
-            libp2p::multiaddr::Protocol::Udp(_) |
-            libp2p::multiaddr::Protocol::Quic => {
+            libp2p::multiaddr::Protocol::Tcp(_)
+            | libp2p::multiaddr::Protocol::Udp(_)
+            | libp2p::multiaddr::Protocol::Quic => {
                 has_transport = true;
-            }
+            },
             libp2p::multiaddr::Protocol::P2p(_) => {
                 has_peer_id = true;
-            }
-            _ => {}
+            },
+            _ => {},
         }
     }
-    
+
     if !has_transport {
         return Err(anyhow::anyhow!("Multiaddr missing transport protocol"));
     }
-    
+
     if !has_peer_id {
         return Err(anyhow::anyhow!("Multiaddr missing peer ID"));
     }
-    
+
     Ok(())
 }
 
 /// Create a basic multiaddr for testing
 pub fn create_test_multiaddr(port: u16) -> Multiaddr {
-    format!("/ip4/127.0.0.1/tcp/{}", port)
-        .parse()
-        .expect("Invalid multiaddr")
+    format!("/ip4/127.0.0.1/tcp/{}", port).parse().expect("Invalid multiaddr")
 }

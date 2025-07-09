@@ -7,4 +7,4 @@ pub mod servers;
 
 // Re-export main functions
 pub use config::{configure_relay_client, configure_relay_server, create_dev_relay};
-pub use servers::{add_relay_servers, validate_relay_addresses, default_relay_servers};
+pub use servers::{add_relay_servers, default_relay_servers, validate_relay_addresses};

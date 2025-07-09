@@ -13,9 +13,7 @@ pub fn init() {
 
 /// Initialize tracing subscriber with default configuration.
 fn initialize_tracing(level: LevelFilter) {
-    let env_filter = EnvFilter::builder()
-        .with_default_directive(level.into())
-        .from_env_lossy();
+    let env_filter = EnvFilter::builder().with_default_directive(level.into()).from_env_lossy();
 
     let log_format = var("RUST_LOG_FORMAT")
         .inspect_err(|error| {
@@ -24,10 +22,7 @@ fn initialize_tracing(level: LevelFilter) {
         .unwrap_or_default();
 
     let log_layer = match log_format.as_str() {
-        "json" => tracing_subscriber::fmt::layer()
-            .json()
-            .with_filter(env_filter)
-            .boxed(),
+        "json" => tracing_subscriber::fmt::layer().json().with_filter(env_filter).boxed(),
         _ => tracing_subscriber::fmt::layer()
             .compact()
             .without_time()
@@ -35,7 +30,5 @@ fn initialize_tracing(level: LevelFilter) {
             .boxed(),
     };
 
-    tracing_subscriber::registry()
-        .with(log_layer)
-        .init();
+    tracing_subscriber::registry().with(log_layer).init();
 }

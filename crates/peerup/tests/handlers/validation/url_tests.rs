@@ -13,7 +13,7 @@ fn test_validate_probe_request_invalid_url() {
         headers: None,
         requested_by: "peer123".to_string(),
     };
-    
+
     let result = validate_probe_request(&request);
     assert!(result.is_err(), "Invalid URL scheme should fail validation");
 }
@@ -28,7 +28,7 @@ fn test_validate_probe_request_malformed_url() {
         headers: None,
         requested_by: "peer123".to_string(),
     };
-    
+
     let result = validate_probe_request(&request);
     assert!(result.is_err(), "Malformed URL should fail validation");
 }

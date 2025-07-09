@@ -1,39 +1,13 @@
-# Formatting width settings
+
+# Rustfmt configuration for the workspace
 max_width = 100
-use_small_heuristics = "Max"
-
-# Indentation & spacing
-tab_spaces = 4
 hard_tabs = false
+use_small_heuristics = "Max"
 newline_style = "Unix"
-
-# Function & struct formatting
-fn_call_width = 80
-fn_single_line = false
-struct_lit_width = 80
-struct_variant_width = 80
-
-# Imports & ordering
-imports_granularity = "Module"
-group_imports = "StdExternalCrate"
 reorder_imports = true
-reorder_modules = true
-imports_layout = "HorizontalVertical"
-
-# Wrapping & line breaking
+imports_granularity = "Crate"
 wrap_comments = true
-format_strings = true
-match_arm_leading_pipes = "Preserve"
-match_block_trailing_comma = true
-trailing_comma = "Vertical"
-chain_width = 80
-
-# Miscellaneous
-condense_wildcard_suffixes = true
-force_explicit_abi = true
-merge_derives = true
+format_code_in_doc_comments = true
 normalize_comments = true
-normalize_doc_attributes = true
-use_field_init_shorthand = true
-use_try_shorthand = true
-edition = "2024"
+format_macro_matchers = true
+format_strings = true

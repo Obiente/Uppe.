@@ -9,7 +9,8 @@ pub mod crypto;
 pub mod events;
 
 // Re-export main types
-pub use config::{NodeConfig, NodeConfigBuilder};
 pub use core::PeerNode;
-pub use crypto::{load_or_generate_keypair, generate_keypair, save_keypair, load_keypair};
+
+pub use config::{NodeConfig, NodeConfigBuilder};
+pub use crypto::{generate_keypair, load_keypair, load_or_generate_keypair, save_keypair};
 pub use events::{handle_peerup_event, handle_swarm_event};

@@ -10,7 +10,7 @@ use tracing::debug;
 pub fn configure_mdns(local_peer_id: PeerId) -> Result<mdns::tokio::Behaviour> {
     let config = mdns::Config::default();
     let behaviour = mdns::tokio::Behaviour::new(config, local_peer_id)?;
-    
+
     debug!("mDNS discovery initialized for peer {}", local_peer_id);
     Ok(behaviour)
 }
@@ -19,7 +19,7 @@ pub fn configure_mdns(local_peer_id: PeerId) -> Result<mdns::tokio::Behaviour> {
 pub fn create_dev_mdns(local_peer_id: PeerId) -> Result<mdns::tokio::Behaviour> {
     let config = mdns::Config::default();
     let behaviour = mdns::tokio::Behaviour::new(config, local_peer_id)?;
-    
+
     debug!("Development mDNS initialized for peer {}", local_peer_id);
     Ok(behaviour)
 }

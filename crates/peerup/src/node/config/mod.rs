@@ -2,7 +2,7 @@
 //!
 //! This module defines the configuration options for PeerUP nodes.
 
-mod types;
 mod methods;
+mod types;
 
 pub use types::{NodeConfig, NodeConfigBuilder};

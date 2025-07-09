@@ -1,8 +1,10 @@
 //! Example: Two PeerUP nodes communicating in the same process.
 
-use anyhow::Result;
-use peerup::{PeerNode, node::NodeConfig, ProbeRequest};
 use std::time::Duration;
+
+use anyhow::Result;
+use peerup::node::NodeConfig;
+use peerup::{PeerNode, ProbeRequest};
 use tokio::time::sleep;
 
 #[tokio::main]
@@ -43,10 +45,7 @@ async fn main() -> Result<()> {
     // NOTE: You need a real API to send a probe request from node2 to node1.
     // If you have a method like node2.send_probe(peer_id, probe), call it here.
     // For now, just print what would happen:
-    println!(
-        "Node2 would send probe to Node1: {:?} -> {}",
-        probe, node1.peer_id()
-    );
+    println!("Node2 would send probe to Node1: {:?} -> {}", probe, node1.peer_id());
 
     // Run both nodes for a short time to process events
     let n1 = tokio::spawn(async move { node1.run().await });

@@ -9,9 +9,9 @@ pub mod validation;
 // Re-export main handler function
 pub use http::handle_probe_request;
 pub use response::{
-    build_success_response, 
-    build_error_response, 
-    build_timeout_response, 
-    build_network_error_response
+    build_error_response,
+    build_network_error_response,
+    build_success_response,
+    build_timeout_response,
 };
 pub use validation::validate_probe_request;

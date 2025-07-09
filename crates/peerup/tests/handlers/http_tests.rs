@@ -13,7 +13,7 @@ async fn test_handle_probe_request_basic() {
         headers: None,
         requested_by: "peer123".to_string(),
     };
-    
+
     // This test might fail if httpbin.org is not available, so we'll just check
     // that the function doesn't panic
     let _response = handle_probe_request(request).await;

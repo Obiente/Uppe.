@@ -1,0 +1,23 @@
+name: Rustfmt
+
+on:
+  push:
+    paths:
+      - '**.rs'
+      - 'rustfmt.toml'
+  pull_request:
+    paths:
+      - '**.rs'
+      - 'rustfmt.toml'
+
+jobs:
+  rustfmt:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+      - name: Check formatting
+        run: cargo fmt --all -- --check

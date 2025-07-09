@@ -6,7 +6,7 @@ use peerup::protocol::ProbeRequest;
 #[test]
 fn test_validate_probe_request_all_http_methods() {
     let methods = vec!["GET", "POST", "PUT", "DELETE", "HEAD", "OPTIONS", "PATCH"];
-    
+
     for method in methods {
         let request = ProbeRequest {
             target_url: "https://example.com".to_string(),
@@ -16,7 +16,7 @@ fn test_validate_probe_request_all_http_methods() {
             headers: None,
             requested_by: "peer123".to_string(),
         };
-        
+
         let result = validate_probe_request(&request);
         assert!(result.is_ok(), "Method {} should be valid", method);
     }
@@ -25,7 +25,7 @@ fn test_validate_probe_request_all_http_methods() {
 #[test]
 fn test_validate_probe_request_case_insensitive_method() {
     let methods = vec!["get", "post", "PUT", "Delete", "head", "OPTIONS", "patch"];
-    
+
     for method in methods {
         let request = ProbeRequest {
             target_url: "https://example.com".to_string(),
@@ -35,7 +35,7 @@ fn test_validate_probe_request_case_insensitive_method() {
             headers: None,
             requested_by: "peer123".to_string(),
         };
-        
+
         let result = validate_probe_request(&request);
         assert!(result.is_ok(), "Method {} should be valid (case insensitive)", method);
     }

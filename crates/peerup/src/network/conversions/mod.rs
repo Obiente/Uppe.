@@ -4,13 +4,13 @@
 
 use crate::network::events::PeerUPEvent;
 
-pub mod request_response;
-pub mod mdns;
 pub mod kad;
+pub mod mdns;
 pub mod relay;
+pub mod request_response;
 
 // Re-export all conversion implementations for proper visibility
-pub use request_response::*;
-pub use mdns::*;
 pub use kad::*;
+pub use mdns::*;
 pub use relay::*;
+pub use request_response::*;

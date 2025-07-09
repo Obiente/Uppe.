@@ -1,11 +1,12 @@
 //! HTTP probe request handling implementation.
 
-use anyhow::Result;
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
+
+use anyhow::Result;
 use tracing::info;
 
-use crate::protocol::{ProbeRequest, ProbeResponse};
 use super::extract::extract_response_headers;
+use crate::protocol::{ProbeRequest, ProbeResponse};
 
 /// Handle an HTTP probe request
 pub async fn handle_probe_request(request: ProbeRequest) -> ProbeResponse {
@@ -13,19 +14,16 @@ pub async fn handle_probe_request(request: ProbeRequest) -> ProbeResponse {
 
     // Record start time
     let start = Instant::now();
-    
+
     // Get current timestamp
-    let timestamp = SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .unwrap_or_default()
-        .as_secs();
-    
+    let timestamp = SystemTime::now().duration_since(UNIX_EPOCH).unwrap_or_default().as_secs();
+
     // Perform the HTTP request
     let result = perform_http_request(&request).await;
-    
+
     // Calculate duration
     let duration = start.elapsed().as_millis() as u64;
-    
+
     // Build response
     match result {
         Ok((status, headers)) => {
@@ -38,7 +36,7 @@ pub async fn handle_probe_request(request: ProbeRequest) -> ProbeResponse {
                 headers: Some(headers),
                 body: None, // Added missing field
             }
-        }
+        },
         Err(error) => {
             ProbeResponse {
                 status: None,
@@ -49,7 +47,7 @@ pub async fn handle_probe_request(request: ProbeRequest) -> ProbeResponse {
                 headers: None,
                 body: None, // Added missing field
             }
-        }
+        },
     }
 }
 
@@ -60,7 +58,7 @@ pub async fn perform_http_request(request: &ProbeRequest) -> Result<(u16, Vec<(S
         .timeout(Duration::from_millis(request.timeout))
         .user_agent("peerup/1.0")
         .build()?;
-    
+
     // Prepare the HTTP request
     let mut http_request = match request.method.to_uppercase().as_str() {
         "GET" => client.get(&request.target_url),
@@ -70,27 +68,27 @@ pub async fn perform_http_request(request: &ProbeRequest) -> Result<(u16, Vec<(S
         "HEAD" => client.head(&request.target_url),
         _ => return Err(anyhow::anyhow!("Unsupported HTTP method: {}", request.method)),
     };
-    
+
     // Add headers if present
     if let Some(headers) = &request.headers {
         for (key, value) in headers {
             http_request = http_request.header(key, value);
         }
     }
-    
+
     // Add body if present
     if let Some(body) = &request.body {
         http_request = http_request.body(body.clone());
     }
-    
+
     // Execute the request
     let response = http_request.send().await?;
-    
+
     // Extract status code
     let status = response.status().as_u16();
-    
+
     // Extract response headers (limited set)
     let headers = extract_response_headers(&response);
-    
+
     Ok((status, headers))
 }

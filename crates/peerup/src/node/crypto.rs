@@ -2,14 +2,16 @@
 //!
 //! This module handles keypair generation and management.
 
+use std::fs;
+use std::path::Path;
+
 use anyhow::Result;
 use libp2p::identity::Keypair;
-use std::{path::Path, fs};
 
 /// Load or generate a keypair from the specified path
 pub fn load_or_generate_keypair<P: AsRef<Path>>(path: P) -> Result<Keypair> {
     let path = path.as_ref();
-    
+
     if path.exists() {
         // Load existing keypair
         let bytes = fs::read(path)?;
@@ -18,14 +20,14 @@ pub fn load_or_generate_keypair<P: AsRef<Path>>(path: P) -> Result<Keypair> {
     } else {
         // Generate new keypair
         let keypair = Keypair::generate_ed25519();
-        
+
         // Save to file
         if let Some(parent) = path.parent() {
             fs::create_dir_all(parent)?;
         }
         let bytes = keypair.to_protobuf_encoding()?;
         fs::write(path, &bytes)?;
-        
+
         Ok(keypair)
     }
 }
@@ -38,14 +40,14 @@ pub fn generate_keypair() -> Keypair {
 /// Save a keypair to a file
 pub fn save_keypair<P: AsRef<Path>>(keypair: &Keypair, path: P) -> Result<()> {
     let path = path.as_ref();
-    
+
     if let Some(parent) = path.parent() {
         fs::create_dir_all(parent)?;
     }
-    
+
     let bytes = keypair.to_protobuf_encoding()?;
     fs::write(path, &bytes)?;
-    
+
     Ok(())
 }
 

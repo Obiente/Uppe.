@@ -2,10 +2,7 @@
 //!
 //! This module defines the events emitted by the PeerUP network behaviour.
 
-use libp2p::{
-    request_response,
-    PeerId,
-};
+use libp2p::{request_response, PeerId};
 
 use crate::protocol::{ProbeRequest, ProbeResponse};
 
@@ -19,23 +16,11 @@ pub enum PeerUPEvent {
         channel: request_response::ResponseChannel<ProbeResponse>,
     },
     /// Probe response was received
-    ProbeResponseReceived {
-        peer: PeerId,
-        request_id: u64,
-        response: ProbeResponse,
-    },
+    ProbeResponseReceived { peer: PeerId, request_id: u64, response: ProbeResponse },
     /// Outbound probe request failed
-    OutboundProbeFailure {
-        peer: PeerId,
-        request_id: u64,
-        error: request_response::OutboundFailure,
-    },
+    OutboundProbeFailure { peer: PeerId, request_id: u64, error: request_response::OutboundFailure },
     /// Inbound probe request failed
-    InboundProbeFailure {
-        peer: PeerId,
-        request_id: u64,
-        error: request_response::InboundFailure,
-    },
+    InboundProbeFailure { peer: PeerId, request_id: u64, error: request_response::InboundFailure },
     /// A peer was discovered
     PeerDiscovered(PeerId),
     /// A peer was removed from the network

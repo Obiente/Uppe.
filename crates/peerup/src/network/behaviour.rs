@@ -3,22 +3,19 @@
 //!
 //! This module defines the libp2p NetworkBehaviour for PeerUP.
 
-use anyhow::Result;
-use libp2p::{
-    identity::Keypair,
-    kad::{self, store::MemoryStore},
-    mdns,
-    request_response,
-    swarm::{NetworkBehaviour, behaviour::toggle::Toggle},
-    PeerId,
-};
 use std::time::Duration;
 
-use crate::{
-    protocol::{ProbeCodec, PROBE_PROTOCOL},
-    node::NodeConfig,
-};
+use anyhow::Result;
+use libp2p::identity::Keypair;
+use libp2p::kad::store::MemoryStore;
+use libp2p::kad::{self};
+use libp2p::swarm::behaviour::toggle::Toggle;
+use libp2p::swarm::NetworkBehaviour;
+use libp2p::{mdns, request_response, PeerId};
+
 use super::events::PeerUPEvent;
+use crate::node::NodeConfig;
+use crate::protocol::{ProbeCodec, PROBE_PROTOCOL};
 
 /// The main network behaviour for PeerUP
 #[derive(NetworkBehaviour)]
@@ -39,7 +36,7 @@ impl PeerUPBehaviour {
     pub async fn new(keypair: &Keypair, config: &NodeConfig) -> Result<Self> {
         let local_peer_id = PeerId::from(keypair.public());
         let request_response = Self::create_probe_protocol();
-        
+
         // Create mDNS if enabled
         let mdns = if config.enable_mdns {
             let mdns_config = mdns::Config::default();
@@ -47,7 +44,7 @@ impl PeerUPBehaviour {
         } else {
             None
         };
-        
+
         // Create Kademlia if enabled
         let kademlia = if config.enable_kademlia {
             let store = MemoryStore::new(local_peer_id);
@@ -56,7 +53,7 @@ impl PeerUPBehaviour {
         } else {
             None
         };
-        
+
         // Create relay if enabled
         let relay = if config.enable_relay {
             let relay_config = libp2p::relay::Config::default();
@@ -64,7 +61,7 @@ impl PeerUPBehaviour {
         } else {
             None
         };
-        
+
         Ok(Self {
             request_response,
             mdns: mdns.into(),
@@ -72,16 +69,18 @@ impl PeerUPBehaviour {
             relay: relay.into(),
         })
     }
-    
+
     fn create_probe_protocol() -> request_response::Behaviour<ProbeCodec> {
         let config = request_response::Config::default()
             .with_request_timeout(Duration::from_secs(30))
             .with_max_concurrent_streams(5);
-            
+
         request_response::Behaviour::new(
-            [(libp2p::StreamProtocol::new(PROBE_PROTOCOL), request_response::ProtocolSupport::Full)],
+            [(
+                libp2p::StreamProtocol::new(PROBE_PROTOCOL),
+                request_response::ProtocolSupport::Full,
+            )],
             config,
         )
     }
 }
-

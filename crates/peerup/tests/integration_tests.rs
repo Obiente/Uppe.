@@ -2,7 +2,7 @@
 //!
 //! These tests verify that the modular components work together correctly.
 
-use peerup::{PeerNode, NodeConfig, ProbeRequest, ProbeResponse};
+use peerup::{NodeConfig, PeerNode, ProbeRequest, ProbeResponse};
 // ...existing code...
 use tracing_subscriber;
 
@@ -74,7 +74,8 @@ async fn test_node_lifecycle() {
     // Run the node for a short time to ensure it starts and can be stopped
     let run_future = node.run();
     let result = timeout(Duration::from_secs(2), run_future).await;
-    // The node should either run successfully or timeout (which is expected for this test)
+    // The node should either run successfully or timeout (which is expected for
+    // this test)
     match result {
         Ok(Ok(())) => {
             // Node completed successfully

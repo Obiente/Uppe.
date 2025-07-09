@@ -3,5 +3,3 @@ pub mod http_method_tests;
 pub mod http_tests;
 pub mod response_tests;
 pub mod validation;
-/// Handlers module tests
-pub mod validation_tests;

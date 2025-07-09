@@ -1,8 +1,8 @@
-# PeerUP
+# Uppe.
 
-**Decentralized, verifiable uptime monitoring.**
+**Monitoring that doesn't let you down.**
 
-PeerUP is a distributed system where nodes monitor both their own services and assigned peers, providing signed uptime and latency data across the network.
+Uppe. is a distributed system where peers -- also known as Uppers -- monitor both their own services and other assigned peers, providing signed uptime and latency data across the network.
 
 ---
 

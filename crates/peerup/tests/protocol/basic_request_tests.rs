@@ -4,13 +4,13 @@ use peerup::protocol::ProbeRequest;
 
 #[test]
 fn test_probe_request_creation() {
-    let headers = vec![("User-Agent".to_string(), "PeerUP/1.0".to_string(),)];
+    let headers = vec![("User-Agent".to_string(), "PeerUP/1.0".to_string())];
 
     let probe_request = ProbeRequest {
         target_url: "https://example.com".to_string(),
         method: "GET".to_string(),
         timeout: 5000,
-        headers: Some(headers,),
+        headers: Some(headers),
         body: None,
         requested_by: "peer123".to_string(),
     };
@@ -25,14 +25,14 @@ fn test_probe_request_creation() {
 
 #[test]
 fn test_probe_request_with_body() {
-    let headers = vec![("Content-Type".to_string(), "application/json".to_string(),)];
+    let headers = vec![("Content-Type".to_string(), "application/json".to_string())];
 
     let probe_request = ProbeRequest {
         target_url: "https://api.example.com/users".to_string(),
         method: "POST".to_string(),
         timeout: 5000,
-        headers: Some(headers,),
-        body: Some(r#"{"name": "John Doe"}"#.to_string(),),
+        headers: Some(headers),
+        body: Some(r#"{"name": "John Doe"}"#.to_string()),
         requested_by: "peer123".to_string(),
     };
 

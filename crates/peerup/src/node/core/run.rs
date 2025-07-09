@@ -10,7 +10,7 @@ use super::peer_node::PeerNode;
 impl PeerNode {
     /// Run the node event loop, polling the swarm and handling events.
     /// This will block until Ctrl+C is pressed or an error occurs.
-    pub async fn run(mut self,) -> Result<(),> {
+    pub async fn run(mut self) -> Result<()> {
         info!("PeerNode event loop started. Press Ctrl+C to exit.");
         loop {
             tokio::select! {
@@ -24,6 +24,6 @@ impl PeerNode {
                 }
             }
         }
-        Ok((),)
+        Ok(())
     }
 }

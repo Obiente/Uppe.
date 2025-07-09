@@ -5,10 +5,10 @@ use peerup::protocol::ProbeResponse;
 #[test]
 fn test_probe_response_creation() {
     let probe_response = ProbeResponse {
-        status: Some(200,),
+        status: Some(200),
         duration: 250,
         error: None,
-        headers: Some(vec![("Content-Type".to_string(), "text/html".to_string(),)],),
+        headers: Some(vec![("Content-Type".to_string(), "text/html".to_string())]),
         body: None,
         probed_by: "peer123".to_string(),
         timestamp: 1234567890,
@@ -27,7 +27,7 @@ fn test_probe_response_with_error() {
     let probe_response = ProbeResponse {
         status: None,
         duration: 0,
-        error: Some("Connection refused".to_string(),),
+        error: Some("Connection refused".to_string()),
         headers: None,
         body: None,
         probed_by: "peer123".to_string(),

@@ -16,7 +16,7 @@ fn test_validate_probe_request_all_http_methods() {
             requested_by: "peer123".to_string(),
         };
 
-        let result = validate_probe_request(&request,);
+        let result = validate_probe_request(&request);
         assert!(result.is_ok(), "Method {method} should be valid");
     }
 }
@@ -35,7 +35,7 @@ fn test_validate_probe_request_case_insensitive_method() {
             requested_by: "peer123".to_string(),
         };
 
-        let result = validate_probe_request(&request,);
+        let result = validate_probe_request(&request);
         assert!(result.is_ok(), "Method {method} should be valid (case insensitive)");
     }
 }

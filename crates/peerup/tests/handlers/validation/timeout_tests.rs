@@ -13,7 +13,7 @@ fn test_validate_probe_request_timeout_too_small() {
         requested_by: "peer123".to_string(),
     };
 
-    let result = validate_probe_request(&request,);
+    let result = validate_probe_request(&request);
     assert!(result.is_err(), "Timeout too small should fail validation");
 }
 
@@ -28,6 +28,6 @@ fn test_validate_probe_request_timeout_too_large() {
         requested_by: "peer123".to_string(),
     };
 
-    let result = validate_probe_request(&request,);
+    let result = validate_probe_request(&request);
     assert!(result.is_err(), "Timeout too large should fail validation");
 }

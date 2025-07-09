@@ -6,17 +6,17 @@ use serde_json;
 #[test]
 fn test_probe_response_serialization() {
     let probe_response = ProbeResponse {
-        status: Some(201,),
+        status: Some(201),
         duration: 300,
         error: None,
-        headers: Some(vec![("Server".to_string(), "nginx/1.18.0".to_string(),)],),
+        headers: Some(vec![("Server".to_string(), "nginx/1.18.0".to_string())]),
         probed_by: "peer456".to_string(),
         timestamp: 1234567890,
         body: None,
     };
 
-    let serialized = serde_json::to_string(&probe_response,).unwrap();
-    let deserialized: ProbeResponse = serde_json::from_str(&serialized,).unwrap();
+    let serialized = serde_json::to_string(&probe_response).unwrap();
+    let deserialized: ProbeResponse = serde_json::from_str(&serialized).unwrap();
 
     assert_eq!(probe_response.status, deserialized.status);
     assert_eq!(probe_response.duration, deserialized.duration);
@@ -32,7 +32,7 @@ fn test_probe_response_statuss() {
 
     for code in statuss {
         let probe_response = ProbeResponse {
-            status: Some(code,),
+            status: Some(code),
             duration: 100,
             error: None,
             headers: None,
@@ -51,7 +51,7 @@ fn test_probe_response_durations() {
 
     for duration in durations {
         let probe_response = ProbeResponse {
-            status: Some(200,),
+            status: Some(200),
             duration,
             error: None,
             headers: None,

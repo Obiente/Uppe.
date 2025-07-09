@@ -5,7 +5,7 @@ use clap::{Parser, crate_authors, crate_version};
 mod config;
 mod peer;
 #[derive(Parser, Debug)]
-#[command(about = "Distributed monitoring system", long_about = None)]
+#[command(about = "Uppe. - Monitoring that doesn't let you down!", long_about = None)]
 struct Args {
     #[arg(short = 'V', long)]
     /// Print version
@@ -58,7 +58,7 @@ fn main() {
     let cli = Args::parse();
     if cli.version {
         let authors = crate_authors!().split(':').collect::<Vec<&str>>().join("\", \"");
-        println!("PeerUP service {} - Authors: \"{}\"", crate_version!(), authors);
+        println!("Uppe. service {} - Authors: \"{}\"", crate_version!(), authors);
         return;
     }
     let cfg = config::Config::from_config(cli.config.as_ref()).expect("Failed to fetch config");

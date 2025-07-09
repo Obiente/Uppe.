@@ -30,7 +30,7 @@ fn normalize_toml_path(path: &path::Path) -> path::PathBuf {
     path
 }
 
-/// Get default config path ($XDG_CONFIG_HOME/peerup/config.toml or
+/// Get default config path ($XDG_CONFIG_HOME/uppe/config.toml or
 /// $HOME/.config/...)
 fn default_config_path() -> Result<path::PathBuf, Error> {
     let path = if let Ok(config_home) = env::var("XDG_CONFIG_HOME") {
@@ -41,7 +41,7 @@ fn default_config_path() -> Result<path::PathBuf, Error> {
         return Err(Error::ConfigPathUnavailable);
     };
 
-    Ok(path.join("peerup/config.toml"))
+    Ok(path.join("uppe/config.toml"))
 }
 
 impl Default for Config {
@@ -78,7 +78,7 @@ impl fmt::Display for Config {
 impl Config {
     /// Generate Config structure from file
     ///
-    /// Creates a default config in ~/.config/peerup/config.toml
+    /// Creates a default config in ~/.config/uppe/config.toml
     ///  or the specified path, with the name config.toml if one does not exist
     ///
     /// ```rust

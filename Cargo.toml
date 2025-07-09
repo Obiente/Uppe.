@@ -6,5 +6,7 @@ members = ["crates/*", "apps/server", "apps/service"]
 actix-web = "=4.11.0"
 thiserror = "2.0.12"
 tracing = "0.1.41"
+peerup = { path = "crates/peerup" }
+anyhow = "1.0.98"
 
 dotenvy = "0.15.7"

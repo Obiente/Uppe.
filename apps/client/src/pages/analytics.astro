@@ -1,0 +1,175 @@
+---
+import Header from "$components/Header.astro";
+import Layout from "$layouts/Layout.astro";
+import { 
+  Section, 
+  Grid, 
+  Card, 
+  CardBody, 
+  Heading, 
+  Paragraph, 
+  MetricCard, 
+  Chart, 
+  Table, 
+  ProgressBar, 
+  CircularProgress, 
+  ButtonGroup,
+  Button,
+  Flex
+} from "$ui";
+
+// Mock data
+const performanceMetrics = [
+  { title: "Avg Response", value: "145ms", icon: "PERFORMANCE" as const, change: "↓ 12ms from last week", changeType: "positive" as const },
+  { title: "Uptime", value: "99.2%", icon: "ANALYTICS" as const, change: "↑ 0.3% from last week", changeType: "positive" as const },
+  { title: "Incidents", value: "3", icon: "WARNING" as const, change: "↑ 2 from last week", changeType: "negative" as const },
+  { title: "Peer Nodes", value: "23", icon: "NETWORK" as const, change: "↑ 5 from last week", changeType: "positive" as const }
+];
+
+const timeRangeButtons = [
+  { text: "24H", value: "24h", active: true },
+  { text: "7D", value: "7d", active: false },
+  { text: "30D", value: "30d", active: false },
+  { text: "90D", value: "90d", active: false }
+];
+
+const peerDistribution = [
+  { label: "North America", value: 8, maxValue: 23, variant: "primary" as const, valueText: "8 peers" },
+  { label: "Europe", value: 10, maxValue: 23, variant: "success" as const, valueText: "10 peers" },
+  { label: "Asia", value: 5, maxValue: 23, variant: "warning" as const, valueText: "5 peers" }
+];
+
+const monitorTableHeaders = ["Monitor", "Status", "Uptime", "Avg Response", "Peer Coverage", "Total Checks"];
+const monitorTableRows = [
+  [
+    { text: "Main Website" },
+    { text: "ONLINE", color: "text-status-online" },
+    { text: "99.9%" },
+    { text: "145ms" },
+    { text: "23 peers" },
+    { text: "15,420" }
+  ],
+  [
+    { text: "API Server" },
+    { text: "ONLINE", color: "text-status-online" },
+    { text: "99.8%" },
+    { text: "89ms" },
+    { text: "31 peers" },
+    { text: "18,230" }
+  ],
+  [
+    { text: "Database" },
+    { text: "WARNING", color: "text-status-warning" },
+    { text: "98.5%" },
+    { text: "230ms" },
+    { text: "18 peers" },
+    { text: "12,100" }
+  ],
+  [
+    { text: "CDN" },
+    { text: "OFFLINE", color: "text-status-error" },
+    { text: "95.2%" },
+    { text: "-" },
+    { text: "15 peers" },
+    { text: "9,850" }
+  ]
+];
+---
+
+<Layout title="Analytics - Uppe." description="Detailed analytics and insights for your P2P monitoring">
+  <Header title="Uppe." />
+  
+  <main class="min-h-screen">
+    <Section>
+      <Heading level={1} class="mb-2">Analytics & Insights</Heading>
+      <Paragraph class="text-secondary">Deep dive into your monitoring data and P2P network performance</Paragraph>
+    </Section>
+
+    <Section>
+      <Card>
+        <CardBody>
+          <Flex align="center" justify="between">
+            <Heading level={2}>Time Range</Heading>
+            <ButtonGroup buttons={timeRangeButtons} />
+          </Flex>
+        </CardBody>
+      </Card>
+    </Section>
+
+    <!-- Performance Metrics -->
+    <Section>
+      <Grid cols="4">
+        {performanceMetrics.map((metric) => (
+          <MetricCard 
+            title={metric.title}
+            value={metric.value}
+            icon={metric.icon}
+            change={metric.change}
+            changeType={metric.changeType}
+          />
+        ))}
+      </Grid>
+    </Section>
+
+    <!-- Response Time Chart -->
+    <Section>
+      <Chart title="Response Time Trends" />
+    </Section>
+
+    <!-- Peer Distribution and Network Contribution -->
+    <Section>
+      <Grid cols="2">
+        <Card>
+          <CardBody>
+            <Heading level={3} class="mb-6">Peer Distribution</Heading>
+            <Flex direction="col" gap="4">
+              {peerDistribution.map((item) => (
+                <ProgressBar 
+                  label={item.label}
+                  value={item.value}
+                  maxValue={item.maxValue}
+                  variant={item.variant}
+                  valueText={item.valueText}
+                />
+              ))}
+            </Flex>
+          </CardBody>
+        </Card>
+
+        <Card>
+          <CardBody>
+            <Heading level={3} class="mb-6">Network Contribution</Heading>
+            <CircularProgress 
+              percentage={85}
+              label="Share Ratio"
+              description="Contributing 4,250 checks/day"
+              subtitle="Receiving 3,680 checks/day"
+            />
+          </CardBody>
+        </Card>
+      </Grid>
+    </Section>
+
+    <!-- Monitor Performance Table -->
+    <Section>
+      <Table 
+        title="Monitor Performance"
+        headers={monitorTableHeaders}
+        rows={monitorTableRows}
+      />
+    </Section>
+
+    <Section>
+      <Card>
+        <CardBody>
+          <Heading level={3} class="mb-4">Export Data</Heading>
+          <Flex align="center" gap="4">
+            <Button variant="primary">Export CSV</Button>
+            <Button variant="secondary">Export JSON</Button>
+            <Button variant="secondary">Generate Report</Button>
+          </Flex>
+        </CardBody>
+      </Card>
+    </Section>
+  </main>
+</Layout>

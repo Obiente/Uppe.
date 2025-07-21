@@ -1,0 +1,38 @@
+---
+export interface Props {
+  for?: string;
+  required?: boolean;
+  size?: 'sm' | 'md' | 'lg';
+  class?: string;
+  [key: string]: any;
+}
+
+const { 
+  for: htmlFor,
+  required = false,
+  size = 'md',
+  class: className = '',
+  ...rest
+} = Astro.props;
+
+// Base label classes with modern styling
+const baseClasses = "block font-medium text-primary tracking-wide";
+
+// Size classes
+const sizeClasses = {
+  sm: "text-sm mb-1",
+  md: "text-base mb-2",
+  lg: "text-lg mb-3"
+};
+
+const classes = `${baseClasses} ${sizeClasses[size]} ${className}`;
+---
+
+<label 
+  for={htmlFor}
+  class={classes}
+  {...rest}
+>
+  <slot />
+  {required && <span class="text-status-error ml-1 text-lg">*</span>}
+</label>

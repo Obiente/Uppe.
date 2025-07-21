@@ -1,0 +1,32 @@
+---
+import Button from './Button.astro';
+import { Icon } from './index';
+import { ICONS } from '../../lib/design-system/icons';
+
+interface Props {
+  class?: string;
+}
+
+const { class: className = '' } = Astro.props;
+---
+
+<div class={`flex gap-2 ${className}`}>
+  <Button 
+    variant="secondary" 
+    size="sm" 
+    class="bg-surface-overlay hover:bg-surface-elevated text-primary transition-colors flex items-center gap-2"
+    onclick="pauseGlobe()"
+  >
+    <Icon icon="STOP" />
+    Pause
+  </Button>
+  <Button 
+    variant="secondary" 
+    size="sm" 
+    class="bg-surface-overlay hover:bg-surface-elevated text-primary transition-colors flex items-center gap-2"
+    onclick="resetGlobe()"
+  >
+    <Icon icon="EXTERNAL_LINK" />
+    Reset
+  </Button>
+</div>

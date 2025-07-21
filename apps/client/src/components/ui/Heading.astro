@@ -1,0 +1,44 @@
+---
+import { type TypographySize, type TypographyWeight, typography} from "src/lib/design-system";
+export interface Props {
+  as?: "h1" | "h2" | "h3" | "h4" | "h5" | "h6";
+  size?: TypographySize;
+  weight?: TypographyWeight;
+  color?: "primary" | "secondary" | "tertiary";
+  class?: string;
+  [key: string]: any;
+}
+
+const {
+  as: Tag = "h2",
+  size = "xl",
+  weight = "semibold",
+  color = "primary",
+  class: className = "",
+  ...rest
+}: Props = Astro.props;
+
+// Base heading classes
+const baseClasses = "font-semibold tracking-tight";
+
+// Weight classes
+const weightClasses = {
+  normal: "font-normal",
+  medium: "font-medium",
+  semibold: "font-semibold",
+  bold: "font-bold",
+};
+
+// Color classes
+const colorClasses = {
+  primary: "text-primary",
+  secondary: "text-secondary",
+  tertiary: "text-tertiary",
+};
+
+const classes = `${baseClasses} ${typography.sizes[size]} ${weightClasses[weight]} ${colorClasses[color]} ${className}`;
+---
+
+<Tag class={classes} {...rest}>
+  <slot />
+</Tag>

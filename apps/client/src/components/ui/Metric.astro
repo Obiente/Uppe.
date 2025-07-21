@@ -1,0 +1,110 @@
+---
+import Card from "./Card.astro";
+import CardBody from "./CardBody.astro";
+import Heading from "./Heading.astro";
+import Paragraph from "./Paragraph.astro";
+import { Icon } from "./index";
+import { ICONS } from "../../lib/design-system/icons";
+
+export interface Props {
+  label: string;
+  value: string | number;
+  unit?: string;
+  trend?: "up" | "down" | "stable";
+  color?: "primary" | "secondary" | "success" | "warning" | "error" | "info";
+  size?: "sm" | "md" | "lg";
+  variant?: "default" | "card" | "inline";
+  class?: string;
+  [key: string]: any;
+}
+
+const {
+  label,
+  value,
+  unit,
+  trend,
+  color = "primary",
+  size = "md",
+  variant = "default",
+  class: className = "",
+  ...rest
+}: Props = Astro.props;
+
+const sizeConfig = {
+  sm: { valueSize: "lg" as const, labelSize: "sm" as const },
+  md: { valueSize: "xl" as const, labelSize: "base" as const },
+  lg: { valueSize: "2xl" as const, labelSize: "lg" as const },
+};
+
+const config = sizeConfig[size];
+
+const trendIcons = {
+  up: 'TRENDING_UP' as const,
+  down: 'TRENDING_DOWN' as const,
+  stable: 'DECREASE' as const,
+};
+
+const trendColors = {
+  up: "text-status-success",
+  down: "text-status-error",
+  stable: "text-secondary",
+};
+
+const variantClasses = {
+  default: "text-center",
+  card: "",
+  inline: "flex items-center justify-between",
+};
+---
+
+<div class={`${variantClasses[variant]} ${className}`} {...rest}>
+  {
+    variant === "inline" ? (
+      <div class="flex items-center justify-between w-full">
+        <Paragraph size={config.labelSize} color="secondary">
+          {label}
+        </Paragraph>
+        <div class="flex items-center gap-2">
+          <div class="flex items-center gap-1">
+            <Heading
+              size={config.valueSize}
+              color={"primary"}
+              weight="bold"
+            >
+              {value}
+            </Heading>
+            {unit && (
+              <Paragraph size="sm" color="secondary" class="self-end">
+                {unit}
+              </Paragraph>
+            )}
+          </div>
+          {trend && (
+            <Icon icon={trendIcons[trend]} class={trendColors[trend]} />
+          )}
+        </div>
+      </div>
+    ) : (
+      <Card variant="elevated">
+        <CardBody class="text-center">
+        <div class="flex items-center justify-center gap-1 mb-2">
+          <Heading size={config.valueSize} color={"primary"} weight="bold">
+            {value}
+          </Heading>
+          {unit && (
+            <Paragraph size="sm" color="secondary" class="self-end mb-1">
+              {unit}
+            </Paragraph>
+          )}
+          {trend && (
+            <Icon icon={trendIcons[trend]} class={trendColors[trend]} />
+          )}
+        </div>
+        <Paragraph  size={config.labelSize} color="secondary">
+          {label}
+        </Paragraph>
+        </CardBody>
+      </Card>
+    )
+  }
+</div>

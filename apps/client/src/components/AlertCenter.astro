@@ -1,0 +1,39 @@
+---
+import Card from './ui/Card.astro';
+import Heading from './ui/Heading.astro';
+import Button from './ui/Button.astro';
+import AlertItem from './ui/AlertItem.astro';
+import EmptyAlerts from './ui/EmptyAlerts.astro';
+interface Props {
+	alerts: Array<{
+		id: string;
+		type: 'down' | 'slow' | 'recovered' | 'network';
+		monitor: string;
+		message: string;
+		timestamp: string;
+		severity: 'high' | 'medium' | 'low';
+		acknowledged: boolean;
+	}>;
+}
+
+const { alerts } = Astro.props;
+---
+
+<Card>
+	<div class="flex items-center justify-between p-6 border-b border-primary">
+		<Heading as="h3" size="lg">Alert Center</Heading>
+		<Button variant="secondary" size="sm">
+			View All
+		</Button>
+	</div>
+
+	<div class="space-y-4 p-6">
+		{alerts.length === 0 ? (
+			<EmptyAlerts />
+		) : (
+			alerts.map((alert) => (
+				<AlertItem alert={alert} />
+			))
+		)}
+	</div>
+</Card>

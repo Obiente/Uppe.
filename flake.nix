@@ -1,5 +1,5 @@
 {
-  description = "Flake for PeerUp's development";
+  description = "Flake for Uppe.'s development";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";

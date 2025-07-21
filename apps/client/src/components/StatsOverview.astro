@@ -1,5 +1,6 @@
 ---
-import MetricCard from "./ui/MetricCard.astro";
+import {MetricCard} from "$ui";
+import { ICONS } from "../lib/design-system/icons";
 
 interface Props {
   totalMonitors: number;
@@ -22,7 +23,7 @@ const {
   <MetricCard
     title="Total Monitors"
     value={totalMonitors.toString()}
-    icon="chart"
+    icon="PERFORMANCE"
     change="+4 this week"
     changeType="neutral"
   />
@@ -30,7 +31,7 @@ const {
   <MetricCard
   title="Online"
   value={onlineMonitors.toString()}
-  icon="network"
+  icon="CONNECTION_STRENGTH"
   change="+1 since yesterday"
   changeType="positive"
   />
@@ -38,7 +39,7 @@ const {
   <MetricCard
     title="Offline"
     value={offlineMonitors.toString()}
-    icon="alert"
+    icon="WARNING"
     change="+1 since yesterday"
 	changeType="negative"
   />
@@ -46,7 +47,7 @@ const {
   <MetricCard
     title="Avg Response"
     value={`${avgResponseTime}ms`}
-    icon="lightning"
+    icon="PERFORMANCE"
     change="-56ms since yesterday"
     changeType="negative"
   />
@@ -54,7 +55,7 @@ const {
   <MetricCard
     title="Avg Uptime"
     value={`${avgUptime}%`}
-    icon="network"
+    icon="NETWORK"
     change="+3.4% this month"
     changeType="positive"
   />

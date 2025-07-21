@@ -1,12 +1,14 @@
 ---
 interface Props {
-  className?: string;
+  class?: string;
   size?: 'sm' | 'md' | 'lg' | 'xl' | 'full';
   padding?: 'sm' | 'md' | 'lg' | 'xl';
+  paddingY?: 'sm' | 'md' | 'lg' | 'xl';
   children?: any;
+  [key: string]: any;
 }
 
-const { className = '', size = 'xl', padding = 'md', children } = Astro.props;
+const { class: className = '', size = 'xl', padding = 'md', paddingY = 'md', children } = Astro.props;
 
 // Size classes
 const sizeClasses = {
@@ -17,7 +19,7 @@ const sizeClasses = {
   full: 'max-w-full'
 };
 
-// Padding classes
+// Horizontal padding classes
 const paddingClasses = {
   sm: 'px-4 sm:px-6',
   md: 'px-4 sm:px-6 lg:px-8',
@@ -25,7 +27,15 @@ const paddingClasses = {
   xl: 'px-8 sm:px-12 lg:px-16'
 };
 
-const containerClasses = `${sizeClasses[size]} mx-auto ${paddingClasses[padding]} ${className}`;
+// Vertical padding classes
+const paddingYClasses = {
+  sm: 'py-8',
+  md: 'py-12',
+  lg: 'py-16',
+  xl: 'py-20'
+};
+
+const containerClasses = `${sizeClasses[size]} mx-auto ${paddingClasses[padding]} ${paddingYClasses[paddingY]} ${className}`;
 ---
 
 <div class={containerClasses}>

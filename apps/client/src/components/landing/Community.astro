@@ -1,0 +1,92 @@
+---
+import { 
+  Section, 
+  Container, 
+  Heading, 
+  Paragraph,
+  Icon,
+  Badge,
+  Flex,
+  Stack
+} from '$ui';
+---
+
+<Section padding="xl">
+  <Container>
+    <Stack gap="16">
+      <!-- Main Statement Section -->
+      <Stack align="center" gap="8">
+        <Badge variant="info" size="md" class="bg-accent-primary text-inverse">
+          <Flex align="center" gap="2">
+            <Icon icon="NETWORK" class="w-5 h-5" />
+            Community-Powered
+          </Flex>
+        </Badge>
+        
+        <Stack align="center" gap="6">
+          <Heading level={2} size="5xl" weight="bold" class="text-center max-w-4xl">
+            Why Uppe. exists
+          </Heading>
+          <Paragraph size="xl" color="secondary" weight="medium" align="center" class="max-w-4xl">
+            <strong class="text-accent-primary">Uppe.</strong> was born from people tired of outages going undetected, 
+            tired of paying corporations for basic internet infrastructure, tired of being tracked and monitored themselves. 
+            <strong class="text-accent-secondary">We believe the internet belongs to everyone</strong> — 
+            and everyone should have a say in how it's monitored.
+          </Paragraph>
+        </Stack>
+      </Stack>
+      
+      <!-- Core Principles -->
+      <Stack gap="12">
+        <Heading level={3} size="3xl" weight="bold" class="text-center">
+          Our principles
+        </Heading>
+        
+        <div class="grid gap-8 md:grid-cols-3">
+          <Stack align="center" gap="4">
+            <Icon icon="SUCCESS" class="text-status-success w-8 h-8" />
+            <Heading level={4} size="xl" weight="semibold" class="text-center">
+              Community First
+            </Heading>
+            <Paragraph size="base" color="secondary" align="center">
+              Democratic governance where every voice matters. No corporate overlords, no shareholders.
+            </Paragraph>
+          </Stack>
+          
+          <Stack align="center" gap="4">
+            <Icon icon="INFO" class="text-accent-secondary w-8 h-8" />
+            <Heading level={4} size="xl" weight="semibold" class="text-center">
+              Radical Transparency
+            </Heading>
+            <Paragraph size="base" color="secondary" align="center">
+              Open source code, open decision making, open data. Nothing hidden, everything auditable.
+            </Paragraph>
+          </Stack>
+          
+          <Stack align="center" gap="4">
+            <Icon icon="NETWORK" class="text-accent-primary w-8 h-8" />
+            <Heading level={4} size="xl" weight="semibold" class="text-center">
+              Distributed Power
+            </Heading>
+            <Paragraph size="base" color="secondary" align="center">
+              No single point of control or failure. Resilience through decentralization.
+            </Paragraph>
+          </Stack>
+        </div>
+      </Stack>
+      
+      <!-- Join Section -->
+      <Stack align="center" gap="6">
+        <Stack align="center" gap="4">
+          <Heading level={3} size="2xl" weight="semibold" class="text-center">
+            The movement is growing
+          </Heading>
+          <Paragraph size="lg" color="secondary" align="center" class="max-w-2xl">
+            Thousands of peers across 50+ countries are already monitoring the internet together. 
+            <strong class="text-primary">Every new peer makes the network stronger.</strong>
+          </Paragraph>
+        </Stack>
+      </Stack>
+    </Stack>
+  </Container>
+</Section>

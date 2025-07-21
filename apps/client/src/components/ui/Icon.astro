@@ -1,0 +1,32 @@
+---
+export const prerender = true;
+import { ICONS, getIcon } from "$lib/design-system";
+export interface Props {
+  icon: keyof typeof ICONS;
+  class?: string;
+}
+const { icon, class: className = "" } = Astro.props;
+import { getIconData, iconToSVG, iconToHTML, replaceIDs } from "@iconify/utils";
+
+if (!icon) {
+  return;
+}
+const [iconPack, iconName] = getIcon(icon).split(":");
+const { icons } = await import(`@iconify-json/${iconPack}`).catch(() => {
+  throw new Error(`Icon pack '${iconPack}' not found.`, { cause: this });
+});
+
+let iconData = getIconData(icons, iconName);
+if (!iconData) {
+  throw new Error(`Icon '${iconName}' not found in pack '${iconPack}'.`);
+}
+
+const renderData = iconToSVG(iconData, {});
+const svg = iconToHTML(replaceIDs(renderData.body), {
+  ...renderData.attributes,
+  width: '100%',
+  height: '100%',
+});
+---
+
+<span class={`size-6 ${className}`} set:html={svg} />

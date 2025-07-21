@@ -1,0 +1,158 @@
+---
+import Header from "$components/Header.astro";
+import Hero from "$components/Hero.astro";
+import StatsOverview from "$components/StatsOverview.astro";
+import MonitorOverview from "$components/MonitorOverview.astro";
+import ShareRatio from "$components/ShareRatio.astro";
+import NetworkStatus from "$components/NetworkStatus.astro";
+import GlobalPingMap from "$components/GlobalPingMap.astro";
+import UptimeChart from "$components/UptimeChart.astro";
+import AlertCenter from "$components/AlertCenter.astro";
+import IncidentList from "$components/IncidentList.astro";
+import Layout from "$layouts/Layout.astro";
+
+import ActionCard from "../components/ui/ActionCard.astro";
+import Section from "../components/ui/Section.astro";
+import Grid from "../components/ui/Grid.astro";
+
+// Import mock data
+import { mockMonitors, mockDetailedMonitors } from "../mock/monitors";
+import { mockGlobalPingData } from "../mock/network";
+import { mockIncidents } from "../mock/incidents";
+import { mockAlerts } from "../mock/alerts";
+import { mockUptimeData, mockHours, mockNetworkStats } from "../mock/stats";
+
+// Calculate stats from mock data
+const totalMonitors = mockMonitors.length;
+const onlineMonitors = mockMonitors.filter((m) => m.status === "online").length;
+const offlineMonitors = mockMonitors.filter(
+  (m) => m.status === "offline"
+).length;
+const avgResponseTime = Math.round(
+  mockMonitors.reduce((acc, m) => acc + m.responseTime, 0) / totalMonitors
+);
+const avgUptime =
+  Math.round(
+    (mockMonitors.reduce((acc, m) => acc + m.uptime, 0) / totalMonitors) * 10
+  ) / 10;
+
+const {
+  shareRatio,
+  monitoringForOthers,
+  receivingFromOthers,
+  contributionScore,
+  connectedPeers,
+  totalPeers,
+  networkHealth,
+  myNodeId,
+  bandwidthUsed,
+  bandwidthLimit,
+  checksPerformedToday,
+  checksReceivedToday,
+} = mockNetworkStats;
+---
+
+<Layout>
+  <Header />
+
+  <main class="min-h-screen">
+    <!-- Hero Section -->
+    <Section>
+      <Hero
+        title="Decentralized Uptime Monitoring"
+        description="Monitor your services with our peer-to-peer network. Get real-time alerts, detailed analytics, and guaranteed 100% coverage even when your node is offline."
+        actionText="Add Your First Monitor"
+        actionUrl="/add-monitor"
+      />
+    </Section>
+
+    <!-- Stats Overview -->
+    <Section>
+      <StatsOverview
+        totalMonitors={totalMonitors}
+        onlineMonitors={onlineMonitors}
+        offlineMonitors={offlineMonitors}
+        avgResponseTime={avgResponseTime}
+        avgUptime={avgUptime}
+      />
+    </Section>
+    <!-- P2P Network Status and Share Ratio -->
+    <Section>
+      <Grid cols="2">
+        <NetworkStatus
+          connectedPeers={connectedPeers}
+          totalPeers={totalPeers}
+          networkHealth={networkHealth}
+          myNodeId={myNodeId}
+          bandwidthUsed={bandwidthUsed}
+          bandwidthLimit={bandwidthLimit}
+          checksPerformedToday={checksPerformedToday}
+          checksReceivedToday={checksReceivedToday}
+        />
+
+        <ShareRatio
+          shareRatio={shareRatio}
+          monitoringForOthers={monitoringForOthers}
+          receivingFromOthers={receivingFromOthers}
+          contributionScore={contributionScore}
+        />
+      </Grid>
+    </Section>
+
+    <!-- Global Ping Map -->
+    <Section>
+      <GlobalPingMap
+        peerData={mockGlobalPingData}
+        targetUrl="https://myapp.com"
+      />
+    </Section>
+
+    <!-- Alerts and Monitor Overview  -->
+    <Section>
+      <Grid cols="2">
+        <MonitorOverview monitors={mockDetailedMonitors} />
+        <AlertCenter alerts={mockAlerts} />
+      </Grid>
+    </Section>
+
+    <!-- Recent Incidents -->
+    <Section>
+      <Grid cols="2">
+
+      <UptimeChart hours={mockHours} uptimeData={mockUptimeData} />
+
+      <IncidentList recentIncidents={mockIncidents} />
+      </Grid>
+    </Section>
+
+    <!-- Quick Actions -->
+    <Section title="Quick Actions">
+      <Grid cols="4">
+        <ActionCard
+          href="/add-monitor"
+          icon="ADD"
+          title="Add Monitor"
+          description="Monitor new service"
+        />
+        <ActionCard
+          href="/status-pages"
+          icon="DOCUMENT"
+          title="Status Pages"
+          description="Manage public pages"
+        />
+        <ActionCard
+          href="/network-map"
+          icon="GLOBAL"
+          title="Network Map"
+          description="View peer network"
+        />
+        <ActionCard
+          href="/analytics"
+          icon="ANALYTICS"
+          title="Analytics"
+          description="View detailed stats"
+        />
+      </Grid>
+    </Section>
+  </main>
+</Layout>

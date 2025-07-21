@@ -1,0 +1,63 @@
+---
+export interface Props {
+  variant?: "info" | "success" | "warning" | "error";
+  title?: string;
+  dismissible?: boolean;
+  class?: string;
+  [key: string]: any;
+}
+
+const { 
+  variant = 'info',
+  title,
+  dismissible = false,
+  class: className = '',
+  ...rest
+} = Astro.props;
+
+// Base alert classes with modern styling
+const baseClasses = "p-6 rounded-2xl border-l-4 shadow-lg transition-all duration-300";
+
+// Variant classes with simple styling
+const variantClasses = {
+  info: "bg-status-info/10 border-l-status-info text-primary",
+  success: "bg-status-success/10 border-l-status-success text-primary",
+  warning: "bg-status-warning/10 border-l-status-warning text-primary",
+  error: "bg-status-error/10 border-l-status-error text-primary"
+};
+
+const alertClasses = `${baseClasses} ${variantClasses[variant]} ${className}`;
+
+const iconColors = {
+  success: 'text-status-success',
+  warning: 'text-status-warning',
+  error: 'text-status-error',
+  info: 'text-status-info'
+};
+---
+
+<div class={alertClasses} {...rest}>
+  <div class="flex items-start gap-4">
+    <div class="flex-shrink-0">
+      <span class={`text-2xl ${iconColors[variant]}`}>"variant]"</span>
+    </div>
+    <div class="flex-1">
+      {title && (
+        <h4 class="font-semibold mb-2 text-primary text-lg">{title}</h4>
+      )}
+      <div class="text-primary leading-relaxed">
+        <slot />
+      </div>
+    </div>
+    {dismissible && (
+      <button 
+        type="button" 
+        class="flex-shrink-0 text-secondary hover:text-primary transition-colors duration-200 p-1 rounded-lg hover:bg-bg-secondary"
+        onclick="this.parentElement.parentElement.style.display='none'"
+      >
+        <span class="sr-only">Dismiss</span>
+        <span class="text-xl">×</span>
+      </button>
+    )}
+  </div>
+</div>

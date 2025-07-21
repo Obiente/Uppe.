@@ -17,8 +17,8 @@
       "name": "Service"
     },
     {
-      "name": "Root",
-      "path": "./"
+      "path": "./",
+      "name": "Uppe."
     },
   ],
 }

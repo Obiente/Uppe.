@@ -1,0 +1,146 @@
+---
+import Card from "./ui/Card.astro";
+import CardBody from "./ui/CardBody.astro";
+import Grid from "./ui/Grid.astro";
+import Heading from "./ui/Heading.astro";
+import Metric from "./ui/Metric.astro";
+import CircularProgress from "./ui/CircularProgress.astro";
+import ProgressBar from "./ui/ProgressBar.astro";
+import Button from "./ui/Button.astro";
+import StatusBadge from "./ui/StatusBadge.astro";
+import Container  from "./ui/Container.astro";
+
+interface Props {
+  connectedPeers: number;
+  totalPeers: number;
+  networkHealth: number;
+  myNodeId: string;
+  bandwidthUsed: number;
+  bandwidthLimit: number;
+  checksPerformedToday: number;
+  checksReceivedToday: number;
+}
+
+const {
+  connectedPeers,
+  totalPeers,
+  networkHealth,
+  myNodeId,
+  bandwidthUsed,
+  bandwidthLimit,
+  checksPerformedToday,
+  checksReceivedToday,
+} = Astro.props;
+
+const getHealthStatus = (health: number) => {
+  if (health >= 90) return "Excellent";
+  if (health >= 70) return "Good";
+  return "Degraded";
+};
+
+const getHealthVariant = (health: number) => {
+  if (health >= 90) return "success" as const;
+  if (health >= 70) return "warning" as const;
+  return "error" as const;
+};
+
+const getProgressVariant = (used: number, limit: number) => {
+  const percentage = used / limit;
+  if (percentage > 0.8) return "error" as const;
+  if (percentage > 0.6) return "warning" as const;
+  return "success" as const;
+};
+---
+
+<Card>
+  <CardBody class="border-b border-primary">
+    <div class="flex items-center justify-between">
+      <Heading as="h3" size="lg">Network Status</Heading>
+      <StatusBadge
+        status={networkHealth >= 90
+          ? "online"
+          : networkHealth >= 70
+            ? "degraded"
+            : "offline"}
+        showIndicator={true}
+      />
+    </div>
+  </CardBody>
+
+  <CardBody>
+    <div class="flex justify-center mb-6">
+      <CircularProgress
+        percentage={networkHealth}
+        label="Health"
+        description={getHealthStatus(networkHealth)}
+        size="lg"
+        variant={getHealthVariant(networkHealth)}
+      />
+    </div>
+
+    <!-- Network Stats -->
+    <Grid cols="2" gap="4" class="mb-6">
+      <Metric
+        label="Connected Peers"
+        value={connectedPeers.toString()}
+        variant="card"
+        size="sm"
+        color="info"
+        trend="up"
+      />
+      <Metric
+        label="Total Network"
+        value={totalPeers.toString()}
+        variant="card"
+        size="sm"
+        color="primary"
+      />
+    </Grid>
+
+    <!-- My Node Info -->
+    <Card variant="elevated">
+      <CardBody padding="sm">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-primary font-medium">My Node</span>
+          <span class="text-accent-primary text-sm font-mono">{myNodeId}</span>
+        </div>
+        <Grid cols="2" gap="4">
+          <Metric
+            label="Checks Performed"
+            value={checksPerformedToday.toLocaleString()}
+            variant="inline"
+            size="sm"
+          />
+          <Metric
+            label="Checks Received"
+            value={checksReceivedToday.toLocaleString()}
+            variant="inline"
+            size="sm"
+          />
+        </Grid>
+      </CardBody>
+    </Card>
+
+    <!-- Bandwidth Usage -->
+    <CardBody>
+      <ProgressBar
+        label="Bandwidth Usage"
+        value={bandwidthUsed}
+        maxValue={bandwidthLimit}
+        variant={getProgressVariant(bandwidthUsed, bandwidthLimit)}
+        valueText={`${bandwidthUsed}MB / ${bandwidthLimit}MB`}
+        size="md"
+      />
+    </CardBody>
+
+    <!-- Network Actions -->
+    <Grid cols="2" gap="2">
+      <Button variant="primary" size="sm" href="/network-map">
+        View Network Map
+      </Button>
+      <Button variant="secondary" size="sm" href="/settings">
+        Node Settings
+      </Button>
+    </Grid>
+  </CardBody>
+</Card>

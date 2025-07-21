@@ -1,0 +1,66 @@
+---
+export interface Props {
+  size?: 'xs' | 'sm' | 'base' | 'lg' | 'xl';
+  color?: 'primary' | 'secondary' | 'tertiary';
+  leading?: 'tight' | 'normal' | 'relaxed' | 'loose';
+  weight?: 'normal' | 'medium' | 'semibold';
+  align?: 'left' | 'center' | 'right' | 'justify';
+  class?: string;
+  [key: string]: any;
+}
+
+const { 
+  size = 'base',
+  color = 'primary',
+  leading = 'normal',
+  weight = 'normal',
+  align = 'left',
+  class: className = '',
+  ...rest
+} = Astro.props;
+
+// Size classes
+const sizeClasses = {
+  xs: 'text-xs',
+  sm: 'text-sm',
+  base: 'text-base',
+  lg: 'text-lg',
+  xl: 'text-xl'
+};
+
+// Color classes
+const colorClasses = {
+  primary: 'text-primary',
+  secondary: 'text-secondary',
+  tertiary: 'text-tertiary'
+};
+
+// Leading classes
+const leadingClasses = {
+  tight: 'leading-tight',
+  normal: 'leading-normal',
+  relaxed: 'leading-relaxed',
+  loose: 'leading-loose'
+};
+
+// Weight classes
+const weightClasses = {
+  normal: 'font-normal',
+  medium: 'font-medium',
+  semibold: 'font-semibold'
+};
+
+// Alignment classes
+const alignClasses = {
+  left: 'text-left',
+  center: 'text-center',
+  right: 'text-right',
+  justify: 'text-justify'
+};
+
+const classes = `${sizeClasses[size]} ${colorClasses[color]} ${leadingClasses[leading]} ${weightClasses[weight]} ${alignClasses[align]} ${className}`;
+---
+
+<p class={classes} {...rest}>
+  <slot />
+</p>

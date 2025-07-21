@@ -1,0 +1,166 @@
+---
+import Card from './ui/Card.astro';
+import CardBody from './ui/CardBody.astro';
+import Grid from './ui/Grid.astro';
+import Flex from './ui/Flex.astro';
+import Stack from './ui/Stack.astro';
+import Heading from './ui/Heading.astro';
+import Button from './ui/Button.astro';
+import StatusIndicator from './ui/StatusIndicator.astro';
+import Badge from './ui/Badge.astro';
+import Icon from './ui/Icon.astro';
+import Paragraph from './ui/Paragraph.astro';
+import UptimeHistoryBar from './ui/UptimeHistoryBar.astro';
+import MetricItem from './ui/MetricItem.astro';
+
+interface Props {
+	monitors: Array<{
+		id: string;
+		name: string;
+		url: string;
+		status: 'online' | 'offline' | 'warning';
+		uptime: number;
+		avgPing: number;
+		totalChecks: number;
+		lastIncident: string | null;
+		peerCoverage: number;
+		uptimeHistory?: boolean[]; // Array of last 30 days uptime (true = up, false = down)
+	}>;
+}
+
+const { monitors } = Astro.props;
+
+// Generate mock uptime history if not provided
+const generateUptimeHistory = (uptime: number) => {
+	return Array.from({ length: 30 }, () => Math.random() < (uptime / 100));
+};
+
+const formatUrl = (url: string) => {
+	try {
+		const urlObj = new URL(url);
+		return urlObj.hostname;
+	} catch {
+		return url;
+	}
+};
+
+const getStatusColor = (status: string) => {
+	switch (status) {
+		case 'online': return 'text-status-success';
+		case 'offline': return 'text-status-error';
+		case 'warning': return 'text-status-warning';
+		default: return 'text-secondary';
+	}
+};
+
+const getResponseTimeColor = (ping: number) => {
+	if (ping < 200) return 'text-status-success';
+	if (ping < 500) return 'text-status-warning';
+	return 'text-status-error';
+};
+---
+
+<Card>
+	<CardBody class="border-b border-primary">
+		<Grid cols="2" class="items-center">
+			<div>
+				<Heading level={3} size="xl">Monitor Overview</Heading>
+				<Paragraph class="text-secondary text-sm">
+					{monitors.length} monitor{monitors.length !== 1 ? 's' : ''} across the network
+				</Paragraph>
+			</div>
+			<Flex justify="end">
+				<Button variant="secondary" size="sm">
+					View All Details
+				</Button>
+			</Flex>
+		</Grid>
+	</CardBody>
+
+	<CardBody>
+		<Grid cols="1" gap="3">
+			{monitors.map((monitor) => {
+				const uptimeHistory = monitor.uptimeHistory || generateUptimeHistory(monitor.uptime);
+				return (
+					<Card class="border hover:shadow-sm transition-all duration-200 cursor-pointer group">
+						<CardBody padding="md">
+							<Stack gap="2">
+								<!-- Header Row -->
+								<Flex align="center" justify="between">
+									<Flex align="center" gap="4">
+										<StatusIndicator status={monitor.status} size="md" />
+										<span>
+											<Heading level={2} size="xl" class="leading-none truncate group-hover:text-accent-primary transition-colors">
+												{monitor.name}
+											</Heading>
+											<Paragraph color="tertiary" class="leading-none">
+												{formatUrl(monitor.url)}
+											</Paragraph>
+										</span>
+									</Flex>
+									
+									<!-- Primary Uptime Display -->
+									<Flex align="center" gap="3">
+										<div class="text-right">
+											<Paragraph class={`text-lg font-semibold ${getStatusColor(monitor.status)}`}>
+												{monitor.uptime}%
+											</Paragraph>
+											<Paragraph class="text-tertiary text-xs uppercase tracking-wide">uptime</Paragraph>
+										</div>
+									</Flex>
+								</Flex>
+
+								<!-- Uptime History -->
+
+								<!-- Secondary Metrics Footer -->
+								<Flex align="center" justify="between">
+									<Flex gap="6">
+										<MetricItem 
+											icon="PERFORMANCE"
+											value={`${monitor.avgPing}ms`}
+											label="response"
+											valueColor={getResponseTimeColor(monitor.avgPing)}
+										/>
+										<MetricItem 
+											icon="ANALYTICS"
+											value={monitor.totalChecks.toLocaleString()}
+											label="checks"
+										/>
+										<MetricItem 
+											icon="NETWORK"
+											value={monitor.peerCoverage.toString()}
+											label="peers"
+										/>
+									</Flex>
+									
+									{monitor.lastIncident && (
+										<Badge variant="warning" size="sm">
+											{monitor.lastIncident}
+										</Badge>
+									)}
+
+
+								</Flex>
+								<UptimeHistoryBar uptimeHistory={uptimeHistory} />
+							</Stack>
+						</CardBody>
+					</Card>
+				);
+			})}
+		</Grid>
+	</CardBody>
+//TODO: remove this condition after demo
+	{monitors.length === 0 || true && (
+		<CardBody padding="xl">
+			<Stack align="center" gap="4">
+				<Heading level={3} size="lg">No monitors configured yet</Heading>
+				<Paragraph align='center' class="text-secondary">
+					Start monitoring your services and websites by adding your first monitor.
+				</Paragraph>
+				<Button variant="primary" size="sm">
+					Add your first monitor
+				</Button>
+			</Stack>
+		</CardBody>
+	)}
+</Card>

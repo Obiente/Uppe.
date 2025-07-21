@@ -1,0 +1,150 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Header from '../components/Header.astro';
+import { 
+  Section, 
+  Grid, 
+  Card, 
+  CardBody, 
+  Heading, 
+  Paragraph, 
+  Button,
+  MetricDisplay,
+  StatusPageCard,
+  Icon
+} from "$ui";
+
+// Mock data for public status pages
+const statusPages = [
+	{
+		id: '1',
+		title: 'Production API Status',
+		slug: 'production-api',
+		url: 'https://api.example.com',
+		services: ['API Server', 'Database', 'CDN'],
+		uptime: 99.97,
+		visits: 1247,
+		lastIncident: '2024-01-10T08:15:00Z',
+		isActive: true,
+		created: '2024-01-01T00:00:00Z'
+	},
+	{
+		id: '2',
+		title: 'Website Status',
+		slug: 'website-status',
+		url: 'https://example.com',
+		services: ['Web Server', 'Load Balancer'],
+		uptime: 99.85,
+		visits: 856,
+		lastIncident: '2024-01-12T14:23:00Z',
+		isActive: true,
+		created: '2024-01-05T00:00:00Z'
+	},
+	{
+		id: '3',
+		title: 'Internal Tools',
+		slug: 'internal-tools',
+		url: 'https://tools.example.com',
+		services: ['Admin Panel', 'Monitoring Dashboard'],
+		uptime: 98.92,
+		visits: 234,
+		lastIncident: '2024-01-14T16:45:00Z',
+		isActive: false,
+		created: '2024-01-10T00:00:00Z'
+	}
+];
+---
+
+<Layout title="Public Status Pages - Uppe.">
+	<Header />
+	
+	<main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+		<Section>
+			<div class="flex items-center justify-between mb-4">
+				<div>
+					<Heading level={1} class="mb-2">Public Status Pages</Heading>
+					<Paragraph class="text-secondary">Create and manage public status pages for your services</Paragraph>
+				</div>
+				<Button variant="primary">
+					Create New Page
+				</Button>
+			</div>
+			
+			<!-- Quick Stats -->
+			<Grid cols="4" class="mb-8">
+				<Card>
+					<CardBody>
+						<MetricDisplay 
+							value={statusPages.length}
+							label="Total Pages"
+							color="primary"
+						/>
+					</CardBody>
+				</Card>
+				<Card>
+					<CardBody>
+						<MetricDisplay 
+							value={statusPages.filter(p => p.isActive).length}
+							label="Active Pages"
+							color="success"
+						/>
+					</CardBody>
+				</Card>
+				<Card>
+					<CardBody>
+						<MetricDisplay 
+							value={statusPages.reduce((sum, p) => sum + p.visits, 0).toLocaleString()}
+							label="Total Visits"
+							color="warning"
+						/>
+					</CardBody>
+				</Card>
+				<Card>
+					<CardBody>
+						<MetricDisplay 
+							value={`${(statusPages.reduce((sum, p) => sum + p.uptime, 0) / statusPages.length).toFixed(1)}%`}
+							label="Avg. Uptime"
+							color="primary"
+						/>
+					</CardBody>
+				</Card>
+			</Grid>
+		</Section>
+
+		<!-- Status Pages List -->
+		<Section>
+			<div class="space-y-4">
+				{statusPages.map((page) => (
+					<StatusPageCard
+						title={page.title}
+						slug={page.slug}
+						isActive={page.isActive}
+						services={page.services}
+						uptime={page.uptime}
+						visits={page.visits}
+						lastIncident={page.lastIncident}
+						created={page.created}
+					/>
+				))}
+			</div>
+		</Section>
+
+		<!-- Create First Page CTA -->
+		<Section>
+			<Card>
+				<CardBody>
+					<div class="text-center py-8">
+						<div class="bg-accent-primary/10 p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+							<Icon icon="DASHBOARD" class="text-accent-primary" />
+						</div>
+						<Heading level={3} class="mb-2">Ready to go public?</Heading>
+						<Paragraph class="text-secondary mb-4">Create your first public status page and keep your users informed about your service status.</Paragraph>
+						<Button variant="primary" size="lg">
+							Create Status Page
+						</Button>
+					</div>
+				</CardBody>
+			</Card>
+		</Section>
+	</main>
+</Layout>

@@ -1,7 +1,7 @@
 {
-  "name": "@obiente/peerup",
+  "name": "@obiente/uppe",
   "version": "1.0.0",
-  "description": "",
+  "description": "Monitoring that doesn't let you down!",
   "main": "index.js",
   "scripts": {
     "build": "turbo run build",
@@ -9,7 +9,7 @@
     "lint": "turbo run lint"
   },
   "keywords": [
-    "peerup",
+    "uppe",
     "obiente",
     "uptime",
     "p2p",
@@ -20,7 +20,7 @@
     "name": "Obiente",
     "url": "https://obiente.com",
     "github": "Obiente",
-    "email": "peerup@obiente.dev"
+    "email": "uppe@obiente.dev"
   },
   "license": "ISC",
   "packageManager": "pnpm@10.12.1",

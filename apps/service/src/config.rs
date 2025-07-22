@@ -13,8 +13,15 @@ pub enum Error {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Config {
     pub zeromq: ZeroMQ,
+    pub preferences: Preferences,
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Preferences {
+    pub use_peerup_layer: bool,
+    pub allow_peer_leech: bool,
+    pub minimum_peer_mr: isize,
+}
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ZeroMQ {
     pub bind: String,
@@ -46,7 +53,14 @@ fn default_config_path() -> Result<path::PathBuf, Error> {
 
 impl Default for Config {
     fn default() -> Self {
-        Self { zeromq: ZeroMQ { bind: "*".into(), port: 5555 } }
+        Self {
+            zeromq: ZeroMQ { bind: "*".into(), port: 5555 },
+            preferences: Preferences {
+                use_peerup_layer: true,
+                allow_peer_leech: false,
+                minimum_peer_mr: 0,
+            },
+        }
     }
 }
 

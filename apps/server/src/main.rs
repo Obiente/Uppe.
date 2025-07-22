@@ -19,10 +19,7 @@ async fn main() -> Result<(), AppError> {
 }
 
 async fn run_server(addr: SocketAddr) -> Result<(), AppError> {
-    HttpServer::new(|| App::new().configure(routes::routes))
-        .bind(addr)?
-        .run()
-        .await?;
+    HttpServer::new(|| App::new().configure(routes::routes)).bind(addr)?.run().await?;
 
     Ok(())
 }

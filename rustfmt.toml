@@ -1,39 +1,9 @@
-# Formatting width settings
+# Opinionated rustfmt configuration for Uppe.
 max_width = 100
-use_small_heuristics = "Max"
-
-# Indentation & spacing
-tab_spaces = 4
 hard_tabs = false
+use_small_heuristics = "Max"
 newline_style = "Unix"
-
-# Function & struct formatting
-fn_call_width = 80
-fn_single_line = false
-struct_lit_width = 80
-struct_variant_width = 80
-
-# Imports & ordering
-imports_granularity = "Module"
-group_imports = "StdExternalCrate"
 reorder_imports = true
 reorder_modules = true
-imports_layout = "HorizontalVertical"
-
-# Wrapping & line breaking
-wrap_comments = true
-format_strings = true
-match_arm_leading_pipes = "Preserve"
-match_block_trailing_comma = true
-trailing_comma = "Vertical"
-chain_width = 80
-
-# Miscellaneous
-condense_wildcard_suffixes = true
-force_explicit_abi = true
+struct_variant_width = 40
 merge_derives = true
-normalize_comments = true
-normalize_doc_attributes = true
-use_field_init_shorthand = true
-use_try_shorthand = true
-edition = "2024"

@@ -6,7 +6,12 @@
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
-    "lint": "turbo run lint"
+    "dev:server": "turbo run dev --filter=@uppe/server",
+    "dev:service": "turbo run dev --filter=@uppe/service",
+    "dev:client": "turbo run dev --filter=@uppe/client",
+    "lint": "turbo run lint",
+    "proto": "turbo run proto",
+    "test": "turbo run test"
   },
   "keywords": [
     "uppe",
@@ -25,6 +30,6 @@
   "license": "ISC",
   "packageManager": "pnpm@10.12.1",
   "devDependencies": {
-    "turbo": "^2.5.4"
+    "turbo": "^2.7.3"
   }
 }

@@ -1,0 +1,90 @@
+mod types;
+mod state;
+mod ui;
+mod events;
+
+use anyhow::Result;
+use crossterm::event::{self, EnableMouseCapture, DisableMouseCapture};
+use crossterm::terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen};
+use crossterm::cursor::{Hide, Show};
+use crossterm::execute;
+use ratatui::Terminal;
+use ratatui::backend::CrosstermBackend;
+use std::time::Duration;
+
+use crate::database::{Database, DatabaseImpl};
+use crate::pool::LibsqlPool;
+
+use state::AppState;
+
+/// Run TUI with P2P information
+pub async fn run_tui_with_p2p(pool: LibsqlPool, peer_id: String, p2p_enabled: bool) -> Result<()> {
+    // Prepare DB
+    let conn = pool.get().await?;
+    crate::database::initialize_database(&conn).await?;
+    drop(conn);
+    let db = DatabaseImpl::new_from_pool(pool);
+
+    // Load initial data
+    let mut state = AppState::new();
+    state.set_peer_info(peer_id, p2p_enabled);
+    state.monitors = db.get_enabled_monitors().await?;
+    if !state.monitors.is_empty() {
+        let uuid = state.monitors[state.selected].uuid;
+        state.results = db.get_recent_results(uuid, 50).await?;
+    }
+
+    // Init terminal in alternate screen
+    enable_raw_mode()?;
+    let mut stdout = std::io::stdout();
+    execute!(stdout, EnterAlternateScreen, Hide, EnableMouseCapture)?;
+    let backend = CrosstermBackend::new(&mut stdout);
+    let mut terminal = Terminal::new(backend)?;
+    terminal.clear()?;
+
+    loop {
+        // Periodic auto-refresh if enabled and no overlay is active
+        if state.auto_refresh
+            && state.last_refresh.elapsed() >= Duration::from_secs(state.refresh_interval_secs)
+            && !state.show_help
+            && !state.show_edit
+            && !state.show_delete_confirm
+            && !state.show_result_detail
+        {
+            state.monitors = db.get_enabled_monitors().await?;
+            if let Some(m) = state.monitors.get(state.selected) {
+                state.results = db.get_recent_results(m.uuid, 50).await?;
+            } else {
+                state.results.clear();
+            }
+            state.last_refresh = std::time::Instant::now();
+        }
+
+        // Render UI
+        terminal.draw(|f| {
+            ui::render(f, &mut state);
+        })?;
+
+        // Poll for events
+        if event::poll(Duration::from_millis(250))? {
+            let ev = event::read()?;
+            let should_quit = events::handle_event(&mut state, ev, &db).await?;
+            
+            if should_quit {
+                break;
+            }
+        }
+    }
+
+    // Cleanup terminal
+    drop(terminal);
+    execute!(stdout, DisableMouseCapture, Show, LeaveAlternateScreen)?;
+    disable_raw_mode()?;
+    Ok(())
+}
+
+/// Backward compatible wrapper
+#[allow(dead_code)]
+pub async fn run_tui(pool: LibsqlPool) -> Result<()> {
+    run_tui_with_p2p(pool, "unknown".into(), false).await
+}

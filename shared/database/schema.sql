@@ -176,9 +176,11 @@ CREATE TABLE IF NOT EXISTS schema_migrations (
 -- | 'Timeout'  | Response exceeded timeout_seconds              |
 -- | 'Error'    | Network error, DNS failure, etc.               |
 -- | 'Degraded' | Responded but latency > degraded_threshold     |
+-- | 'Unknown'  | Status could not be determined (fallback)      |
 --
 -- Note: Status is stored as TEXT for readability and flexibility.
 -- Go API should map these to protobuf enum values.
+-- Rust service may emit 'Unknown' as a fallback when no other status applies.
 -- ============================================================================
 
 -- ============================================================================

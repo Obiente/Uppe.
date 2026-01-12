@@ -37,6 +37,11 @@ pub struct AppState {
     // P2P status
     pub peer_id: String,
     pub p2p_enabled: bool,
+    pub connected_peers: usize,
+    pub total_peers_seen: usize,
+    pub results_shared: usize,
+    pub results_received: usize,
+    pub last_peer_event: Option<String>,
 
     // Validation
     pub validation_error: Option<String>,
@@ -65,8 +70,30 @@ impl AppState {
             refresh_interval_secs: 5,
             peer_id: String::new(),
             p2p_enabled: false,
+            connected_peers: 0,
+            total_peers_seen: 0,
+            results_shared: 0,
+            results_received: 0,
+            last_peer_event: None,
             validation_error: None,
         }
+    }
+
+    pub fn update_peer_stats(
+        &mut self,
+        connected: usize,
+        total: usize,
+        shared: usize,
+        received: usize,
+    ) {
+        self.connected_peers = connected;
+        self.total_peers_seen = total;
+        self.results_shared = shared;
+        self.results_received = received;
+    }
+
+    pub fn record_peer_event(&mut self, event: String) {
+        self.last_peer_event = Some(event);
     }
 
     pub fn set_peer_info(&mut self, peer_id: String, enabled: bool) {

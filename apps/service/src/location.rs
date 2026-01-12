@@ -151,10 +151,11 @@ pub fn init_location_cache(update_interval_secs: u64, privacy_level: LocationPri
 pub fn init_location(location: Location) {
     init_location_cache(0, LocationPrivacy::Full); // 0 = never auto-update
     if let Some(cache) = LOCATION_CACHE.get()
-        && let Ok(mut cache) = cache.write() {
-            cache.location = location;
-            cache.last_update = Instant::now();
-        }
+        && let Ok(mut cache) = cache.write()
+    {
+        cache.location = location;
+        cache.last_update = Instant::now();
+    }
 }
 
 /// Get the configured location (with automatic updates if enabled)

@@ -39,9 +39,10 @@ pub async fn handle_edit_popup(
 
         KeyCode::End => {
             if state.edit_field_index < 2
-                && let Some(text) = state.get_current_field_text() {
-                    state.text_cursor = text.len();
-                }
+                && let Some(text) = state.get_current_field_text()
+            {
+                state.text_cursor = text.len();
+            }
         }
 
         // Backspace in text fields
@@ -105,11 +106,12 @@ pub async fn handle_edit_popup(
             } else {
                 // Validate before saving
                 if state.validate_current_monitor()
-                    && let Some(m) = state.edit_monitor.take() {
-                        db.save_monitor(&m).await?;
-                        state.close_edit();
-                        state.refresh_monitors_and_results(db).await?;
-                    }
+                    && let Some(m) = state.edit_monitor.take()
+                {
+                    db.save_monitor(&m).await?;
+                    state.close_edit();
+                    state.refresh_monitors_and_results(db).await?;
+                }
             }
         }
 
@@ -119,9 +121,10 @@ pub async fn handle_edit_popup(
             if state.edit_field_index < 2 {
                 // Move cursor right in text field
                 if let Some(text) = state.get_current_field_text()
-                    && state.text_cursor < text.len() {
-                        state.text_cursor += 1;
-                    }
+                    && state.text_cursor < text.len()
+                {
+                    state.text_cursor += 1;
+                }
             } else {
                 // Adjust values in other fields
                 if let Some(m) = state.edit_monitor.as_mut() {
@@ -258,33 +261,38 @@ pub async fn handle_edit_popup(
                     }
                     '+' => {
                         if let Some(m) = state.edit_monitor.as_mut()
-                            && state.edit_field_index == 3 {
-                                m.interval_seconds = m.interval_seconds.saturating_add(5);
-                            }
+                            && state.edit_field_index == 3
+                        {
+                            m.interval_seconds = m.interval_seconds.saturating_add(5);
+                        }
                     }
                     '-' => {
                         if let Some(m) = state.edit_monitor.as_mut()
-                            && state.edit_field_index == 3 {
-                                m.interval_seconds = m.interval_seconds.saturating_sub(5).max(1);
-                            }
+                            && state.edit_field_index == 3
+                        {
+                            m.interval_seconds = m.interval_seconds.saturating_sub(5).max(1);
+                        }
                     }
                     '[' => {
                         if let Some(m) = state.edit_monitor.as_mut()
-                            && state.edit_field_index == 4 {
-                                m.timeout_seconds = m.timeout_seconds.saturating_sub(1).max(1);
-                            }
+                            && state.edit_field_index == 4
+                        {
+                            m.timeout_seconds = m.timeout_seconds.saturating_sub(1).max(1);
+                        }
                     }
                     ']' => {
                         if let Some(m) = state.edit_monitor.as_mut()
-                            && state.edit_field_index == 4 {
-                                m.timeout_seconds = m.timeout_seconds.saturating_add(1);
-                            }
+                            && state.edit_field_index == 4
+                        {
+                            m.timeout_seconds = m.timeout_seconds.saturating_add(1);
+                        }
                     }
                     ' ' => {
                         if let Some(m) = state.edit_monitor.as_mut()
-                            && state.edit_field_index == 5 {
-                                m.enabled = !m.enabled;
-                            }
+                            && state.edit_field_index == 5
+                        {
+                            m.enabled = !m.enabled;
+                        }
                     }
                     _ => {}
                 }

@@ -147,9 +147,10 @@ impl Orchestrator {
 
             // Share with P2P network if enabled
             if self.p2p_network.is_enabled()
-                && let Err(e) = self.p2p_network.share_result(&signed_result).await {
-                    error!("Failed to share result with P2P network: {}", e);
-                }
+                && let Err(e) = self.p2p_network.share_result(&signed_result).await
+            {
+                error!("Failed to share result with P2P network: {}", e);
+            }
 
             // Log the result
             info!(

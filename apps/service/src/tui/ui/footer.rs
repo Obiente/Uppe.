@@ -27,7 +27,7 @@ pub fn render(f: &mut Frame, area: Rect, show_help: bool) -> Vec<(String, Rect)>
         let keys = ["A", "E", "D", "R", "H/?", "Q/Esc"];
 
         for (i, (label, key)) in labels.iter().zip(keys.iter()).enumerate() {
-            let text = format!("{}: {}", key, label);
+            let text = format!("{key}: {label}");
             let btn = Paragraph::new(Line::from(Span::styled(
                 text,
                 Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD),

@@ -28,21 +28,21 @@ pub fn render(f: &mut Frame, area: Rect, state: &AppState) {
         let monitor = &state.monitors[state.selected];
         let truncated_name: String = monitor.name.chars().take(20).collect();
         lines.push(Line::from(Span::styled(
-            format!("Monitor: {}", truncated_name),
+            format!("Monitor: {truncated_name}"),
             Style::default().fg(Color::Yellow),
         )));
-        lines.push(Line::from(format!("  Uptime:  {:.1}%", uptime)));
-        lines.push(Line::from(format!("  Success: {} / {}", success_count, total_checks)));
-        lines.push(Line::from(format!("  Latency: {} ms", avg_latency)));
+        lines.push(Line::from(format!("  Uptime:  {uptime:.1}%")));
+        lines.push(Line::from(format!("  Success: {success_count} / {total_checks}")));
+        lines.push(Line::from(format!("  Latency: {avg_latency} ms")));
     } else {
         lines.push(Line::from("No monitor selected"));
     }
 
     lines.push(Line::from(""));
     lines.push(Line::from(Span::styled("Global Stats", Style::default().fg(Color::Yellow))));
-    lines.push(Line::from(format!("  Total:  {}", total_monitors)));
-    lines.push(Line::from(format!("  Online: {}", online_monitors)));
-    lines.push(Line::from(format!("  Avg:    {:.1}%", global_uptime)));
+    lines.push(Line::from(format!("  Total:  {total_monitors}")));
+    lines.push(Line::from(format!("  Online: {online_monitors}")));
+    lines.push(Line::from(format!("  Avg:    {global_uptime:.1}%")));
 
     let widget = Paragraph::new(lines)
         .block(Block::default().borders(Borders::ALL).title(title).border_style(focus_style));

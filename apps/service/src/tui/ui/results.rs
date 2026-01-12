@@ -19,7 +19,7 @@ fn format_time(time: SystemTime) -> String {
     let minutes = (total_secs % 3600) / 60;
     let seconds = total_secs % 60;
 
-    format!("{:02}:{:02}:{:02}", hours, minutes, seconds)
+    format!("{hours:02}:{minutes:02}:{seconds:02}")
 }
 
 /// Format location from city, country, and region.

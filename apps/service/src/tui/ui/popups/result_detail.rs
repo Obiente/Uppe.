@@ -21,7 +21,7 @@ fn format_location(
             parts.push(country.clone());
         }
         if let Some(region) = region {
-            parts.push(format!("({})", region));
+            parts.push(format!("({region})"));
         }
         parts.join(", ")
     } else if let Some(region) = region {
@@ -70,7 +70,7 @@ pub fn render(f: &mut Frame, size: Rect, state: &AppState) {
                 "Code: {}",
                 r.status_code.map(|v| v.to_string()).unwrap_or_else(|| "-".into())
             )),
-            Line::from(format!("Location: {}", location)),
+            Line::from(format!("Location: {location}")),
             Line::from(format!("Error: {}", r.error_message.clone().unwrap_or_default())),
             Line::from(format!("Peer: {}", r.peer_id)),
             Line::from(""),

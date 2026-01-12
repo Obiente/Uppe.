@@ -191,7 +191,7 @@ pub fn validate_interval(interval: u64) -> ValidationResult {
 
 /// Validate monitor timeout
 pub fn validate_timeout(timeout: u64, interval: u64) -> ValidationResult {
-    if timeout < 1 {
+    if timeout == 0 {
         return ValidationResult::err("Timeout must be at least 1 second");
     }
 

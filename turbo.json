@@ -7,7 +7,8 @@
       ],
       "outputs": [
         "dist/**",
-        "target/release/**"
+        "target/release/**",
+        "bin/**"
       ]
     },
     "check-types": {
@@ -17,6 +18,30 @@
     },
     "dev": {
       "persistent": true,
+      "cache": false,
+      "env": ["LocalAppData", "GOCACHE", "GOPATH"]
+    },
+    "@uppe/server#dev": {
+      "persistent": true,
+      "cache": false,
+      "interruptible": true,
+      "env": ["LocalAppData", "GOCACHE", "GOPATH"]
+    },
+    "proto": {
+      "dependsOn": [
+        "^proto"
+      ],
+      "outputs": [
+        "gen/**"
+      ]
+    },
+    "test": {
+      "dependsOn": [
+        "^build"
+      ],
+      "outputs": []
+    },
+    "deps": {
       "cache": false
     }
   }

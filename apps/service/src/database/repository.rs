@@ -169,25 +169,12 @@ impl Database for DatabaseImpl {
 
     async fn delete_monitor(&self, uuid: Uuid) -> Result<()> {
         let conn = self.get_conn().await?;
-        
-        // Delete all results for this monitor first to avoid foreign key constraint
-        conn.execute(
-            "DELETE FROM monitor_results WHERE monitor_uuid = ?",
-            params![uuid.to_string()],
-        ).await?;
-        
-        // Delete peer results as well
-        conn.execute(
-            "DELETE FROM peer_results WHERE monitor_uuid = ?",
-            params![uuid.to_string()],
-        ).await?;
-        
-        // Now delete the monitor itself
+
+        // Delete the monitor; related rows will be removed via ON DELETE CASCADE
         conn.execute(
             "DELETE FROM monitors WHERE uuid = ?",
             params![uuid.to_string()],
         ).await?;
-        
         Ok(())
     }
 

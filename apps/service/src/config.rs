@@ -29,6 +29,8 @@ pub enum LocationPrivacy {
 pub struct Config {
     pub zeromq: ZeroMQ,
     pub preferences: Preferences,
+    #[serde(default)]
+    pub peerup: PeerUPConfig,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -44,6 +46,50 @@ pub struct Preferences {
     /// Location privacy level: "disabled", "country_only", or "full"
     #[serde(default)]
     pub location_privacy: LocationPrivacy,
+}
+
+/// PeerUP P2P network configuration
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct PeerUPConfig {
+    /// Port range for P2P networking (min, max)
+    #[serde(default = "default_peerup_port_range")]
+    pub port_range: (u16, u16),
+    /// Enable mDNS for local peer discovery
+    #[serde(default = "default_true")]
+    pub enable_mdns: bool,
+    /// Enable Kademlia DHT for wide-area peer discovery
+    #[serde(default = "default_true")]
+    pub enable_kademlia: bool,
+    /// Enable relay for NAT traversal
+    #[serde(default = "default_false")]
+    pub enable_relay: bool,
+    /// Bootstrap peers (multiaddrs as strings)
+    #[serde(default)]
+    pub bootstrap_peers: Vec<String>,
+}
+
+fn default_peerup_port_range() -> (u16, u16) {
+    (9000, 9010)
+}
+
+fn default_true() -> bool {
+    true
+}
+
+fn default_false() -> bool {
+    false
+}
+
+impl Default for PeerUPConfig {
+    fn default() -> Self {
+        Self {
+            port_range: default_peerup_port_range(),
+            enable_mdns: true,
+            enable_kademlia: true,
+            enable_relay: false,
+            bootstrap_peers: Vec::new(),
+        }
+    }
 }
 
 fn default_location_update_interval() -> u64 {
@@ -91,6 +137,7 @@ impl Default for Config {
                 location_update_interval_secs: 300,
                 location_privacy: LocationPrivacy::Full,
             },
+            peerup: PeerUPConfig::default(),
         }
     }
 }

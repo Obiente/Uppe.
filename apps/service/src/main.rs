@@ -178,7 +178,12 @@ async fn main() -> anyhow::Result<()> {
         Commands::Run => {
             tracing::info!("Starting Uppe. service...");
             tracing::info!("P2P network enabled: {}", cfg.preferences.use_peerup_layer);
-            orchestrator::Orchestrator::start(cfg, pool).await?;
+            
+            // Use LocalSet for P2P network (libp2p Swarm is !Send)
+            let local = tokio::task::LocalSet::new();
+            local.run_until(async move {
+                orchestrator::Orchestrator::start(cfg, pool).await
+            }).await?;
         }
         Commands::Migrate => {
             tracing::info!("Running database migrations...");
@@ -252,7 +257,12 @@ async fn main() -> anyhow::Result<()> {
                 "unknown".to_string()
             };
             let p2p_enabled = cfg.preferences.use_peerup_layer;
-            tui::run_tui_with_p2p(pool, peer_id, p2p_enabled).await?;
+            
+            // Use LocalSet for P2P network (libp2p Swarm is !Send)
+            let local = tokio::task::LocalSet::new();
+            local.run_until(async move {
+                tui::run_tui_with_p2p(pool, peer_id, p2p_enabled).await
+            }).await?;
         }
     }
 

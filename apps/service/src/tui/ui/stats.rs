@@ -26,8 +26,9 @@ pub fn render(f: &mut Frame, area: Rect, state: &AppState) {
 
     if !state.monitors.is_empty() && state.selected < state.monitors.len() {
         let monitor = &state.monitors[state.selected];
+        let truncated_name: String = monitor.name.chars().take(20).collect();
         lines.push(Line::from(Span::styled(
-            format!("Monitor: {}", &monitor.name[..monitor.name.len().min(20)]),
+            format!("Monitor: {}", truncated_name),
             Style::default().fg(Color::Yellow),
         )));
         lines.push(Line::from(format!("  Uptime:  {:.1}%", uptime)));

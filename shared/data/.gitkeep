@@ -1,0 +1,2 @@
+# This directory contains the shared SQLite database
+# The libsql.db file is created by the Rust service on first run

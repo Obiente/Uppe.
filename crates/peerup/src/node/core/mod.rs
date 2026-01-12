@@ -2,6 +2,7 @@
 //!
 //! This module contains the core PeerNode struct and its methods.
 
+pub mod gossipsub;
 mod node_methods;
 mod peer_node;
 mod run;

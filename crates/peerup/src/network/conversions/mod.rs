@@ -2,6 +2,7 @@
 //!
 //! This module implements conversions from libp2p events to PeerUPEvent.
 
+pub mod gossipsub;
 pub mod kad;
 pub mod mdns;
 pub mod relay;

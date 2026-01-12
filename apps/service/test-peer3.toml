@@ -1,0 +1,22 @@
+# Peer 3 Configuration
+[zeromq]
+bind = "*"
+port = 5557
+
+[preferences]
+use_peerup_layer = true
+allow_peer_leech = true
+minimum_peer_mr = 0
+timeout_seconds = 10
+degraded_threshold_ms = 1000
+location_privacy = "country_only"
+location_update_interval_secs = 3600
+
+[peerup]
+# Different port range for peer 3 (no overlap)
+port_range = [9200, 9210]
+# Production-like local testing: disable mDNS and use bootstrap peers
+bootstrap_peers = ["/ip4/127.0.0.1/tcp/9000", "/ip4/127.0.0.1/tcp/9100"]
+enable_mdns = false
+enable_kademlia = true
+enable_relay = false

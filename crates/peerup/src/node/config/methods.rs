@@ -66,6 +66,12 @@ impl NodeConfigBuilder {
         self
     }
 
+    /// Set bootstrap peers
+    pub fn bootstrap_peers(mut self, peers: Vec<String>) -> Self {
+        self.config.bootstrap_peers = peers;
+        self
+    }
+
     /// Enable mDNS
     pub fn enable_mdns(mut self) -> Self {
         self.config.enable_mdns = true;
@@ -75,6 +81,30 @@ impl NodeConfigBuilder {
     /// Disable mDNS
     pub fn disable_mdns(mut self) -> Self {
         self.config.enable_mdns = false;
+        self
+    }
+
+    /// Enable Kademlia
+    pub fn enable_kademlia(mut self) -> Self {
+        self.config.enable_kademlia = true;
+        self
+    }
+
+    /// Disable Kademlia
+    pub fn disable_kademlia(mut self) -> Self {
+        self.config.enable_kademlia = false;
+        self
+    }
+
+    /// Enable Relay
+    pub fn enable_relay(mut self) -> Self {
+        self.config.enable_relay = true;
+        self
+    }
+
+    /// Disable Relay
+    pub fn disable_relay(mut self) -> Self {
+        self.config.enable_relay = false;
         self
     }
 }

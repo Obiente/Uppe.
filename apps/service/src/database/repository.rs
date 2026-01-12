@@ -5,7 +5,7 @@ use libsql::{Connection, params};
 use std::sync::Arc;
 use uuid::Uuid;
 
-use super::models::{Monitor, MonitorResult, PeerResult};
+use super::models::{Monitor, MonitorResult, NetworkStats, Peer, PeerResult};
 use crate::monitoring::types::CheckResult;
 use crate::pool::LibsqlPool;
 
@@ -39,6 +39,18 @@ pub trait Database: Send + Sync {
 
     /// Get peer results for a monitor
     async fn get_peer_results(&self, monitor_uuid: Uuid, limit: usize) -> Result<Vec<PeerResult>>;
+
+    /// Upsert peer metadata
+    async fn upsert_peer(&self, peer: &Peer) -> Result<()>;
+
+    /// Mark peer offline
+    async fn mark_peer_offline(&self, peer_id: &str, now: std::time::SystemTime) -> Result<()>;
+
+    /// Insert network stats snapshot
+    async fn insert_network_stats(&self, stats: &NetworkStats) -> Result<i64>;
+
+    /// Get latest network stats
+    async fn get_latest_network_stats(&self) -> Result<Option<NetworkStats>>;
 }
 
 /// LibSQL database implementation
@@ -354,5 +366,96 @@ impl Database for DatabaseImpl {
         }
 
         Ok(results)
+    }
+
+    async fn upsert_peer(&self, peer: &Peer) -> Result<()> {
+        let conn = self.get_conn().await?;
+        let last_seen = Monitor::timestamp_to_i64(peer.last_seen);
+        let joined_at = Monitor::timestamp_to_i64(peer.joined_at);
+
+        conn.execute(
+            "INSERT INTO peers (peer_id, status, last_seen, joined_at, contribution_score, \
+             uptime_percentage, checks_per_day, location_city, location_region, location_country)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+             ON CONFLICT(peer_id) DO UPDATE SET status=excluded.status, \
+             last_seen=excluded.last_seen",
+            params![
+                peer.peer_id.clone(),
+                peer.status.clone(),
+                last_seen,
+                joined_at,
+                peer.contribution_score,
+                peer.uptime_percentage,
+                peer.checks_per_day,
+                peer.location_city.clone(),
+                peer.location_region.clone(),
+                peer.location_country.clone()
+            ],
+        )
+        .await?;
+
+        Ok(())
+    }
+
+    async fn mark_peer_offline(&self, peer_id: &str, now: std::time::SystemTime) -> Result<()> {
+        let conn = self.get_conn().await?;
+        let ts = Monitor::timestamp_to_i64(now);
+
+        conn.execute(
+            "UPDATE peers SET status = 'offline', last_seen = ? WHERE peer_id = ?",
+            params![ts, peer_id],
+        )
+        .await?;
+
+        Ok(())
+    }
+
+    async fn insert_network_stats(&self, stats: &NetworkStats) -> Result<i64> {
+        let conn = self.get_conn().await?;
+        let ts = Monitor::timestamp_to_i64(stats.timestamp);
+
+        conn.execute(
+            "INSERT INTO network_stats (timestamp, total_peers, online_peers, checks_performed, \
+             checks_received, bandwidth_used_mb)
+             VALUES (?, ?, ?, ?, ?, ?)",
+            params![
+                ts,
+                stats.total_peers,
+                stats.online_peers,
+                stats.checks_performed,
+                stats.checks_received,
+                stats.bandwidth_used_mb
+            ],
+        )
+        .await?;
+
+        Ok(conn.last_insert_rowid())
+    }
+
+    async fn get_latest_network_stats(&self) -> Result<Option<NetworkStats>> {
+        let conn = self.get_conn().await?;
+        let mut stmt = conn
+            .prepare(
+                "SELECT timestamp, total_peers, online_peers, checks_performed, checks_received, \
+                 bandwidth_used_mb
+                 FROM network_stats ORDER BY timestamp DESC LIMIT 1",
+            )
+            .await?;
+
+        let mut rows = stmt.query(()).await?;
+
+        if let Some(row) = rows.next().await? {
+            let ts: i64 = row.get(0)?;
+            Ok(Some(NetworkStats {
+                timestamp: Monitor::i64_to_timestamp(ts),
+                total_peers: row.get(1)?,
+                online_peers: row.get(2)?,
+                checks_performed: row.get(3)?,
+                checks_received: row.get(4)?,
+                bandwidth_used_mb: row.get(5)?,
+            }))
+        } else {
+            Ok(None)
+        }
     }
 }

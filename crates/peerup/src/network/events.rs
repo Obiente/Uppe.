@@ -2,13 +2,29 @@
 //!
 //! This module defines the events emitted by the PeerUP network behaviour.
 
-use libp2p::{request_response, PeerId};
+use libp2p::{gossipsub, request_response, PeerId};
 
 use crate::protocol::{ProbeRequest, ProbeResponse};
 
 /// Events emitted by the PeerUPBehaviour
 #[derive(Debug)]
 pub enum PeerUPEvent {
+    /// A gossipsub message was received
+    GossipsubMessage {
+        peer: PeerId,
+        message_id: gossipsub::MessageId,
+        message: gossipsub::Message,
+    },
+    /// Successfully subscribed to a gossipsub topic
+    GossipsubSubscribed {
+        peer: PeerId,
+        topic: gossipsub::IdentTopic,
+    },
+    /// Unsubscribed from a gossipsub topic
+    GossipsubUnsubscribed {
+        peer: PeerId,
+        topic: gossipsub::IdentTopic,
+    },
     /// Probe request was received
     ProbeRequestReceived {
         peer: PeerId,
@@ -41,6 +57,8 @@ pub enum PeerUPEvent {
     ConnectionEstablished(PeerId),
     /// The local node's connection to a peer was closed
     ConnectionClosed(PeerId),
+    /// Gossipsub event (other)
+    Gossipsub(gossipsub::Event),
     /// Relay event
     Relay(libp2p::relay::Event),
     /// Kademlia event

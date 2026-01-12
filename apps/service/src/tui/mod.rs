@@ -36,6 +36,15 @@ pub async fn run_tui_with_p2p(pool: LibsqlPool, peer_id: String, p2p_enabled: bo
         state.results = db.get_recent_results(uuid, 50).await?;
     }
 
+    if let Ok(Some(stats)) = db.get_latest_network_stats().await {
+        state.update_peer_stats(
+            stats.online_peers as usize,
+            stats.total_peers as usize,
+            stats.checks_performed as usize,
+            stats.checks_received as usize,
+        );
+    }
+
     // Init terminal in alternate screen
     enable_raw_mode()?;
     let mut stdout = std::io::stdout();
@@ -58,6 +67,15 @@ pub async fn run_tui_with_p2p(pool: LibsqlPool, peer_id: String, p2p_enabled: bo
                 state.results = db.get_recent_results(m.uuid, 50).await?;
             } else {
                 state.results.clear();
+            }
+
+            if let Ok(Some(stats)) = db.get_latest_network_stats().await {
+                state.update_peer_stats(
+                    stats.online_peers as usize,
+                    stats.total_peers as usize,
+                    stats.checks_performed as usize,
+                    stats.checks_received as usize,
+                );
             }
             state.last_refresh = std::time::Instant::now();
         }

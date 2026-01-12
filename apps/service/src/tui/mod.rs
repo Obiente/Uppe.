@@ -78,8 +78,9 @@ pub async fn run_tui_with_p2p(pool: LibsqlPool, peer_id: String, p2p_enabled: bo
 
     // Cleanup terminal
     drop(terminal);
-    execute!(stdout, DisableMouseCapture, Show, LeaveAlternateScreen)?;
-    disable_raw_mode()?;
+    let exec_result = execute!(stdout, DisableMouseCapture, Show, LeaveAlternateScreen);
+    let raw_mode_result = disable_raw_mode();
+    exec_result.and(raw_mode_result)?;
     Ok(())
 }
 

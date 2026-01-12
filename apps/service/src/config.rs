@@ -11,7 +11,7 @@ pub enum Error {
 }
 
 /// Location privacy setting
-#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, Default)]
 pub enum LocationPrivacy {
     /// Disable location tracking completely
     #[serde(rename = "disabled")]
@@ -21,13 +21,8 @@ pub enum LocationPrivacy {
     CountryOnly,
     /// Full location details (city, country, region)
     #[serde(rename = "full")]
+    #[default]
     Full,
-}
-
-impl Default for LocationPrivacy {
-    fn default() -> Self {
-        LocationPrivacy::Full
-    }
 }
 
 #[derive(Debug, Serialize, Deserialize)]

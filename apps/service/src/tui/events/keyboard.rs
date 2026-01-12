@@ -124,14 +124,14 @@ pub async fn handle_main_view(
 
         // Toggle enabled status
         KeyCode::Char(' ') | KeyCode::Char('t') if key.modifiers.is_empty() => {
-            if state.focus == Focus::Monitors {
-                if let Some(mo) = state.monitors.get(state.selected).cloned() {
-                    let mut nm = mo;
-                    nm.enabled = !nm.enabled;
-                    db.save_monitor(&nm).await?;
-                    state.refresh_monitors_and_results(db).await?;
-                    state.last_refresh = std::time::Instant::now();
-                }
+            if state.focus == Focus::Monitors
+                && let Some(mo) = state.monitors.get(state.selected).cloned()
+            {
+                let mut nm = mo;
+                nm.enabled = !nm.enabled;
+                db.save_monitor(&nm).await?;
+                state.refresh_monitors_and_results(db).await?;
+                state.last_refresh = std::time::Instant::now();
             }
         }
 

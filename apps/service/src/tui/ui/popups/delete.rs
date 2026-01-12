@@ -35,7 +35,7 @@ pub fn render(f: &mut Frame, size: Rect, state: &AppState) {
             Style::default().fg(Color::Red).add_modifier(Modifier::BOLD),
         )),
         Line::from(""),
-        Line::from(format!("Are you sure you want to delete '{}' ?", name)),
+        Line::from(format!("Are you sure you want to delete '{name}' ?")),
         Line::from(""),
         Line::from("Y: Yes    N/Esc: No"),
     ])

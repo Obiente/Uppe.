@@ -21,7 +21,7 @@ pub fn render(f: &mut Frame, area: Rect, state: &AppState) {
             };
 
             ListItem::new(Line::from(vec![
-                Span::styled(format!("{}", m.name), style),
+                Span::styled(m.name.to_string(), style),
                 Span::styled(
                     if m.enabled { "  ✓ " } else { "  ✗ " },
                     Style::default().fg(if m.enabled { Color::Green } else { Color::Red }),

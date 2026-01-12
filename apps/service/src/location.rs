@@ -130,11 +130,7 @@ async fn fetch_location_from_ip() -> Result<Location> {
     let country =
         if !response.country_code.is_empty() { Some(response.country_code.clone()) } else { None };
 
-    let region = if let Some(ref cc) = country {
-        Some(Location::region_from_country(cc).to_string())
-    } else {
-        None
-    };
+    let region = country.as_ref().map(|cc| Location::region_from_country(cc).to_string());
 
     Ok(Location::new(city, country, region))
 }
@@ -154,11 +150,11 @@ pub fn init_location_cache(update_interval_secs: u64, privacy_level: LocationPri
 /// Initialize location from static config (for backwards compatibility)
 pub fn init_location(location: Location) {
     init_location_cache(0, LocationPrivacy::Full); // 0 = never auto-update
-    if let Some(cache) = LOCATION_CACHE.get() {
-        if let Ok(mut cache) = cache.write() {
-            cache.location = location;
-            cache.last_update = Instant::now();
-        }
+    if let Some(cache) = LOCATION_CACHE.get()
+        && let Ok(mut cache) = cache.write()
+    {
+        cache.location = location;
+        cache.last_update = Instant::now();
     }
 }
 

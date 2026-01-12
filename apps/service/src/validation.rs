@@ -40,8 +40,7 @@ pub fn validate_http_endpoint(target: &str) -> ValidationResult {
             let scheme = url.scheme();
             if scheme != "http" && scheme != "https" {
                 return ValidationResult::err(format!(
-                    "Invalid scheme '{}'. Must be http or https",
-                    scheme
+                    "Invalid scheme '{scheme}'. Must be http or https"
                 ));
             }
 
@@ -56,7 +55,7 @@ pub fn validate_http_endpoint(target: &str) -> ValidationResult {
             if !target.contains("://") {
                 ValidationResult::err("URL must include scheme (http:// or https://)")
             } else {
-                ValidationResult::err(format!("Invalid URL: {}", e))
+                ValidationResult::err(format!("Invalid URL: {e}"))
             }
         }
     }
@@ -87,7 +86,7 @@ pub fn validate_https_endpoint(target: &str) -> ValidationResult {
             if !target.contains("://") {
                 ValidationResult::err("URL must include scheme (https://)")
             } else {
-                ValidationResult::err(format!("Invalid URL: {}", e))
+                ValidationResult::err(format!("Invalid URL: {e}"))
             }
         }
     }
@@ -157,7 +156,7 @@ pub fn validate_monitor_target(target: &str, check_type: &str) -> ValidationResu
         "https" => validate_https_endpoint(target),
         "tcp" => validate_tcp_endpoint(target),
         "icmp" => validate_icmp_endpoint(target),
-        _ => ValidationResult::err(format!("Unknown check type: {}", check_type)),
+        _ => ValidationResult::err(format!("Unknown check type: {check_type}")),
     }
 }
 
@@ -191,7 +190,7 @@ pub fn validate_interval(interval: u64) -> ValidationResult {
 
 /// Validate monitor timeout
 pub fn validate_timeout(timeout: u64, interval: u64) -> ValidationResult {
-    if timeout < 1 {
+    if timeout == 0 {
         return ValidationResult::err("Timeout must be at least 1 second");
     }
 

@@ -68,7 +68,7 @@ pub fn render(f: &mut Frame, size: Rect, state: &AppState) {
 
             lines.push(Line::from(vec![
                 Span::raw(prefix),
-                Span::styled(format!("{}: ", label), Style::default().fg(Color::Gray)),
+                Span::styled(format!("{label}: "), Style::default().fg(Color::Gray)),
                 Span::styled(display_value, field_style),
             ]));
         }
@@ -78,7 +78,7 @@ pub fn render(f: &mut Frame, size: Rect, state: &AppState) {
         // Show validation error if present
         if let Some(err) = &state.validation_error {
             lines.push(Line::from(Span::styled(
-                format!("⚠ {}", err),
+                format!("⚠ {err}"),
                 Style::default().fg(Color::Red).add_modifier(Modifier::BOLD),
             )));
             lines.push(Line::from(""));

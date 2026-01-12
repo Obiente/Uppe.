@@ -171,11 +171,11 @@ CREATE TABLE IF NOT EXISTS schema_migrations (
 -- 
 -- | Value      | Description                                    |
 -- |------------|------------------------------------------------|
--- | 'Up'       | Service responded successfully                 |
--- | 'Down'     | Service did not respond                        |
--- | 'Timeout'  | Response exceeded timeout_seconds              |
--- | 'Error'    | Network error, DNS failure, etc.               |
--- | 'Degraded' | Responded but latency > degraded_threshold     |
+-- | 'up'       | Service responded successfully                 |
+-- | 'down'     | Service did not respond                        |
+-- | 'timeout'  | Response exceeded timeout_seconds              |
+-- | 'error'    | Network error, DNS failure, etc.               |
+-- | 'degraded' | Responded but latency > degraded_threshold     |
 -- | 'Unknown'  | Status could not be determined (fallback)      |
 --
 -- Note: Status is stored as TEXT for readability and flexibility.

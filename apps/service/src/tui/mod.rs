@@ -1,13 +1,15 @@
-mod types;
-mod state;
-mod ui;
 mod events;
+mod state;
+mod types;
+mod ui;
 
 use anyhow::Result;
-use crossterm::event::{self, EnableMouseCapture, DisableMouseCapture};
-use crossterm::terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen};
 use crossterm::cursor::{Hide, Show};
+use crossterm::event::{self, DisableMouseCapture, EnableMouseCapture};
 use crossterm::execute;
+use crossterm::terminal::{
+    EnterAlternateScreen, LeaveAlternateScreen, disable_raw_mode, enable_raw_mode,
+};
 use ratatui::Terminal;
 use ratatui::backend::CrosstermBackend;
 use std::time::Duration;
@@ -69,7 +71,7 @@ pub async fn run_tui_with_p2p(pool: LibsqlPool, peer_id: String, p2p_enabled: bo
         if event::poll(Duration::from_millis(250))? {
             let ev = event::read()?;
             let should_quit = events::handle_event(&mut state, ev, &db).await?;
-            
+
             if should_quit {
                 break;
             }
@@ -85,7 +87,7 @@ pub async fn run_tui_with_p2p(pool: LibsqlPool, peer_id: String, p2p_enabled: bo
 }
 
 /// Backward compatible wrapper
-#[allow(dead_code)]
+#[allow(dead_code)] // Backward compatibility API
 pub async fn run_tui(pool: LibsqlPool) -> Result<()> {
     run_tui_with_p2p(pool, "unknown".into(), false).await
 }

@@ -88,6 +88,8 @@ pub async fn handle_edit_popup(
         }
 
         // Save monitor
+        // Note: Enter saves from any field (including text fields).
+        // Users can use Tab/Arrow keys to navigate between fields before saving.
         KeyCode::Enter | KeyCode::Char('s') => {
             // Only allow 's' as Save if not in text input
             if state.edit_field_index < 2 && matches!(key_code, KeyCode::Char('s')) {
@@ -107,10 +109,7 @@ pub async fn handle_edit_popup(
                     if let Some(m) = state.edit_monitor.take() {
                         db.save_monitor(&m).await?;
                         state.close_edit();
-                        state.monitors = db.get_enabled_monitors().await?;
-                        if let Some(m) = state.monitors.get(state.selected) {
-                            state.results = db.get_recent_results(m.uuid, 50).await?;
-                        }
+                        state.refresh_monitors_and_results(db).await?;
                     }
                 }
             }
@@ -228,7 +227,8 @@ pub async fn handle_edit_popup(
                                     };
                                 }
                                 3 => {
-                                    m.interval_seconds = m.interval_seconds.saturating_sub(5).max(1);
+                                    m.interval_seconds =
+                                        m.interval_seconds.saturating_sub(5).max(1);
                                 }
                                 4 => {
                                     m.timeout_seconds = m.timeout_seconds.saturating_sub(1).max(1);

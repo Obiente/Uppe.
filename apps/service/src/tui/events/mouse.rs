@@ -1,8 +1,8 @@
 use anyhow::Result;
-use crossterm::event::{MouseEventKind, MouseButton, MouseEvent};
+use crossterm::event::{MouseButton, MouseEvent, MouseEventKind};
 
-use crate::database::{Database, DatabaseImpl};
 use crate::database::models::Monitor;
+use crate::database::{Database, DatabaseImpl};
 use crate::tui::state::AppState;
 use crate::tui::types::Focus;
 

@@ -1,13 +1,13 @@
+pub mod footer;
 pub mod header;
 pub mod monitors;
-pub mod results;
-pub mod footer;
-pub mod popups;
-pub mod stats;
 pub mod network;
+pub mod popups;
+pub mod results;
+pub mod stats;
 
-use ratatui::layout::{Constraint, Direction, Layout};
 use ratatui::Frame;
+use ratatui::layout::{Constraint, Direction, Layout};
 
 use crate::tui::state::AppState;
 use crate::tui::types::FrameAreas;
@@ -15,15 +15,11 @@ use crate::tui::types::FrameAreas;
 /// Render the entire UI
 pub fn render(f: &mut Frame, state: &mut AppState) {
     let size = f.size();
-    
+
     let chunks = Layout::default()
         .direction(Direction::Vertical)
         .margin(1)
-        .constraints([
-            Constraint::Length(2),
-            Constraint::Min(1),
-            Constraint::Length(2),
-        ])
+        .constraints([Constraint::Length(2), Constraint::Min(1), Constraint::Length(2)])
         .split(size);
 
     // Render header
@@ -34,12 +30,12 @@ pub fn render(f: &mut Frame, state: &mut AppState) {
         .direction(Direction::Vertical)
         .constraints([Constraint::Percentage(50), Constraint::Percentage(50)])
         .split(chunks[1]);
-    
+
     let top_panes = Layout::default()
         .direction(Direction::Horizontal)
         .constraints([Constraint::Percentage(50), Constraint::Percentage(50)])
         .split(grid[0]);
-    
+
     let bottom_panes = Layout::default()
         .direction(Direction::Horizontal)
         .constraints([Constraint::Percentage(50), Constraint::Percentage(50)])
@@ -67,15 +63,15 @@ pub fn render(f: &mut Frame, state: &mut AppState) {
     if state.show_help {
         popups::help::render(f, size);
     }
-    
+
     if state.show_edit {
         popups::edit::render(f, size, state);
     }
-    
+
     if state.show_delete_confirm {
         popups::delete::render(f, size, state);
     }
-    
+
     if state.show_result_detail {
         popups::result_detail::render(f, size, state);
     }

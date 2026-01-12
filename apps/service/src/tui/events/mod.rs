@@ -1,5 +1,5 @@
-pub mod keyboard;
 pub mod edit;
+pub mod keyboard;
 pub mod mouse;
 
 use anyhow::Result;
@@ -9,11 +9,7 @@ use crate::database::{Database, DatabaseImpl};
 use crate::tui::state::AppState;
 
 /// Handle all events and return true if should quit
-pub async fn handle_event(
-    state: &mut AppState,
-    event: Event,
-    db: &DatabaseImpl,
-) -> Result<bool> {
+pub async fn handle_event(state: &mut AppState, event: Event, db: &DatabaseImpl) -> Result<bool> {
     match event {
         Event::Key(k) => {
             // Only process key press events, ignore releases and repeats

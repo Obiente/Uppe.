@@ -1,8 +1,8 @@
+use ratatui::Frame;
 use ratatui::layout::Rect;
 use ratatui::style::{Color, Modifier, Style};
 use ratatui::text::{Line, Span};
 use ratatui::widgets::{Block, Borders, Paragraph};
-use ratatui::Frame;
 
 use crate::tui::state::AppState;
 
@@ -39,20 +39,13 @@ pub fn render(f: &mut Frame, area: Rect, state: &AppState) {
     }
 
     lines.push(Line::from(""));
-    lines.push(Line::from(Span::styled(
-        "Global Stats",
-        Style::default().fg(Color::Yellow),
-    )));
+    lines.push(Line::from(Span::styled("Global Stats", Style::default().fg(Color::Yellow))));
     lines.push(Line::from(format!("  Total:  {}", total_monitors)));
     lines.push(Line::from(format!("  Online: {}", online_monitors)));
     lines.push(Line::from(format!("  Avg:    {:.1}%", global_uptime)));
 
-    let widget = Paragraph::new(lines).block(
-        Block::default()
-            .borders(Borders::ALL)
-            .title(title)
-            .border_style(focus_style),
-    );
+    let widget = Paragraph::new(lines)
+        .block(Block::default().borders(Borders::ALL).title(title).border_style(focus_style));
 
     f.render_widget(widget, area);
 }

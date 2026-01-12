@@ -1,19 +1,19 @@
 // Removed unstable feature to avoid warnings
-use std::{path};
+use std::path;
 
 use clap::{Parser, Subcommand, crate_authors, crate_version};
 
 mod config;
-mod models;
-mod pool;
-mod database;
-mod monitoring;
 mod crypto;
-mod p2p;
+mod database;
+mod location;
+mod models;
+mod monitoring;
 mod orchestrator;
+mod p2p;
+mod pool;
 mod tui;
 mod validation;
-mod location;
 
 #[derive(Subcommand, Debug)]
 enum MonitorCmd {
@@ -79,39 +79,62 @@ async fn main() -> anyhow::Result<()> {
         .init();
 
     let cli = Args::parse();
-    
+
     if cli.version {
         let authors = crate_authors!().split(':').collect::<Vec<&str>>().join("\", \"");
         println!("Uppe. service {} - Authors: \"{}\"", crate_version!(), authors);
         return Ok(());
     }
-    
+
     // Load configuration
-    let cfg = config::Config::from_config(cli.config.as_ref())
-        .expect("Failed to load configuration");
+    let cfg =
+        config::Config::from_config(cli.config.as_ref()).expect("Failed to load configuration");
 
     // Initialize database pool - use shared database location
-    // Default to shared/data/libsql.db in project root (2 levels up from apps/service)
+    // Default to shared/data/libsql.db in project root, using CARGO_MANIFEST_DIR when available
     let db_path = std::env::var("DATABASE_LIBSQL_PATH").unwrap_or_else(|_| {
-        // Try to find project root by looking for Cargo.toml or turbo.json
-        let default_path = if std::path::Path::new("../../shared/data").exists() 
-            || std::fs::create_dir_all("../../shared/data").is_ok() {
-            "../../shared/data/libsql.db".to_string()
-        } else if std::path::Path::new("shared/data").exists() 
-            || std::fs::create_dir_all("shared/data").is_ok() {
-            "shared/data/libsql.db".to_string()
-        } else {
-            "libsql.db".to_string()
-        };
-        default_path
+        use std::path::PathBuf;
+
+        // Build candidate paths in priority order
+        let mut candidates: Vec<PathBuf> = Vec::new();
+
+        // Prefer a path relative to the workspace root (two levels up from this crate),
+        // using CARGO_MANIFEST_DIR as a stable base instead of the current working directory
+        if let Ok(manifest_dir) = std::env::var("CARGO_MANIFEST_DIR") {
+            let mut workspace_root = PathBuf::from(manifest_dir);
+            workspace_root.pop(); // up from apps/service to apps
+            workspace_root.pop(); // up from apps to workspace root
+            candidates.push(workspace_root.join("shared").join("data").join("libsql.db"));
+        }
+
+        // Fallbacks relative to the current working directory, kept for compatibility
+        candidates.push(PathBuf::from("../../shared/data/libsql.db"));
+        candidates.push(PathBuf::from("shared/data/libsql.db"));
+        candidates.push(PathBuf::from("libsql.db"));
+
+        // Only select a path whose parent directory either exists or can be created successfully
+        for candidate in candidates {
+            if let Some(parent) = candidate.parent() {
+                if parent.exists() || std::fs::create_dir_all(parent).is_ok() {
+                    return candidate.to_string_lossy().into_owned();
+                }
+            } else {
+                // No parent directory (e.g., "libsql.db" in current dir) — accept it directly
+                return candidate.to_string_lossy().into_owned();
+            }
+        }
+
+        // As a last resort, fall back to a database file in the current directory
+        "libsql.db".to_string()
     });
-    
+
     // Ensure parent directory exists
     if let Some(parent) = std::path::Path::new(&db_path).parent() {
         let _ = std::fs::create_dir_all(parent);
     }
-    
+
     let db = libsql::Builder::new_local(&db_path).build().await?;
+
     let manager = pool::LibsqlManager::new(db);
     let pool: pool::LibsqlPool = deadpool::managed::Pool::builder(manager)
         .config(deadpool::managed::PoolConfig::default())
@@ -120,18 +143,18 @@ async fn main() -> anyhow::Result<()> {
 
     // Initialize location system
     let location_update_interval = cfg.preferences.location_update_interval_secs;
-    
+
     // Check if user has manually set location via environment variables
     let manual_location = location::Location::new(
         std::env::var("UPPE_LOCATION_CITY").ok(),
         std::env::var("UPPE_LOCATION_COUNTRY").ok(),
         std::env::var("UPPE_LOCATION_REGION").ok(),
     );
-    
-    let has_manual_location = manual_location.city.is_some() 
-        || manual_location.country.is_some() 
+
+    let has_manual_location = manual_location.city.is_some()
+        || manual_location.country.is_some()
         || manual_location.region.is_some();
-    
+
     if has_manual_location {
         // User manually configured location - use it without auto-updates
         tracing::info!("Using manually configured location: {}", manual_location.display());
@@ -142,8 +165,11 @@ async fn main() -> anyhow::Result<()> {
         location::init_location(location::Location::unknown());
     } else {
         // Auto-detect location from IP with privacy settings
-        tracing::info!("Initializing dynamic IP-based location tracking (update interval: {}s, privacy: {:?})", 
-                      location_update_interval, cfg.preferences.location_privacy);
+        tracing::info!(
+            "Initializing dynamic IP-based location tracking (update interval: {}s, privacy: {:?})",
+            location_update_interval,
+            cfg.preferences.location_privacy
+        );
         location::init_location_cache(location_update_interval, cfg.preferences.location_privacy);
         location::update_location_from_ip(); // Trigger first update
     }
@@ -152,7 +178,7 @@ async fn main() -> anyhow::Result<()> {
         Commands::Run => {
             tracing::info!("Starting Uppe. service...");
             tracing::info!("P2P network enabled: {}", cfg.preferences.use_peerup_layer);
-            orchestrator::Orchestrator::new(cfg, pool).await?;
+            orchestrator::Orchestrator::start(cfg, pool).await?;
         }
         Commands::Migrate => {
             tracing::info!("Running database migrations...");
@@ -170,11 +196,45 @@ async fn main() -> anyhow::Result<()> {
                         println!("No monitors found.");
                     } else {
                         for m in monitors {
-                            println!("- {} [{}] -> {} (every {}s, timeout {}s)", m.name, m.check_type, m.target, m.interval_seconds, m.timeout_seconds);
+                            println!(
+                                "- {} [{}] -> {} (every {}s, timeout {}s)",
+                                m.name,
+                                m.check_type,
+                                m.target,
+                                m.interval_seconds,
+                                m.timeout_seconds
+                            );
                         }
                     }
                 }
                 MonitorCmd::Add { name, target, check_type, interval, timeout } => {
+                    // Validate inputs before creating monitor
+                    use crate::validation::*;
+
+                    let name_result = validate_monitor_name(&name);
+                    if !name_result.is_valid {
+                        eprintln!("Error: {}", name_result.error.unwrap_or_default());
+                        std::process::exit(1);
+                    }
+
+                    let target_result = validate_monitor_target(&target, &check_type);
+                    if !target_result.is_valid {
+                        eprintln!("Error: {}", target_result.error.unwrap_or_default());
+                        std::process::exit(1);
+                    }
+
+                    let interval_result = validate_interval(interval);
+                    if !interval_result.is_valid {
+                        eprintln!("Error: {}", interval_result.error.unwrap_or_default());
+                        std::process::exit(1);
+                    }
+
+                    let timeout_result = validate_timeout(timeout, interval);
+                    if !timeout_result.is_valid {
+                        eprintln!("Error: {}", timeout_result.error.unwrap_or_default());
+                        std::process::exit(1);
+                    }
+
                     let mut monitor = database::models::Monitor::new(name, target, check_type);
                     monitor.interval_seconds = interval;
                     monitor.timeout_seconds = timeout;

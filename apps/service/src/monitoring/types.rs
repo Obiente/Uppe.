@@ -28,28 +28,28 @@ impl std::fmt::Display for MonitorStatus {
 pub struct CheckResult {
     /// UUID of the monitor that was checked
     pub monitor_id: Uuid,
-    
+
     /// URL or target that was checked
     pub target: String,
-    
+
     /// Timestamp when the check was performed
     pub timestamp: SystemTime,
-    
+
     /// Status of the check (up/down/degraded/unknown)
     pub status: MonitorStatus,
-    
+
     /// Response time in milliseconds
     pub latency_ms: Option<u64>,
-    
+
     /// HTTP status code (if applicable)
     pub status_code: Option<u16>,
-    
+
     /// Error message (if check failed)
     pub error_message: Option<String>,
-    
+
     /// ID of the peer that performed this check
     pub peer_id: String,
-    
+
     /// Cryptographic signature of this result
     pub signature: Option<Vec<u8>>,
 }

@@ -1,5 +1,5 @@
 #![allow(dead_code)]
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 use ed25519_dalek::{Signature, Verifier, VerifyingKey};
 use serde::Serialize;
 use std::time::SystemTime;
@@ -39,9 +39,7 @@ pub fn verify_result(
     let message = SignableMessage {
         monitor_id: result.monitor_uuid.to_string(),
         target: target.to_string(),
-        timestamp: result.timestamp
-            .duration_since(SystemTime::UNIX_EPOCH)?
-            .as_secs(),
+        timestamp: result.timestamp.duration_since(SystemTime::UNIX_EPOCH)?.as_secs(),
         status: result.status.to_string(),
         latency_ms: result.latency_ms,
         status_code: result.status_code,
@@ -61,10 +59,10 @@ pub fn verify_result(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::monitoring::types::MonitorStatus;
     use crate::crypto::keys::generate_keypair;
     use crate::crypto::signing::sign_result;
     use crate::monitoring::types::CheckResult;
+    use crate::monitoring::types::MonitorStatus;
     use uuid::Uuid;
 
     #[test]
@@ -72,15 +70,12 @@ mod tests {
         let keypair = generate_keypair();
         let monitor_id = Uuid::new_v4();
         let target = "https://example.com".to_string();
-        
+
         // Create and sign a result
-        let mut check_result = CheckResult::new(
-            monitor_id,
-            target.clone(),
-            "test-peer".to_string(),
-        );
+        let mut check_result =
+            CheckResult::new(monitor_id, target.clone(), "test-peer".to_string());
         check_result = check_result.success(100, Some(200));
-        
+
         let signature = sign_result(&check_result, &keypair).unwrap();
 
         // Convert to PeerResult
@@ -102,11 +97,7 @@ mod tests {
         };
 
         // Verify the signature
-        let is_valid = verify_result(
-            &peer_result,
-            &keypair.public_key_bytes(),
-            &target,
-        ).unwrap();
+        let is_valid = verify_result(&peer_result, &keypair.public_key_bytes(), &target).unwrap();
 
         assert!(is_valid);
     }
@@ -115,7 +106,7 @@ mod tests {
     fn test_verify_invalid_signature() {
         let keypair = generate_keypair();
         let monitor_id = Uuid::new_v4();
-        
+
         // Create a peer result with invalid signature
         let peer_result = PeerResult {
             id: None,
@@ -134,11 +125,9 @@ mod tests {
             region: None,
         };
 
-        let is_valid = verify_result(
-            &peer_result,
-            &keypair.public_key_bytes(),
-            "https://example.com",
-        ).unwrap();
+        let is_valid =
+            verify_result(&peer_result, &keypair.public_key_bytes(), "https://example.com")
+                .unwrap();
 
         assert!(!is_valid);
     }

@@ -24,9 +24,7 @@ pub fn sign_result(result: &CheckResult, keypair: &KeyPair) -> Result<Vec<u8>> {
     let message = SignableMessage {
         monitor_id: result.monitor_id.to_string(),
         target: result.target.clone(),
-        timestamp: result.timestamp
-            .duration_since(SystemTime::UNIX_EPOCH)?
-            .as_secs(),
+        timestamp: result.timestamp.duration_since(SystemTime::UNIX_EPOCH)?.as_secs(),
         status: result.status.to_string(),
         latency_ms: result.latency_ms,
         status_code: result.status_code,

@@ -1,6 +1,6 @@
-use anyhow::{anyhow, Result};
-use url::Url;
+use anyhow::{Result, anyhow};
 use std::net::{IpAddr, ToSocketAddrs};
+use url::Url;
 
 /// Validation results with specific error messages
 #[derive(Debug, Clone)]
@@ -11,20 +11,14 @@ pub struct ValidationResult {
 
 impl ValidationResult {
     pub fn ok() -> Self {
-        Self {
-            is_valid: true,
-            error: None,
-        }
+        Self { is_valid: true, error: None }
     }
 
     pub fn err(msg: impl Into<String>) -> Self {
-        Self {
-            is_valid: false,
-            error: Some(msg.into()),
-        }
+        Self { is_valid: false, error: Some(msg.into()) }
     }
 
-    #[allow(dead_code)]
+    #[allow(dead_code)] // Public API method
     pub fn to_result(&self) -> Result<()> {
         if self.is_valid {
             Ok(())
@@ -45,7 +39,10 @@ pub fn validate_http_endpoint(target: &str) -> ValidationResult {
         Ok(url) => {
             let scheme = url.scheme();
             if scheme != "http" && scheme != "https" {
-                return ValidationResult::err(format!("Invalid scheme '{}'. Must be http or https", scheme));
+                return ValidationResult::err(format!(
+                    "Invalid scheme '{}'. Must be http or https",
+                    scheme
+                ));
             }
 
             if url.host_str().is_none() {
@@ -74,7 +71,10 @@ pub fn validate_https_endpoint(target: &str) -> ValidationResult {
     match Url::parse(target) {
         Ok(url) => {
             if url.scheme() != "https" {
-                return ValidationResult::err(format!("Invalid scheme '{}'. Must be https", url.scheme()));
+                return ValidationResult::err(format!(
+                    "Invalid scheme '{}'. Must be https",
+                    url.scheme()
+                ));
             }
 
             if url.host_str().is_none() {
@@ -164,7 +164,7 @@ pub fn validate_monitor_target(target: &str, check_type: &str) -> ValidationResu
 /// Validate monitor name
 pub fn validate_monitor_name(name: &str) -> ValidationResult {
     let trimmed = name.trim();
-    
+
     if trimmed.is_empty() {
         return ValidationResult::err("Name cannot be empty");
     }
@@ -178,7 +178,7 @@ pub fn validate_monitor_name(name: &str) -> ValidationResult {
 
 /// Validate monitor interval
 pub fn validate_interval(interval: u64) -> ValidationResult {
-    if interval < 1 {
+    if interval == 0 {
         return ValidationResult::err("Interval must be at least 1 second");
     }
 
@@ -191,7 +191,7 @@ pub fn validate_interval(interval: u64) -> ValidationResult {
 
 /// Validate monitor timeout
 pub fn validate_timeout(timeout: u64, interval: u64) -> ValidationResult {
-    if timeout == 0 {
+    if timeout < 1 {
         return ValidationResult::err("Timeout must be at least 1 second");
     }
 
@@ -212,7 +212,7 @@ mod tests {
         assert!(validate_http_endpoint("https://example.com").is_valid);
         assert!(validate_http_endpoint("http://192.168.1.1").is_valid);
         assert!(validate_http_endpoint("http://example.com:8080/path").is_valid);
-        
+
         assert!(!validate_http_endpoint("").is_valid);
         assert!(!validate_http_endpoint("example.com").is_valid);
         assert!(!validate_http_endpoint("ftp://example.com").is_valid);
@@ -230,7 +230,7 @@ mod tests {
         assert!(validate_tcp_endpoint("localhost:8080").is_valid);
         assert!(validate_tcp_endpoint("192.168.1.1:443").is_valid);
         assert!(validate_tcp_endpoint("example.com:22").is_valid);
-        
+
         assert!(!validate_tcp_endpoint("").is_valid);
         assert!(!validate_tcp_endpoint("localhost").is_valid);
         assert!(!validate_tcp_endpoint("localhost:").is_valid);
@@ -242,7 +242,7 @@ mod tests {
         assert!(validate_icmp_endpoint("192.168.1.1").is_valid);
         assert!(validate_icmp_endpoint("example.com").is_valid);
         assert!(validate_icmp_endpoint("sub.example.com").is_valid);
-        
+
         assert!(!validate_icmp_endpoint("").is_valid);
         assert!(!validate_icmp_endpoint("invalid hostname").is_valid);
     }
@@ -251,7 +251,7 @@ mod tests {
     fn test_name_validation() {
         assert!(validate_monitor_name("My Monitor").is_valid);
         assert!(validate_monitor_name("Test123").is_valid);
-        
+
         assert!(!validate_monitor_name("").is_valid);
         assert!(!validate_monitor_name("   ").is_valid);
     }

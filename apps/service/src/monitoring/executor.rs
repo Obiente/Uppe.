@@ -2,7 +2,7 @@ use anyhow::Result;
 use std::sync::Arc;
 use uuid::Uuid;
 
-use super::checker::{CheckType, Checker, HttpChecker, TcpChecker, IcmpChecker};
+use super::checker::{CheckType, Checker, HttpChecker, IcmpChecker, TcpChecker};
 use super::types::CheckResult;
 
 /// Monitoring executor - executes individual monitoring checks
@@ -65,17 +65,11 @@ mod tests {
 
     #[tokio::test]
     async fn test_http_check() {
-        let executor = MonitoringExecutor::new(
-            "test-peer".to_string(),
-            10,
-            1000,
-        ).unwrap();
+        let executor = MonitoringExecutor::new("test-peer".to_string(), 10, 1000).unwrap();
 
-        let result = executor.execute_check(
-            Uuid::new_v4(),
-            "https://example.com".to_string(),
-            CheckType::Https,
-        ).await;
+        let result = executor
+            .execute_check(Uuid::new_v4(), "https://example.com".to_string(), CheckType::Https)
+            .await;
 
         // Should succeed for example.com
         assert!(matches!(result.status, MonitorStatus::Up | MonitorStatus::Degraded));

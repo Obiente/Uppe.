@@ -31,7 +31,11 @@ pub trait Database: Send + Sync {
     async fn save_peer_result(&self, result: &PeerResult) -> Result<i64>;
 
     /// Get recent results for a monitor
-    async fn get_recent_results(&self, monitor_uuid: Uuid, limit: usize) -> Result<Vec<MonitorResult>>;
+    async fn get_recent_results(
+        &self,
+        monitor_uuid: Uuid,
+        limit: usize,
+    ) -> Result<Vec<MonitorResult>>;
 
     /// Get peer results for a monitor
     async fn get_peer_results(&self, monitor_uuid: Uuid, limit: usize) -> Result<Vec<PeerResult>>;
@@ -67,7 +71,10 @@ impl Database for DatabaseImpl {
     async fn get_enabled_monitors(&self) -> Result<Vec<Monitor>> {
         let conn = self.get_conn().await?;
         let mut stmt = conn
-            .prepare("SELECT id, uuid, name, target, check_type, interval_seconds, timeout_seconds, enabled, created_at, updated_at FROM monitors WHERE enabled = 1")
+            .prepare(
+                "SELECT id, uuid, name, target, check_type, interval_seconds, timeout_seconds, \
+                 enabled, created_at, updated_at FROM monitors WHERE enabled = 1",
+            )
             .await?;
 
         let mut rows = stmt.query(()).await?;
@@ -98,7 +105,10 @@ impl Database for DatabaseImpl {
     async fn get_monitor_by_uuid(&self, uuid: Uuid) -> Result<Option<Monitor>> {
         let conn = self.get_conn().await?;
         let mut stmt = conn
-            .prepare("SELECT id, uuid, name, target, check_type, interval_seconds, timeout_seconds, enabled, created_at, updated_at FROM monitors WHERE uuid = ?")
+            .prepare(
+                "SELECT id, uuid, name, target, check_type, interval_seconds, timeout_seconds, \
+                 enabled, created_at, updated_at FROM monitors WHERE uuid = ?",
+            )
             .await?;
 
         let mut rows = stmt.query(params![uuid.to_string()]).await?;
@@ -133,7 +143,8 @@ impl Database for DatabaseImpl {
         if let Some(id) = monitor.id {
             // Update existing monitor
             conn.execute(
-                "UPDATE monitors SET name = ?, target = ?, check_type = ?, interval_seconds = ?, timeout_seconds = ?, enabled = ?, updated_at = ? WHERE id = ?",
+                "UPDATE monitors SET name = ?, target = ?, check_type = ?, interval_seconds = ?, \
+                 timeout_seconds = ?, enabled = ?, updated_at = ? WHERE id = ?",
                 params![
                     monitor.name.clone(),
                     monitor.target.clone(),
@@ -144,12 +155,15 @@ impl Database for DatabaseImpl {
                     updated_at,
                     id
                 ],
-            ).await?;
+            )
+            .await?;
             Ok(id)
         } else {
             // Insert new monitor
             conn.execute(
-                "INSERT INTO monitors (uuid, name, target, check_type, interval_seconds, timeout_seconds, enabled, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                "INSERT INTO monitors (uuid, name, target, check_type, interval_seconds, \
+                 timeout_seconds, enabled, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, \
+                 ?, ?)",
                 params![
                     monitor.uuid.to_string(),
                     monitor.name.clone(),
@@ -161,7 +175,8 @@ impl Database for DatabaseImpl {
                     created_at,
                     updated_at
                 ],
-            ).await?;
+            )
+            .await?;
 
             Ok(conn.last_insert_rowid())
         }
@@ -170,11 +185,21 @@ impl Database for DatabaseImpl {
     async fn delete_monitor(&self, uuid: Uuid) -> Result<()> {
         let conn = self.get_conn().await?;
 
-        // Delete the monitor; related rows will be removed via ON DELETE CASCADE
+        // Delete all results for this monitor first to avoid foreign key constraint
         conn.execute(
-            "DELETE FROM monitors WHERE uuid = ?",
+            "DELETE FROM monitor_results WHERE monitor_uuid = ?",
             params![uuid.to_string()],
-        ).await?;
+        )
+        .await?;
+
+        // Delete peer results as well
+        conn.execute("DELETE FROM peer_results WHERE monitor_uuid = ?", params![uuid.to_string()])
+            .await?;
+
+        // Now delete the monitor itself
+        conn.execute("DELETE FROM monitors WHERE uuid = ?", params![uuid.to_string()])
+            .await?;
+
         Ok(())
     }
 
@@ -185,7 +210,9 @@ impl Database for DatabaseImpl {
         let location = crate::location::get_location();
 
         conn.execute(
-            "INSERT INTO monitor_results (monitor_uuid, timestamp, status, latency_ms, status_code, error_message, peer_id, signature, created_at, city, country, region) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            "INSERT INTO monitor_results (monitor_uuid, timestamp, status, latency_ms, \
+             status_code, error_message, peer_id, signature, created_at, city, country, region) \
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
             params![
                 result.monitor_id.to_string(),
                 timestamp,
@@ -200,7 +227,8 @@ impl Database for DatabaseImpl {
                 location.country,
                 location.region
             ],
-        ).await?;
+        )
+        .await?;
 
         Ok(conn.last_insert_rowid())
     }
@@ -211,7 +239,9 @@ impl Database for DatabaseImpl {
         let created_at = Monitor::timestamp_to_i64(result.created_at);
 
         conn.execute(
-            "INSERT INTO peer_results (monitor_uuid, timestamp, status, latency_ms, status_code, error_message, peer_id, signature, verified, created_at, city, country, region) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            "INSERT INTO peer_results (monitor_uuid, timestamp, status, latency_ms, status_code, \
+             error_message, peer_id, signature, verified, created_at, city, country, region) \
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
             params![
                 result.monitor_uuid.to_string(),
                 timestamp,
@@ -227,15 +257,24 @@ impl Database for DatabaseImpl {
                 result.country.clone(),
                 result.region.clone()
             ],
-        ).await?;
+        )
+        .await?;
 
         Ok(conn.last_insert_rowid())
     }
 
-    async fn get_recent_results(&self, monitor_uuid: Uuid, limit: usize) -> Result<Vec<MonitorResult>> {
+    async fn get_recent_results(
+        &self,
+        monitor_uuid: Uuid,
+        limit: usize,
+    ) -> Result<Vec<MonitorResult>> {
         let conn = self.get_conn().await?;
         let mut stmt = conn
-            .prepare("SELECT id, monitor_uuid, timestamp, status, latency_ms, status_code, error_message, peer_id, signature, created_at, city, country, region FROM monitor_results WHERE monitor_uuid = ? ORDER BY timestamp DESC LIMIT ?")
+            .prepare(
+                "SELECT id, monitor_uuid, timestamp, status, latency_ms, status_code, \
+                 error_message, peer_id, signature, created_at, city, country, region FROM \
+                 monitor_results WHERE monitor_uuid = ? ORDER BY timestamp DESC LIMIT ?",
+            )
             .await?;
 
         let mut rows = stmt.query(params![monitor_uuid.to_string(), limit as i64]).await?;
@@ -275,7 +314,11 @@ impl Database for DatabaseImpl {
     async fn get_peer_results(&self, monitor_uuid: Uuid, limit: usize) -> Result<Vec<PeerResult>> {
         let conn = self.get_conn().await?;
         let mut stmt = conn
-            .prepare("SELECT id, monitor_uuid, timestamp, status, latency_ms, status_code, error_message, peer_id, signature, verified, created_at, city, country, region FROM peer_results WHERE monitor_uuid = ? ORDER BY timestamp DESC LIMIT ?")
+            .prepare(
+                "SELECT id, monitor_uuid, timestamp, status, latency_ms, status_code, \
+                 error_message, peer_id, signature, verified, created_at FROM peer_results WHERE \
+                 monitor_uuid = ? ORDER BY timestamp DESC LIMIT ?",
+            )
             .await?;
 
         let mut rows = stmt.query(params![monitor_uuid.to_string(), limit as i64]).await?;

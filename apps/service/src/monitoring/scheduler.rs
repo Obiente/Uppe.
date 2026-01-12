@@ -4,8 +4,8 @@ use tokio::sync::mpsc;
 use tokio::time::interval;
 use uuid::Uuid;
 
-use super::executor::MonitoringExecutor;
 use super::checker::CheckType;
+use super::executor::MonitoringExecutor;
 use super::types::CheckResult;
 
 /// Monitor configuration for scheduling
@@ -27,10 +27,7 @@ pub struct MonitoringScheduler {
 impl MonitoringScheduler {
     /// Create a new monitoring scheduler
     pub fn new(executor: Arc<MonitoringExecutor>, result_tx: mpsc::Sender<CheckResult>) -> Self {
-        Self {
-            executor,
-            result_tx,
-        }
+        Self { executor, result_tx }
     }
 
     /// Schedule a single monitor for periodic checking
@@ -48,11 +45,9 @@ impl MonitoringScheduler {
             loop {
                 timer.tick().await;
 
-                let result = executor.execute_check(
-                    config.id,
-                    config.target.clone(),
-                    config.check_type,
-                ).await;
+                let result = executor
+                    .execute_check(config.id, config.target.clone(), config.check_type)
+                    .await;
 
                 // Send result to the result channel
                 if let Err(e) = result_tx.send(result).await {
@@ -64,11 +59,11 @@ impl MonitoringScheduler {
     }
 
     /// Schedule multiple monitors
-    pub fn schedule_monitors(&self, configs: Vec<MonitorConfig>) -> Vec<tokio::task::JoinHandle<()>> {
-        configs
-            .into_iter()
-            .map(|config| self.schedule_monitor(config))
-            .collect()
+    pub fn schedule_monitors(
+        &self,
+        configs: Vec<MonitorConfig>,
+    ) -> Vec<tokio::task::JoinHandle<()>> {
+        configs.into_iter().map(|config| self.schedule_monitor(config)).collect()
     }
 }
 
@@ -78,9 +73,8 @@ mod tests {
 
     #[tokio::test]
     async fn test_scheduler() {
-        let executor = Arc::new(
-            MonitoringExecutor::new("test-peer".to_string(), 10, 1000).unwrap()
-        );
+        let executor =
+            Arc::new(MonitoringExecutor::new("test-peer".to_string(), 10, 1000).unwrap());
 
         let (tx, mut rx) = mpsc::channel(10);
         let scheduler = MonitoringScheduler::new(executor, tx);

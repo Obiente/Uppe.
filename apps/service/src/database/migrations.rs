@@ -5,7 +5,7 @@ use libsql::Connection;
 const SCHEMA_VERSION: i32 = 3;
 
 /// Run database migrations
-/// 
+///
 /// This is the single source of truth for database schema.
 /// The Go API should NOT run migrations - it only reads data.
 pub async fn run_migrations(conn: &Connection) -> Result<()> {
@@ -22,7 +22,7 @@ pub async fn run_migrations(conn: &Connection) -> Result<()> {
 
     // Check current schema version
     let current_version = get_current_version(conn).await?;
-    
+
     if current_version >= SCHEMA_VERSION {
         tracing::info!("Database schema is up to date (version {})", current_version);
         return Ok(());
@@ -35,27 +35,28 @@ pub async fn run_migrations(conn: &Connection) -> Result<()> {
         run_migration_v1(conn).await?;
         record_migration(conn, 1, "Initial schema").await?;
     }
-    
+
     if current_version < 2 {
         run_migration_v2(conn).await?;
         record_migration(conn, 2, "Add HTTP-specific columns to monitors").await?;
     }
-    
+
     if current_version < 3 {
         run_migration_v3(conn).await?;
         record_migration(conn, 3, "Add status pages, settings, and network tables").await?;
     }
 
-    tracing::info!("Database migrations completed successfully (now at version {})", SCHEMA_VERSION);
+    tracing::info!(
+        "Database migrations completed successfully (now at version {})",
+        SCHEMA_VERSION
+    );
     Ok(())
 }
 
 /// Get current schema version from database
 async fn get_current_version(conn: &Connection) -> Result<i32> {
-    let mut rows = conn
-        .query("SELECT MAX(version) FROM schema_migrations", ())
-        .await?;
-    
+    let mut rows = conn.query("SELECT MAX(version) FROM schema_migrations", ()).await?;
+
     if let Some(row) = rows.next().await? {
         let version: Option<i32> = row.get(0)?;
         Ok(version.unwrap_or(0))
@@ -70,13 +71,13 @@ async fn record_migration(conn: &Connection, version: i32, description: &str) ->
         .duration_since(std::time::UNIX_EPOCH)
         .unwrap()
         .as_secs() as i64;
-    
+
     conn.execute(
         "INSERT INTO schema_migrations (version, applied_at, description) VALUES (?, ?, ?)",
         libsql::params![version, now, description],
     )
     .await?;
-    
+
     tracing::info!("Applied migration v{}: {}", version, description);
     Ok(())
 }
@@ -147,21 +148,71 @@ async fn run_migration_v1(conn: &Connection) -> Result<()> {
     .await?;
 
     // Create indexes
-    conn.execute("CREATE INDEX IF NOT EXISTS idx_monitors_uuid ON monitors(uuid)", ()).await?;
-    conn.execute("CREATE INDEX IF NOT EXISTS idx_monitors_enabled ON monitors(enabled)", ()).await?;
-    conn.execute("CREATE INDEX IF NOT EXISTS idx_monitors_created_at ON monitors(created_at DESC)", ()).await?;
-    
-    conn.execute("CREATE INDEX IF NOT EXISTS idx_monitor_results_monitor_uuid ON monitor_results(monitor_uuid)", ()).await?;
-    conn.execute("CREATE INDEX IF NOT EXISTS idx_monitor_results_timestamp ON monitor_results(timestamp DESC)", ()).await?;
-    conn.execute("CREATE INDEX IF NOT EXISTS idx_monitor_results_monitor_timestamp ON monitor_results(monitor_uuid, timestamp DESC)", ()).await?;
-    conn.execute("CREATE INDEX IF NOT EXISTS idx_monitor_results_peer_id ON monitor_results(peer_id)", ()).await?;
-    conn.execute("CREATE INDEX IF NOT EXISTS idx_monitor_results_status ON monitor_results(status)", ()).await?;
-    
-    conn.execute("CREATE INDEX IF NOT EXISTS idx_peer_results_monitor_uuid ON peer_results(monitor_uuid)", ()).await?;
-    conn.execute("CREATE INDEX IF NOT EXISTS idx_peer_results_timestamp ON peer_results(timestamp DESC)", ()).await?;
-    conn.execute("CREATE INDEX IF NOT EXISTS idx_peer_results_monitor_timestamp ON peer_results(monitor_uuid, timestamp DESC)", ()).await?;
-    conn.execute("CREATE INDEX IF NOT EXISTS idx_peer_results_peer_id ON peer_results(peer_id)", ()).await?;
-    conn.execute("CREATE INDEX IF NOT EXISTS idx_peer_results_verified ON peer_results(verified)", ()).await?;
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_monitors_uuid ON monitors(uuid)", ())
+        .await?;
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_monitors_enabled ON monitors(enabled)", ())
+        .await?;
+    conn.execute(
+        "CREATE INDEX IF NOT EXISTS idx_monitors_created_at ON monitors(created_at DESC)",
+        (),
+    )
+    .await?;
+
+    conn.execute(
+        "CREATE INDEX IF NOT EXISTS idx_monitor_results_monitor_uuid ON \
+         monitor_results(monitor_uuid)",
+        (),
+    )
+    .await?;
+    conn.execute(
+        "CREATE INDEX IF NOT EXISTS idx_monitor_results_timestamp ON monitor_results(timestamp \
+         DESC)",
+        (),
+    )
+    .await?;
+    conn.execute(
+        "CREATE INDEX IF NOT EXISTS idx_monitor_results_monitor_timestamp ON \
+         monitor_results(monitor_uuid, timestamp DESC)",
+        (),
+    )
+    .await?;
+    conn.execute(
+        "CREATE INDEX IF NOT EXISTS idx_monitor_results_peer_id ON monitor_results(peer_id)",
+        (),
+    )
+    .await?;
+    conn.execute(
+        "CREATE INDEX IF NOT EXISTS idx_monitor_results_status ON monitor_results(status)",
+        (),
+    )
+    .await?;
+
+    conn.execute(
+        "CREATE INDEX IF NOT EXISTS idx_peer_results_monitor_uuid ON peer_results(monitor_uuid)",
+        (),
+    )
+    .await?;
+    conn.execute(
+        "CREATE INDEX IF NOT EXISTS idx_peer_results_timestamp ON peer_results(timestamp DESC)",
+        (),
+    )
+    .await?;
+    conn.execute(
+        "CREATE INDEX IF NOT EXISTS idx_peer_results_monitor_timestamp ON \
+         peer_results(monitor_uuid, timestamp DESC)",
+        (),
+    )
+    .await?;
+    conn.execute(
+        "CREATE INDEX IF NOT EXISTS idx_peer_results_peer_id ON peer_results(peer_id)",
+        (),
+    )
+    .await?;
+    conn.execute(
+        "CREATE INDEX IF NOT EXISTS idx_peer_results_verified ON peer_results(verified)",
+        (),
+    )
+    .await?;
 
     Ok(())
 }
@@ -170,36 +221,23 @@ async fn run_migration_v1(conn: &Connection) -> Result<()> {
 /// Adds expected_status_codes, headers, body, user_id for frontend/API compatibility
 async fn run_migration_v2(conn: &Connection) -> Result<()> {
     // Add expected_status_codes column (JSON array of status codes like ["200", "201"])
-    conn.execute(
-        "ALTER TABLE monitors ADD COLUMN expected_status_codes TEXT DEFAULT '[]'",
-        (),
-    )
-    .await?;
+    conn.execute("ALTER TABLE monitors ADD COLUMN expected_status_codes TEXT DEFAULT '[]'", ())
+        .await?;
 
     // Add headers column (JSON object of HTTP headers)
-    conn.execute(
-        "ALTER TABLE monitors ADD COLUMN headers TEXT DEFAULT '{}'",
-        (),
-    )
-    .await?;
+    conn.execute("ALTER TABLE monitors ADD COLUMN headers TEXT DEFAULT '{}'", ())
+        .await?;
 
     // Add body column (request body for POST/PUT requests)
-    conn.execute(
-        "ALTER TABLE monitors ADD COLUMN body TEXT DEFAULT ''",
-        (),
-    )
-    .await?;
+    conn.execute("ALTER TABLE monitors ADD COLUMN body TEXT DEFAULT ''", ()).await?;
 
     // Add user_id column (for multi-user support)
-    conn.execute(
-        "ALTER TABLE monitors ADD COLUMN user_id TEXT",
-        (),
-    )
-    .await?;
+    conn.execute("ALTER TABLE monitors ADD COLUMN user_id TEXT", ()).await?;
 
     // Set default expected_status_codes for HTTP monitors
     conn.execute(
-        "UPDATE monitors SET expected_status_codes = '[\"200\"]' WHERE check_type = 'Http' AND expected_status_codes = '[]'",
+        "UPDATE monitors SET expected_status_codes = '[\"200\"]' WHERE check_type = 'Http' AND \
+         expected_status_codes = '[]'",
         (),
     )
     .await?;
@@ -301,7 +339,7 @@ async fn run_migration_v3(conn: &Connection) -> Result<()> {
         .duration_since(std::time::UNIX_EPOCH)
         .unwrap()
         .as_secs() as i64;
-    
+
     let default_settings = vec![
         ("display_name", "Uppe. Node"),
         ("email", ""),
@@ -371,14 +409,35 @@ async fn run_migration_v3(conn: &Connection) -> Result<()> {
     .await?;
 
     // Create indexes
-    conn.execute("CREATE INDEX IF NOT EXISTS idx_status_pages_slug ON status_pages(slug)", ()).await?;
-    conn.execute("CREATE INDEX IF NOT EXISTS idx_status_pages_active ON status_pages(is_active)", ()).await?;
-    conn.execute("CREATE INDEX IF NOT EXISTS idx_incidents_status ON incidents(status)", ()).await?;
-    conn.execute("CREATE INDEX IF NOT EXISTS idx_incidents_monitor ON incidents(monitor_uuid)", ()).await?;
-    conn.execute("CREATE INDEX IF NOT EXISTS idx_incident_updates_incident ON incident_updates(incident_uuid)", ()).await?;
-    conn.execute("CREATE INDEX IF NOT EXISTS idx_network_stats_timestamp ON network_stats(timestamp DESC)", ()).await?;
-    conn.execute("CREATE INDEX IF NOT EXISTS idx_peers_status ON peers(status)", ()).await?;
-    conn.execute("CREATE INDEX IF NOT EXISTS idx_peers_last_seen ON peers(last_seen DESC)", ()).await?;
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_status_pages_slug ON status_pages(slug)", ())
+        .await?;
+    conn.execute(
+        "CREATE INDEX IF NOT EXISTS idx_status_pages_active ON status_pages(is_active)",
+        (),
+    )
+    .await?;
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_incidents_status ON incidents(status)", ())
+        .await?;
+    conn.execute(
+        "CREATE INDEX IF NOT EXISTS idx_incidents_monitor ON incidents(monitor_uuid)",
+        (),
+    )
+    .await?;
+    conn.execute(
+        "CREATE INDEX IF NOT EXISTS idx_incident_updates_incident ON \
+         incident_updates(incident_uuid)",
+        (),
+    )
+    .await?;
+    conn.execute(
+        "CREATE INDEX IF NOT EXISTS idx_network_stats_timestamp ON network_stats(timestamp DESC)",
+        (),
+    )
+    .await?;
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_peers_status ON peers(status)", ())
+        .await?;
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_peers_last_seen ON peers(last_seen DESC)", ())
+        .await?;
 
     tracing::info!("Added status pages, settings, incidents, and network tables");
     Ok(())

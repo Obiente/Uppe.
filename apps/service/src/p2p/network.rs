@@ -1,9 +1,8 @@
-#![allow(dead_code)]
 use anyhow::Result;
 use tokio::sync::mpsc;
 
-use crate::monitoring::types::CheckResult;
 use crate::database::models::PeerResult;
+use crate::monitoring::types::CheckResult;
 
 /// P2P network manager
 pub struct P2PNetwork {
@@ -16,10 +15,7 @@ pub struct P2PNetwork {
 impl P2PNetwork {
     /// Create a new P2P network manager
     pub fn new(peer_id: String, enabled: bool) -> Self {
-        Self {
-            peer_id,
-            enabled,
-        }
+        Self { peer_id, enabled }
     }
 
     /// Initialize and join the P2P network
@@ -30,7 +26,7 @@ impl P2PNetwork {
         }
 
         tracing::info!("Starting P2P network with peer ID: {}", self.peer_id);
-        
+
         // TODO: Initialize PeerUP node
         // let config = peerup::PeerNodeConfig::new()
         //     .with_port(8080);
@@ -46,18 +42,16 @@ impl P2PNetwork {
             return Ok(());
         }
 
-        tracing::debug!(
-            "Sharing result for monitor {} with network",
-            result.monitor_id
-        );
+        tracing::debug!("Sharing result for monitor {} with network", result.monitor_id);
 
         // TODO: Implement actual P2P sharing via PeerUP
         // This will broadcast the signed result to connected peers
-        
+
         Ok(())
     }
 
     /// Start receiving results from peers
+    #[allow(dead_code)] // Will be used when P2P integration is complete
     pub async fn start_receiving(&self, _tx: mpsc::Sender<PeerResult>) -> Result<()> {
         if !self.enabled {
             return Ok(());
@@ -67,11 +61,12 @@ impl P2PNetwork {
 
         // TODO: Implement actual P2P receiving via PeerUP
         // This will listen for results from other peers and send them to the channel
-        
+
         Ok(())
     }
 
     /// Get our peer ID
+    #[allow(dead_code)] // Public API method
     pub fn peer_id(&self) -> &str {
         &self.peer_id
     }
@@ -90,7 +85,7 @@ mod tests {
     async fn test_p2p_network_disabled() {
         let network = P2PNetwork::new("test-peer".to_string(), false);
         assert!(!network.is_enabled());
-        
+
         let result = network.start().await;
         assert!(result.is_ok());
     }

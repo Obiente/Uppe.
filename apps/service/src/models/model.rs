@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 use libsql::Connection;
 use thiserror::Error;
 

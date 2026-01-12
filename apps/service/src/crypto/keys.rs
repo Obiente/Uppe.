@@ -15,10 +15,7 @@ impl KeyPair {
     /// Create a new keypair from a signing key
     pub fn new(signing_key: SigningKey) -> Self {
         let verifying_key = signing_key.verifying_key();
-        Self {
-            signing_key,
-            verifying_key,
-        }
+        Self { signing_key, verifying_key }
     }
 
     /// Get the public key as bytes
@@ -44,31 +41,29 @@ pub fn generate_keypair() -> KeyPair {
 /// Save a keypair to a file
 pub fn save_keypair(keypair: &KeyPair, path: &Path) -> Result<()> {
     let secret_bytes = keypair.signing_key.to_bytes();
-    
+
     // Create parent directory if it doesn't exist
     if let Some(parent) = path.parent() {
         fs::create_dir_all(parent)?;
     }
-    
-    fs::write(path, secret_bytes)
-        .context("Failed to write keypair to file")?;
-    
+
+    fs::write(path, secret_bytes).context("Failed to write keypair to file")?;
+
     tracing::info!("Saved keypair to: {}", path.display());
     Ok(())
 }
 
 /// Load a keypair from a file
 pub fn load_keypair(path: &Path) -> Result<KeyPair> {
-    let secret_bytes = fs::read(path)
-        .context("Failed to read keypair file")?;
-    
+    let secret_bytes = fs::read(path).context("Failed to read keypair file")?;
+
     if secret_bytes.len() != 32 {
         anyhow::bail!("Invalid keypair file: expected 32 bytes, got {}", secret_bytes.len());
     }
-    
+
     let mut bytes = [0u8; 32];
     bytes.copy_from_slice(&secret_bytes);
-    
+
     let signing_key = SigningKey::from_bytes(&bytes);
     Ok(KeyPair::new(signing_key))
 }
@@ -106,10 +101,7 @@ mod tests {
         save_keypair(&original, &path).unwrap();
 
         let loaded = load_keypair(&path).unwrap();
-        assert_eq!(
-            original.public_key_bytes(),
-            loaded.public_key_bytes()
-        );
+        assert_eq!(original.public_key_bytes(), loaded.public_key_bytes());
     }
 
     #[test]
@@ -119,13 +111,10 @@ mod tests {
 
         // First call should generate
         let first = load_or_generate_keypair(&path).unwrap();
-        
+
         // Second call should load the same key
         let second = load_or_generate_keypair(&path).unwrap();
-        
-        assert_eq!(
-            first.public_key_bytes(),
-            second.public_key_bytes()
-        );
+
+        assert_eq!(first.public_key_bytes(), second.public_key_bytes());
     }
 }

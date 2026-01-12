@@ -1,7 +1,7 @@
 {
   "name": "@uppe/service",
   "scripts": {
-    "dev": "cargo run dev",
+    "dev": "cargo run",
     "add": "cargo add",
     "build": "cargo build --release",
     "build:debug": "cargo build",

@@ -39,9 +39,7 @@ impl Monitor {
 
     /// Convert SystemTime to Unix timestamp
     pub fn timestamp_to_i64(time: SystemTime) -> i64 {
-        time.duration_since(UNIX_EPOCH)
-            .unwrap_or_default()
-            .as_secs() as i64
+        time.duration_since(UNIX_EPOCH).unwrap_or_default().as_secs() as i64
     }
 
     /// Convert Unix timestamp to SystemTime

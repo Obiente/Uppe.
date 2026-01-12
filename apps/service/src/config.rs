@@ -10,6 +10,26 @@ pub enum Error {
     ConfigPathUnavailable,
 }
 
+/// Location privacy setting
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum LocationPrivacy {
+    /// Disable location tracking completely
+    #[serde(rename = "disabled")]
+    Disabled,
+    /// Only track country (no city or region details)
+    #[serde(rename = "country_only")]
+    CountryOnly,
+    /// Full location details (city, country, region)
+    #[serde(rename = "full")]
+    Full,
+}
+
+impl Default for LocationPrivacy {
+    fn default() -> Self {
+        LocationPrivacy::Full
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Config {
     pub zeromq: ZeroMQ,
@@ -21,6 +41,18 @@ pub struct Preferences {
     pub use_peerup_layer: bool,
     pub allow_peer_leech: bool,
     pub minimum_peer_mr: isize,
+    pub timeout_seconds: Option<u64>,
+    pub degraded_threshold_ms: Option<u64>,
+    /// How often to update location from IP (in seconds). 0 = disabled, 300 = 5 minutes
+    #[serde(default = "default_location_update_interval")]
+    pub location_update_interval_secs: u64,
+    /// Location privacy level: "disabled", "country_only", or "full"
+    #[serde(default)]
+    pub location_privacy: LocationPrivacy,
+}
+
+fn default_location_update_interval() -> u64 {
+    300 // 5 minutes default for mobile devices
 }
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ZeroMQ {
@@ -59,6 +91,10 @@ impl Default for Config {
                 use_peerup_layer: true,
                 allow_peer_leech: false,
                 minimum_peer_mr: 0,
+                timeout_seconds: Some(10),
+                degraded_threshold_ms: Some(1000),
+                location_update_interval_secs: 300,
+                location_privacy: LocationPrivacy::Full,
             },
         }
     }

@@ -275,7 +275,7 @@ impl Database for DatabaseImpl {
     async fn get_peer_results(&self, monitor_uuid: Uuid, limit: usize) -> Result<Vec<PeerResult>> {
         let conn = self.get_conn().await?;
         let mut stmt = conn
-            .prepare("SELECT id, monitor_uuid, timestamp, status, latency_ms, status_code, error_message, peer_id, signature, verified, created_at FROM peer_results WHERE monitor_uuid = ? ORDER BY timestamp DESC LIMIT ?")
+            .prepare("SELECT id, monitor_uuid, timestamp, status, latency_ms, status_code, error_message, peer_id, signature, verified, created_at, city, country, region FROM peer_results WHERE monitor_uuid = ? ORDER BY timestamp DESC LIMIT ?")
             .await?;
 
         let mut rows = stmt.query(params![monitor_uuid.to_string(), limit as i64]).await?;

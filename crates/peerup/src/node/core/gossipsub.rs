@@ -37,7 +37,7 @@ impl PeerNode {
     /// Publish a monitoring result to the network
     pub fn publish_result(&mut self, result_json: String) -> Result<()> {
         let topic = IdentTopic::new(MONITORING_RESULTS_TOPIC);
-        
+
         match self.swarm.behaviour_mut().gossipsub.publish(topic, result_json.as_bytes()) {
             Ok(_) => {
                 tracing::debug!("Published result to gossipsub network");

@@ -92,6 +92,7 @@ impl AppState {
         self.results_received = received;
     }
 
+    #[allow(dead_code)] // TUI API
     pub fn record_peer_event(&mut self, event: String) {
         self.last_peer_event = Some(event);
     }

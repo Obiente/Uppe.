@@ -14,8 +14,8 @@ use tracing::{debug, error, info, warn};
 
 use crate::config::Config;
 use crate::crypto::{KeyPair, load_or_generate_keypair, sign_result, verify_result};
-use crate::database::{Database, DatabaseImpl, initialize_database};
 use crate::database::models::{NetworkStats, Peer};
+use crate::database::{Database, DatabaseImpl, initialize_database};
 use crate::monitoring::checker::CheckType;
 use crate::monitoring::scheduler::MonitorConfig;
 use crate::monitoring::{CheckResult, MonitoringExecutor, MonitoringScheduler};
@@ -57,8 +57,8 @@ impl Orchestrator {
 
         // Load or generate cryptographic keypair
         info!("Loading cryptographic keypair...");
-        let keypair_path = std::env::var("UPPE_KEYPAIR_PATH")
-            .unwrap_or_else(|_| "uppe_keypair.key".to_string());
+        let keypair_path =
+            std::env::var("UPPE_KEYPAIR_PATH").unwrap_or_else(|_| "uppe_keypair.key".to_string());
         let keypair_path = PathBuf::from(keypair_path);
         let keypair = Arc::new(load_or_generate_keypair(&keypair_path)?);
         let peer_id = keypair.public_key_hex();
@@ -207,10 +207,10 @@ impl Orchestrator {
                     checks_performed += 1;
 
                     // Share with P2P network if enabled
-                    if p2p_network.is_enabled() {
-                        if let Err(e) = p2p_network.share_result(&signed_result).await {
-                            error!("Failed to share result with P2P network: {}", e);
-                        }
+                    if p2p_network.is_enabled()
+                        && let Err(e) = p2p_network.share_result(&signed_result).await
+                    {
+                        error!("Failed to share result with P2P network: {}", e);
                     }
 
                     if last_stats_persist.elapsed() >= stats_persist_interval {
@@ -256,7 +256,7 @@ impl Orchestrator {
                                     if public_key_vec.len() == 32 {
                                         let mut public_key_bytes = [0u8; 32];
                                         public_key_bytes.copy_from_slice(&public_key_vec[..32]);
-                                        
+
                                         // Verify the signature
                                         match verify_result(&db_result, &public_key_bytes, &result.result.target) {
                                             Ok(true) => {
@@ -280,7 +280,7 @@ impl Orchestrator {
                                     warn!("Received peer result without public key from {}", peer_id);
                                     false
                                 };
-                                
+
                                 db_result.verified = verified;
 
                                 // Keep peer record fresh when results arrive
@@ -288,7 +288,7 @@ impl Orchestrator {
                                 if let Err(e) = self.database.upsert_peer(&peer_model).await {
                                     warn!("Failed to upsert peer {} on result: {}", peer_id, e);
                                 }
-                                
+
                                 if let Err(e) = self.database.save_peer_result(&db_result).await {
                                     error!("Failed to save peer result: {}", e);
                                 } else {

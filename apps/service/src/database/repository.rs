@@ -374,9 +374,11 @@ impl Database for DatabaseImpl {
         let joined_at = Monitor::timestamp_to_i64(peer.joined_at);
 
         conn.execute(
-            "INSERT INTO peers (peer_id, status, last_seen, joined_at, contribution_score, uptime_percentage, checks_per_day, location_city, location_region, location_country)
+            "INSERT INTO peers (peer_id, status, last_seen, joined_at, contribution_score, \
+             uptime_percentage, checks_per_day, location_city, location_region, location_country)
              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-             ON CONFLICT(peer_id) DO UPDATE SET status=excluded.status, last_seen=excluded.last_seen",
+             ON CONFLICT(peer_id) DO UPDATE SET status=excluded.status, \
+             last_seen=excluded.last_seen",
             params![
                 peer.peer_id.clone(),
                 peer.status.clone(),
@@ -413,7 +415,8 @@ impl Database for DatabaseImpl {
         let ts = Monitor::timestamp_to_i64(stats.timestamp);
 
         conn.execute(
-            "INSERT INTO network_stats (timestamp, total_peers, online_peers, checks_performed, checks_received, bandwidth_used_mb)
+            "INSERT INTO network_stats (timestamp, total_peers, online_peers, checks_performed, \
+             checks_received, bandwidth_used_mb)
              VALUES (?, ?, ?, ?, ?, ?)",
             params![
                 ts,
@@ -433,7 +436,8 @@ impl Database for DatabaseImpl {
         let conn = self.get_conn().await?;
         let mut stmt = conn
             .prepare(
-                "SELECT timestamp, total_peers, online_peers, checks_performed, checks_received, bandwidth_used_mb
+                "SELECT timestamp, total_peers, online_peers, checks_performed, checks_received, \
+                 bandwidth_used_mb
                  FROM network_stats ORDER BY timestamp DESC LIMIT 1",
             )
             .await?;

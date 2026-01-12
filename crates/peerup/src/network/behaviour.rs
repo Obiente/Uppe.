@@ -59,8 +59,13 @@ impl PeerUPBehaviour {
                     Some(behaviour)
                 }
                 Err(e) => {
-                    tracing::warn!("Failed to enable mDNS (platform limitation or network config): {}", e);
-                    tracing::info!("Peer discovery will rely on Kademlia DHT and configured bootstrap peers");
+                    tracing::warn!(
+                        "Failed to enable mDNS (platform limitation or network config): {}",
+                        e
+                    );
+                    tracing::info!(
+                        "Peer discovery will rely on Kademlia DHT and configured bootstrap peers"
+                    );
                     None
                 }
             }
@@ -73,10 +78,10 @@ impl PeerUPBehaviour {
         let kademlia = if config.enable_kademlia {
             let store = MemoryStore::new(local_peer_id);
             let mut kademlia = kad::Behaviour::new(local_peer_id, store);
-            
+
             // Set to server mode for better network participation
             kademlia.set_mode(Some(kad::Mode::Server));
-            
+
             tracing::info!("Kademlia DHT peer discovery enabled");
             Some(kademlia)
         } else {

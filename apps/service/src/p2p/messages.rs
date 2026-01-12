@@ -19,10 +19,13 @@ pub enum P2PCommand {
     /// Publish a monitoring result to the network
     PublishResult(CheckResult),
     /// Subscribe to monitoring results
+    #[allow(dead_code)] // Future API
     Subscribe,
     /// Unsubscribe from monitoring results
+    #[allow(dead_code)] // Future API
     Unsubscribe,
     /// Shutdown the P2P node
+    #[allow(dead_code)] // Future API
     Shutdown,
 }
 

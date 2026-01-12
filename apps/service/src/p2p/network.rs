@@ -21,6 +21,7 @@ pub struct P2PNetwork {
 
 impl P2PNetwork {
     /// Create a new P2P network manager
+    #[allow(dead_code)] // Public API
     pub fn new(peer_id: String, enabled: bool) -> Self {
         // Create default config for PeerUP node
         let config = NodeConfig::builder()
@@ -34,8 +35,20 @@ impl P2PNetwork {
     }
 
     /// Create a new P2P network manager with custom config
-    pub fn with_config(peer_id: String, enabled: bool, public_key: [u8; 32], config: NodeConfig) -> Self {
-        Self { peer_id, enabled, public_key: Some(public_key), config, command_tx: None, event_rx: None }
+    pub fn with_config(
+        peer_id: String,
+        enabled: bool,
+        public_key: [u8; 32],
+        config: NodeConfig,
+    ) -> Self {
+        Self {
+            peer_id,
+            enabled,
+            public_key: Some(public_key),
+            config,
+            command_tx: None,
+            event_rx: None,
+        }
     }
 
     /// Initialize and join the P2P network
@@ -73,10 +86,16 @@ impl P2PNetwork {
         {
             let bootstrap_peers = node.config().bootstrap_peers.clone();
             if !bootstrap_peers.is_empty() {
-                tracing::info!("Dialing {} configured bootstrap peer(s) for network join", bootstrap_peers.len());
+                tracing::info!(
+                    "Dialing {} configured bootstrap peer(s) for network join",
+                    bootstrap_peers.len()
+                );
                 node.dial_bootstrap_peers(&bootstrap_peers)?;
             } else {
-                tracing::info!("No bootstrap peers configured - relying on mDNS (LAN) and Kademlia (WAN) for peer discovery");
+                tracing::info!(
+                    "No bootstrap peers configured - relying on mDNS (LAN) and Kademlia (WAN) for \
+                     peer discovery"
+                );
             }
         }
 
@@ -101,7 +120,7 @@ impl P2PNetwork {
                                     result: result.clone(),
                                     public_key: public_key.unwrap_or([0u8; 32]),
                                 };
-                                
+
                                 if let Ok(json) = serde_json::to_string(&signed_msg) {
                                     match node.publish_result(json) {
                                         Ok(_) => {
@@ -206,6 +225,7 @@ impl P2PNetwork {
     }
 
     /// Send a command to the P2P node
+    #[allow(dead_code)] // Public API
     pub async fn send_command(&self, command: P2PCommand) -> anyhow::Result<()> {
         if let Some(tx) = &self.command_tx {
             tx.send(command)

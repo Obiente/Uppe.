@@ -217,10 +217,15 @@ impl AppState {
         let total = self.results.len() as u64;
         let successful = self.results.iter().filter(|r| r.status == MonitorStatus::Up).count() as u64;
         let uptime = if total > 0 { (successful as f64 / total as f64) * 100.0 } else { 0.0 };
-        let avg_latency = self.results
+        let (latency_sum, latency_count) = self.results
             .iter()
             .filter_map(|r| r.latency_ms)
-            .sum::<u64>() / self.results.len().max(1) as u64;
+            .fold((0u64, 0u64), |(sum, count), latency| (sum + latency, count + 1));
+        let avg_latency = if latency_count > 0 {
+            latency_sum / latency_count
+        } else {
+            0
+        };
 
         (uptime, successful, total, avg_latency)
     }

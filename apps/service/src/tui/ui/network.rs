@@ -23,7 +23,7 @@ pub fn render(f: &mut Frame, area: Rect, state: &AppState) {
 
     let node_status = if state.p2p_enabled {
         Span::styled(
-            format!("Node ID: {}", &state.peer_id[..state.peer_id.len().min(12)]),
+            format!("Node ID: {}", state.peer_id.chars().take(12).collect::<String>()),
             Style::default().fg(Color::Green),
         )
     } else {

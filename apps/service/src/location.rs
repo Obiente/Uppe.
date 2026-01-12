@@ -123,7 +123,7 @@ impl Location {
 /// Fetch location from IP geolocation API
 async fn fetch_location_from_ip() -> Result<Location> {
     // Use ip-api.com - free, no API key required, 45 requests/minute
-    let response = reqwest::get("http://ip-api.com/json/?fields=status,city,countryCode,regionName")
+    let response = reqwest::get("https://ip-api.com/json/?fields=status,city,countryCode,regionName")
         .await?
         .json::<IpApiResponse>()
         .await?;

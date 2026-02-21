@@ -6,7 +6,7 @@ use anyhow::Result;
 use crossterm::event::{Event, KeyCode, KeyEventKind};
 
 use crate::database::{Database, DatabaseImpl};
-use crate::tui::state::AppState;
+use crate::tui::state::{AppState, StatusLevel};
 
 /// Handle all events and return true if should quit
 pub async fn handle_event(state: &mut AppState, event: Event, db: &DatabaseImpl) -> Result<bool> {
@@ -28,19 +28,66 @@ pub async fn handle_event(state: &mut AppState, event: Event, db: &DatabaseImpl)
                 return Ok(false);
             }
 
+            if state.show_dht_query_popup {
+                match k.code {
+                    KeyCode::Esc => {
+                        state.show_dht_query_popup = false;
+                        state.dht_query_input.clear();
+                    }
+                    KeyCode::Enter => {
+                        if !state.dht_query_input.is_empty() {
+                            if state.dht_snapshot.is_none() {
+                                state.set_status("No P2P connection -- run orchestrator first", StatusLevel::Error);
+                            } else {
+                                let key = state.dht_query_input.clone();
+                                state.dht_pending_queries += 1;
+                                state.dht_last_query = Some((key.clone(), false));
+                                #[allow(unused_must_use)] { crate::tui::bus::publish_dht_query(key.clone()); }
+                                state.set_status(format!("DHT query: {}", key), StatusLevel::Info);
+                            }
+                        }
+                        state.show_dht_query_popup = false;
+                    }
+                    KeyCode::Backspace => {
+                        state.dht_query_input.pop();
+                    }
+                    KeyCode::Char(c) => {
+                        state.dht_query_input.push(c);
+                    }
+                    _ => {}
+                }
+                return Ok(false);
+            }
+
             if state.show_delete_confirm {
                 match k.code {
                     KeyCode::Char('y') => {
                         if let Some(m) = state.monitors.get(state.selected) {
-                            db.delete_monitor(m.uuid).await?;
-                            state.show_delete_confirm = false;
-                            state.monitors = db.get_enabled_monitors().await?;
-                            if state.selected >= state.monitors.len() {
-                                state.selected = state.monitors.len().saturating_sub(1);
-                            }
-                            state.results.clear();
-                            if let Some(m) = state.monitors.get(state.selected) {
-                                state.results = db.get_recent_results(m.uuid, 50).await?;
+                            let name = m.name.clone();
+                            match db.delete_monitor(m.uuid).await {
+                                Ok(_) => {
+                                    state.show_delete_confirm = false;
+                                    match db.get_enabled_monitors().await {
+                                        Ok(monitors) => {
+                                            state.monitors = monitors;
+                                            if state.selected >= state.monitors.len() {
+                                                state.selected = state.monitors.len().saturating_sub(1);
+                                            }
+                                            state.results.clear();
+                                            if let Some(m) = state.monitors.get(state.selected) {
+                                                if let Ok(results) = db.get_recent_results(m.uuid, 50).await {
+                                                    state.results = results;
+                                                }
+                                            }
+                                        }
+                                        Err(e) => tracing::warn!("Failed to refresh after delete: {}", e),
+                                    }
+                                    state.set_status(format!("Deleted: {}", name), StatusLevel::Success);
+                                }
+                                Err(e) => {
+                                    state.show_delete_confirm = false;
+                                    state.set_status(format!("Delete failed: {}", e), StatusLevel::Error);
+                                }
                             }
                         } else {
                             state.show_delete_confirm = false;
@@ -74,12 +121,7 @@ pub async fn handle_event(state: &mut AppState, event: Event, db: &DatabaseImpl)
         }
 
         Event::Mouse(m) => {
-            // Only handle mouse events if no popup is blocking
-            if !state.show_help
-                && !state.show_edit
-                && !state.show_delete_confirm
-                && !state.show_result_detail
-            {
+            if !state.any_popup_open() {
                 mouse::handle_mouse(state, m, db).await
             } else {
                 Ok(false)

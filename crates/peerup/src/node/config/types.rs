@@ -24,6 +24,16 @@ pub struct NodeConfig {
 
     /// Whether to enable relay support
     pub enable_relay: bool,
+
+    /// Distributed Peer Data Support
+    /// Enable peers to store data for each other (community support)
+    pub enable_peer_data_support: bool,
+
+    /// How long to retain peer data before auto-cleanup (in days)
+    pub peer_data_retention_days: u64,
+
+    /// Automatically sync peer data on startup (recover from downtime)
+    pub auto_sync_on_startup: bool,
 }
 
 impl Default for NodeConfig {
@@ -35,6 +45,10 @@ impl Default for NodeConfig {
             enable_mdns: true,
             enable_kademlia: true,
             enable_relay: true,
+            // Distributed peer data support defaults
+            enable_peer_data_support: true,
+            peer_data_retention_days: 7,
+            auto_sync_on_startup: true,
         }
     }
 }

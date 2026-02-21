@@ -36,9 +36,7 @@ impl From<request_response::Event<ProbeRequest, ProbeResponse>> for PeerUPEvent 
                 PeerUPEvent::InboundProbeFailure { peer, request_id, error }
             }
             request_response::Event::ResponseSent { .. } => {
-                // No-op: ResponseSent is not mapped to a PeerUPEvent variant
-                // You may log or handle this event elsewhere if needed
-                PeerUPEvent::PeerDiscovered(libp2p::PeerId::random())
+                PeerUPEvent::Noop
             }
         }
     }

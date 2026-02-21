@@ -63,8 +63,28 @@ pub enum PeerUPEvent {
     Relay(libp2p::relay::Event),
     /// Kademlia event
     Kademlia(libp2p::kad::Event),
+    /// DHT get record success (first record)
+    DhtGetRecordOk {
+        key: Vec<u8>,
+        record: Vec<u8>,
+    },
+    /// DHT get record not found
+    DhtGetRecordErr {
+        key: Vec<u8>,
+    },
+    /// DHT put record success
+    DhtPutRecordOk {
+        key: Vec<u8>,
+    },
+    /// DHT put record failed
+    DhtPutRecordErr {
+        key: Vec<u8>,
+        error: String,
+    },
     /// Mdns event
     Mdns(libp2p::mdns::Event),
     /// Request/response event
     RequestResponse(request_response::Event<ProbeRequest, ProbeResponse>),
+    /// No-op event — used when a protocol event has no meaningful PeerUP mapping
+    Noop,
 }

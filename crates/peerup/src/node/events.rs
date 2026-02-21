@@ -2,21 +2,32 @@
 //!
 //! This module handles network events and swarm events.
 
-use libp2p::{request_response::ResponseChannel, swarm::SwarmEvent, PeerId};
+use libp2p::swarm::SwarmEvent;
 use tracing::{debug, info, warn};
 
-use crate::{
-    handlers,
-    network::PeerUPEvent,
-    protocol::{ProbeRequest, ProbeResponse},
-};
+use crate::network::PeerUPEvent;
 
-/// Handle a PeerUP network event
+/// Handle a PeerUP network event.
+///
+/// Note: `ProbeRequestReceived` events carry a `ResponseChannel` that must be
+/// used via `swarm.behaviour_mut().request_response.send_response(channel, resp)`.
+/// Since this standalone handler has no swarm access, probe requests are logged
+/// but the response channel is returned to the caller. Consumers that need full
+/// probe handling (like the Uppe service) should match on `PeerUPEvent` directly
+/// in their own event loop.
 pub fn handle_peerup_event(event: PeerUPEvent) {
     match event {
         PeerUPEvent::ProbeRequestReceived { peer, request, channel } => {
-            info!("Received probe request from {}: {:?}", peer, request);
-            handle_probe_request(peer, request, channel);
+            // We cannot send a response here because we don't have swarm access.
+            // Log the request and drop the channel — the peer will see an inbound
+            // failure.  Production consumers should handle this variant in their
+            // own swarm event loop where they have mutable access to the behaviour.
+            warn!(
+                "ProbeRequestReceived from {} ({:?}) — dropping channel \
+                 (handle in your own event loop to respond)",
+                peer, request
+            );
+            drop(channel);
         }
         PeerUPEvent::ProbeResponseReceived { peer, request_id, response } => {
             info!("Received probe response from {} (ID: {}): {:?}", peer, request_id, response);
@@ -48,27 +59,11 @@ pub fn handle_peerup_event(event: PeerUPEvent) {
         PeerUPEvent::Mdns(ev) => {
             debug!("Mdns event: {:?}", ev);
         }
+        PeerUPEvent::Noop => {}
         other => {
             debug!("Unhandled PeerUPEvent variant: {:?}", other);
         }
     }
-}
-
-/// Handle a probe request
-fn handle_probe_request(
-    peer: PeerId,
-    request: ProbeRequest,
-    channel: ResponseChannel<ProbeResponse>,
-) {
-    // Handle the probe request asynchronously
-    tokio::spawn(async move {
-        let response = handlers::handle_probe_request(request).await;
-
-        // Note: In libp2p 0.56+, ResponseChannel might need different handling
-        // For now, we'll just drop the channel since the API has changed
-        drop(channel);
-        info!("Handled probe request from {} - response: {:?}", peer, response);
-    });
 }
 
 /// Handle swarm events

@@ -1,6 +1,5 @@
 #![allow(dead_code)]
-use anyhow::{Result, anyhow};
-use ed25519_dalek::{Signature, Verifier, VerifyingKey};
+use anyhow::{anyhow, Result};
 use serde::Serialize;
 use std::time::SystemTime;
 
@@ -17,52 +16,40 @@ struct SignableMessage {
     status_code: Option<u16>,
     peer_id: String,
 }
-/// Verify a peer result signature
+
+/// Verify a peer result signature using the generic peerup verifier.
 pub fn verify_result(
     result: &PeerResult,
     public_key_bytes: &[u8; 32],
     target: &str,
 ) -> Result<bool> {
-    // Parse the public key
-    let verifying_key = VerifyingKey::from_bytes(public_key_bytes)
-        .map_err(|e| anyhow!("Invalid public key: {}", e))?;
-
-    // Parse the signature
-    if result.signature.len() != 64 {
-        return Ok(false);
-    }
-    let mut sig_bytes = [0u8; 64];
-    sig_bytes.copy_from_slice(&result.signature);
-    let signature = Signature::from_bytes(&sig_bytes);
-
-    // Reconstruct the message that was signed
+    // Reconstruct the canonical message that was signed
     let message = SignableMessage {
         monitor_id: result.monitor_uuid.to_string(),
         target: target.to_string(),
-        timestamp: result.timestamp.duration_since(SystemTime::UNIX_EPOCH)?.as_secs(),
+        timestamp: result
+            .timestamp
+            .duration_since(SystemTime::UNIX_EPOCH)
+            .map_err(|e| anyhow!("Invalid timestamp: {}", e))?
+            .as_secs(),
         status: result.status.to_string(),
         latency_ms: result.latency_ms,
         status_code: result.status_code,
         peer_id: result.peer_id.clone(),
     };
 
-    // Serialize to JSON (same as signing)
     let message_bytes = serde_json::to_vec(&message)?;
 
-    // Verify the signature
-    match verifying_key.verify(&message_bytes, &signature) {
-        Ok(_) => Ok(true),
-        Err(_) => Ok(false),
-    }
+    // Delegate to peerup's generic Ed25519 verifier
+    peerup::crypto::verify_signature(&message_bytes, &result.signature, public_key_bytes)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::crypto::keys::generate_keypair;
     use crate::crypto::signing::sign_result;
-    use crate::monitoring::types::CheckResult;
-    use crate::monitoring::types::MonitorStatus;
+    use crate::monitoring::types::{CheckResult, MonitorStatus};
+    use peerup::crypto::generate_keypair;
     use uuid::Uuid;
 
     #[test]
@@ -71,14 +58,16 @@ mod tests {
         let monitor_id = Uuid::new_v4();
         let target = "https://example.com".to_string();
 
-        // Create and sign a result
-        let mut check_result =
-            CheckResult::new(monitor_id, target.clone(), "test-peer".to_string());
+        let mut check_result = CheckResult::new(
+            monitor_id,
+            target.clone(),
+            "http".to_string(),
+            "test-peer".to_string(),
+        );
         check_result = check_result.success(100, Some(200));
 
         let signature = sign_result(&check_result, &keypair).unwrap();
 
-        // Convert to PeerResult
         let peer_result = PeerResult {
             id: None,
             monitor_uuid: monitor_id,
@@ -94,11 +83,13 @@ mod tests {
             city: None,
             country: None,
             region: None,
+            source_peer_id: Some("test-peer".to_string()),
+            synced_from_peer: false,
+            retention_until: None,
         };
 
-        // Verify the signature
-        let is_valid = verify_result(&peer_result, &keypair.public_key_bytes(), &target).unwrap();
-
+        let is_valid =
+            verify_result(&peer_result, &keypair.public_key_bytes(), &target).unwrap();
         assert!(is_valid);
     }
 
@@ -107,7 +98,6 @@ mod tests {
         let keypair = generate_keypair();
         let monitor_id = Uuid::new_v4();
 
-        // Create a peer result with invalid signature
         let peer_result = PeerResult {
             id: None,
             monitor_uuid: monitor_id,
@@ -117,18 +107,20 @@ mod tests {
             status_code: Some(200),
             error_message: None,
             peer_id: "test-peer".to_string(),
-            signature: vec![0u8; 64], // Invalid signature
+            signature: vec![0u8; 64],
             verified: false,
             created_at: SystemTime::now(),
             city: None,
             country: None,
             region: None,
+            source_peer_id: Some("test-peer".to_string()),
+            synced_from_peer: false,
+            retention_until: None,
         };
 
         let is_valid =
             verify_result(&peer_result, &keypair.public_key_bytes(), "https://example.com")
                 .unwrap();
-
         assert!(!is_valid);
     }
 }

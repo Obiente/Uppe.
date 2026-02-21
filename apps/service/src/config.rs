@@ -25,7 +25,7 @@ pub enum LocationPrivacy {
     Full,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Config {
     pub zeromq: ZeroMQ,
     pub preferences: Preferences,
@@ -33,7 +33,7 @@ pub struct Config {
     pub peerup: PeerUPConfig,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Preferences {
     pub use_peerup_layer: bool,
     pub allow_peer_leech: bool,
@@ -46,6 +46,15 @@ pub struct Preferences {
     /// Location privacy level: "disabled", "country_only", or "full"
     #[serde(default)]
     pub location_privacy: LocationPrivacy,
+    /// Enable distributed monitoring (other peers monitor your services)
+    #[serde(default = "default_true")]
+    pub enable_distributed_monitoring: bool,
+    /// Days to retain peer results before auto-deleting (default 7 days)
+    #[serde(default = "default_peer_result_retention_days")]
+    pub peer_result_retention_days: u64,
+    /// Automatically sync results from peers on startup
+    #[serde(default = "default_true")]
+    pub auto_sync_peer_results: bool,
 }
 
 /// PeerUP P2P network configuration
@@ -95,7 +104,11 @@ impl Default for PeerUPConfig {
 fn default_location_update_interval() -> u64 {
     300 // 5 minutes default for mobile devices
 }
-#[derive(Debug, Serialize, Deserialize)]
+
+fn default_peer_result_retention_days() -> u64 {
+    7 // Keep peer results for 7 days by default
+}
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ZeroMQ {
     pub bind: String,
     pub port: u16,
@@ -136,6 +149,9 @@ impl Default for Config {
                 degraded_threshold_ms: Some(1000),
                 location_update_interval_secs: 300,
                 location_privacy: LocationPrivacy::Full,
+                enable_distributed_monitoring: true,
+                peer_result_retention_days: 7,
+                auto_sync_peer_results: true,
             },
             peerup: PeerUPConfig::default(),
         }

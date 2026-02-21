@@ -33,7 +33,8 @@ impl MonitoringExecutor {
         target: String,
         check_type: CheckType,
     ) -> CheckResult {
-        let mut result = CheckResult::new(monitor_id, target.clone(), self.peer_id.clone());
+        let check_type_str = format!("{:?}", check_type).to_lowercase();
+        let mut result = CheckResult::new(monitor_id, target.clone(), check_type_str, self.peer_id.clone());
 
         let checker: &dyn Checker = match check_type {
             CheckType::Http | CheckType::Https => self.http_checker.as_ref(),

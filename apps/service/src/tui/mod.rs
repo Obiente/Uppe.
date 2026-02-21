@@ -2,6 +2,7 @@ mod events;
 mod state;
 mod types;
 mod ui;
+pub mod bus;
 
 use anyhow::Result;
 use crossterm::cursor::{Hide, Show};
@@ -45,6 +46,24 @@ pub async fn run_tui_with_p2p(pool: LibsqlPool, peer_id: String, p2p_enabled: bo
         );
     }
 
+    // Load known peers for DHT/peer visibility
+    if let Ok(peers) = db.list_peers(200).await {
+        state.peers = peers;
+    }
+
+    // Load persisted DHT snapshot (so the DHT view has data before the first live update)
+    if let Ok(Some(json)) = db.get_setting("dht_snapshot").await {
+        match serde_json::from_str::<crate::p2p::messages::DhtSnapshot>(&json) {
+            Ok(snapshot) => {
+                tracing::debug!(buckets = snapshot.buckets.len(), "Loaded persisted DHT snapshot");
+                state.dht_snapshot = Some(snapshot);
+            }
+            Err(e) => tracing::warn!("Failed to parse persisted DHT snapshot: {}", e),
+        }
+    }
+
+
+
     // Init terminal in alternate screen
     enable_raw_mode()?;
     let mut stdout = std::io::stdout();
@@ -53,20 +72,64 @@ pub async fn run_tui_with_p2p(pool: LibsqlPool, peer_id: String, p2p_enabled: bo
     let mut terminal = Terminal::new(backend)?;
     terminal.clear()?;
 
+    // Subscribe to live bus
+    tracing::info!("TUI bus: subscribing for live updates");
+    let mut bus_rx = bus::subscribe();
+
     loop {
+        // Drain TUI bus (non-blocking) for live updates
+        while let Ok(ev) = bus_rx.try_recv() {
+            match ev {
+                bus::TuiEvent::Peers(peers) => {
+                    tracing::debug!(count = peers.len(), "TUI bus: received peers update");
+                    state.peers = peers;
+                }
+                bus::TuiEvent::NetworkStats(stats) => {
+                    state.update_peer_stats(
+                        stats.online_peers as usize,
+                        stats.total_peers as usize,
+                        stats.checks_performed as usize,
+                        stats.checks_received as usize,
+                    );
+                }
+                bus::TuiEvent::DhtSnapshot(snapshot) => {
+                    tracing::debug!(buckets = snapshot.buckets.len(), "TUI bus: received DHT snapshot");
+                    state.dht_snapshot = Some(snapshot);
+                    // dht_cursor will be clamped during rendering
+                }
+                bus::TuiEvent::DhtQueryResult { key, ok, bytes: _ } => {
+                    tracing::debug!(%key, ok, "TUI bus: received DHT GET result");
+                    // Update query stats for footer display
+                    if ok { state.dht_successful_queries += 1; } else { state.dht_failed_queries += 1; }
+                    state.dht_pending_queries = state.dht_pending_queries.saturating_sub(1);
+                    state.dht_last_query = Some((key, ok));
+                }
+                _ => {}
+            }
+        }
+        // Clear expired status notifications
+        state.clear_expired_status();
+
         // Periodic auto-refresh if enabled and no overlay is active
         if state.auto_refresh
             && state.last_refresh.elapsed() >= Duration::from_secs(state.refresh_interval_secs)
-            && !state.show_help
-            && !state.show_edit
-            && !state.show_delete_confirm
-            && !state.show_result_detail
+            && !state.any_popup_open()
         {
-            state.monitors = db.get_enabled_monitors().await?;
-            if let Some(m) = state.monitors.get(state.selected) {
-                state.results = db.get_recent_results(m.uuid, 50).await?;
-            } else {
-                state.results.clear();
+            match db.get_enabled_monitors().await {
+                Ok(monitors) => {
+                    state.monitors = monitors;
+                    if let Some(m) = state.monitors.get(state.selected) {
+                        match db.get_recent_results(m.uuid, 50).await {
+                            Ok(results) => state.results = results,
+                            Err(e) => tracing::warn!("Auto-refresh results failed: {}", e),
+                        }
+                    } else {
+                        state.results.clear();
+                    }
+                }
+                Err(e) => {
+                    tracing::warn!("Auto-refresh monitors failed: {}", e);
+                }
             }
 
             if let Ok(Some(stats)) = db.get_latest_network_stats().await {
@@ -76,6 +139,12 @@ pub async fn run_tui_with_p2p(pool: LibsqlPool, peer_id: String, p2p_enabled: bo
                     stats.checks_performed as usize,
                     stats.checks_received as usize,
                 );
+            }
+
+            if state.peers.is_empty() {
+                if let Ok(peers) = db.list_peers(200).await {
+                    state.peers = peers;
+                }
             }
             state.last_refresh = std::time::Instant::now();
         }

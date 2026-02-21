@@ -2,7 +2,7 @@
 
 use anyhow::Result;
 use libp2p::PeerId;
-use tracing::info;
+use tracing::{debug, info};
 
 use super::peer_node::PeerNode;
 use crate::{
@@ -114,10 +114,14 @@ impl PeerNode {
                 info!("Added Kademlia bootstrap peer: {} at {}", peer_id, addr);
             }
 
-            // Trigger bootstrap to populate the routing table
-            match kademlia.bootstrap() {
-                Ok(_) => info!("Kademlia bootstrap initiated with {} peer(s)", peers.len()),
-                Err(e) => tracing::warn!("Kademlia bootstrap error: {:?}", e),
+            // Only trigger bootstrap if we have peers to bootstrap from
+            if !peers.is_empty() {
+                match kademlia.bootstrap() {
+                    Ok(_) => info!("Kademlia bootstrap initiated with {} peer(s)", peers.len()),
+                    Err(e) => tracing::warn!("Kademlia bootstrap error: {:?}", e),
+                }
+            } else {
+                debug!("No bootstrap peers provided, skipping Kademlia bootstrap (will discover via mDNS/connections)");
             }
         } else {
             tracing::warn!("Kademlia is not enabled, cannot add bootstrap peers");

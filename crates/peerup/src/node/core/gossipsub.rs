@@ -56,6 +56,49 @@ impl PeerNode {
         }
     }
 
+    /// Publish a message to a specific GossipSub topic
+    pub fn publish_to_topic(&mut self, topic_name: &str, message: Vec<u8>) -> Result<()> {
+        let topic = IdentTopic::new(topic_name);
+        
+        // Ensure we're subscribed to the topic (required for publishing)
+        if !self.swarm.behaviour().gossipsub.topics().any(|t| t.to_string() == topic_name) {
+            self.swarm
+                .behaviour_mut()
+                .gossipsub
+                .subscribe(&topic)
+                .map_err(|e| anyhow::anyhow!("Failed to subscribe to topic {}: {}", topic_name, e))?;
+            tracing::debug!("Auto-subscribed to topic {}", topic_name);
+        }
+
+        match self.swarm.behaviour_mut().gossipsub.publish(topic, message) {
+            Ok(_) => {
+                tracing::debug!("Published message to topic {}", topic_name);
+                Ok(())
+            }
+            Err(e) => {
+                let msg = e.to_string();
+                if msg.contains("InsufficientPeers") || msg.to_lowercase().contains("no peers") {
+                    tracing::debug!("No peers connected to receive published message on topic {} (normal during startup or isolation)", topic_name);
+                    Ok(())
+                } else {
+                    Err(anyhow::anyhow!("Failed to publish to topic {}: {}", topic_name, e))
+                }
+            }
+        }
+    }
+
+    /// Subscribe to a specific GossipSub topic
+    pub fn subscribe_to_topic(&mut self, topic_name: &str) -> Result<()> {
+        let topic = IdentTopic::new(topic_name);
+        self.swarm
+            .behaviour_mut()
+            .gossipsub
+            .subscribe(&topic)
+            .map_err(|e| anyhow::anyhow!("Failed to subscribe to topic {}: {}", topic_name, e))?;
+        tracing::debug!("Subscribed to topic {}", topic_name);
+        Ok(())
+    }
+
     /// Get list of peers subscribed to a topic
     pub fn get_topic_peers(&self, topic: &str) -> Vec<libp2p::PeerId> {
         let topic_hash = TopicHash::from_raw(topic);

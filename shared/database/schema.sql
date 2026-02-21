@@ -40,6 +40,12 @@ CREATE TABLE IF NOT EXISTS monitors (
     headers TEXT DEFAULT '{}',                   -- JSON object: {"User-Agent": "..."}
     body TEXT DEFAULT '',                        -- Request body for POST/PUT
     
+    -- Visibility & Orchestration (v3 - Public/Private monitors)
+    visibility TEXT NOT NULL DEFAULT 'Private',  -- 'Public' or 'Private'
+    public_domain TEXT,                          -- For public monitors (e.g., "google.com")
+    public_display_name TEXT,                    -- Display name for grouped public monitors
+    owner_peer_id TEXT,                          -- For private monitors (peer that owns it)
+    
     -- Status & ownership
     enabled INTEGER NOT NULL DEFAULT 1,          -- 0=disabled, 1=enabled
     user_id TEXT,                                -- For multi-user support
@@ -53,6 +59,8 @@ CREATE TABLE IF NOT EXISTS monitors (
 CREATE INDEX IF NOT EXISTS idx_monitors_uuid ON monitors(uuid);
 CREATE INDEX IF NOT EXISTS idx_monitors_enabled ON monitors(enabled);
 CREATE INDEX IF NOT EXISTS idx_monitors_created_at ON monitors(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_monitors_visibility ON monitors(visibility);
+CREATE INDEX IF NOT EXISTS idx_monitors_public_domain ON monitors(public_domain) WHERE public_domain IS NOT NULL;
 
 -- ============================================================================
 -- Table: monitor_results  
@@ -138,7 +146,12 @@ CREATE TABLE IF NOT EXISTS peer_results (
     -- Location of remote peer
     city TEXT,
     country TEXT,
-    region TEXT
+    region TEXT,
+    
+    -- P2P synchronization tracking
+    source_peer_id TEXT,                         -- Peer that originally created this result
+    synced_from_peer INTEGER DEFAULT 0,          -- 1=received from DHT sync, 0=received via gossipsub
+    retention_until INTEGER                      -- Unix timestamp when to delete (for cleanup automation)
 );
 
 -- Indexes for peer_results

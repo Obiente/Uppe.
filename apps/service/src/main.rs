@@ -249,8 +249,10 @@ async fn main() -> anyhow::Result<()> {
             }
         }
         Commands::Tui => {
-            // Get peer ID and P2P status
-            let keypair_path = path::PathBuf::from("uppe_keypair.key");
+            // Load keypair for peer ID
+            let keypair_path = std::env::var("UPPE_KEYPAIR_PATH")
+                .unwrap_or_else(|_| "uppe_keypair.key".to_string());
+            let keypair_path = path::PathBuf::from(keypair_path);
             let peer_id = if let Ok(kp) = crypto::load_or_generate_keypair(&keypair_path) {
                 kp.public_key_hex()
             } else {
@@ -258,7 +260,8 @@ async fn main() -> anyhow::Result<()> {
             };
             let p2p_enabled = cfg.preferences.use_peerup_layer;
 
-            // Use LocalSet for P2P network (libp2p Swarm is !Send)
+            // TUI is a read-only viewer — the backend must be running separately
+            // via `uppe-service run` for live data to flow.
             let local = tokio::task::LocalSet::new();
             local
                 .run_until(async move { tui::run_tui_with_p2p(pool, peer_id, p2p_enabled).await })

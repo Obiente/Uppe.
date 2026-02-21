@@ -2,7 +2,7 @@ use anyhow::Result;
 use libsql::Connection;
 
 /// Schema version - increment when making schema changes
-const SCHEMA_VERSION: i32 = 3;
+const SCHEMA_VERSION: i32 = 5;
 
 /// Run database migrations
 ///
@@ -44,6 +44,16 @@ pub async fn run_migrations(conn: &Connection) -> Result<()> {
     if current_version < 3 {
         run_migration_v3(conn).await?;
         record_migration(conn, 3, "Add status pages, settings, and network tables").await?;
+    }
+
+    if current_version < 4 {
+        run_migration_v4(conn).await?;
+        record_migration(conn, 4, "Add public/private monitor visibility and orchestration fields").await?;
+    }
+
+    if current_version < 5 {
+        run_migration_v5(conn).await?;
+        record_migration(conn, 5, "Add retention_until and P2P sync columns to peer_results").await?;
     }
 
     tracing::info!(
@@ -141,7 +151,10 @@ async fn run_migration_v1(conn: &Connection) -> Result<()> {
             created_at INTEGER NOT NULL,
             city TEXT,
             country TEXT,
-            region TEXT
+            region TEXT,
+            source_peer_id TEXT,
+            synced_from_peer INTEGER DEFAULT 0,
+            retention_until INTEGER
         )",
         (),
     )
@@ -440,5 +453,140 @@ async fn run_migration_v3(conn: &Connection) -> Result<()> {
         .await?;
 
     tracing::info!("Added status pages, settings, incidents, and network tables");
+    Ok(())
+}
+
+/// Migration v4: Add public/private monitor visibility
+async fn run_migration_v4(conn: &Connection) -> Result<()> {
+    tracing::info!("Running migration v4: Add monitor visibility fields");
+
+    // Add visibility columns to monitors table
+    conn.execute(
+        "ALTER TABLE monitors ADD COLUMN visibility TEXT NOT NULL DEFAULT 'Private'",
+        (),
+    )
+    .await?;
+
+    conn.execute(
+        "ALTER TABLE monitors ADD COLUMN public_domain TEXT",
+        (),
+    )
+    .await?;
+
+    conn.execute(
+        "ALTER TABLE monitors ADD COLUMN public_display_name TEXT",
+        (),
+    )
+    .await?;
+
+    conn.execute(
+        "ALTER TABLE monitors ADD COLUMN owner_peer_id TEXT",
+        (),
+    )
+    .await?;
+
+    // Create indexes for visibility queries
+    conn.execute(
+        "CREATE INDEX IF NOT EXISTS idx_monitors_visibility ON monitors(visibility)",
+        (),
+    )
+    .await?;
+
+    conn.execute(
+        "CREATE INDEX IF NOT EXISTS idx_monitors_public_domain ON monitors(public_domain) \
+         WHERE public_domain IS NOT NULL",
+        (),
+    )
+    .await?;
+
+    // Create public_monitor_groups table for orchestration consensus
+    conn.execute(
+        "CREATE TABLE IF NOT EXISTS public_monitor_groups (
+            domain TEXT PRIMARY KEY,
+            display_name TEXT NOT NULL,
+            participating_peers TEXT NOT NULL,
+            schedule_json TEXT NOT NULL,
+            total_checks INTEGER NOT NULL DEFAULT 0,
+            created_at INTEGER NOT NULL,
+            last_updated INTEGER NOT NULL
+        )",
+        (),
+    )
+    .await?;
+
+    // Create orchestration_votes table for consensus
+    conn.execute(
+        "CREATE TABLE IF NOT EXISTS orchestration_votes (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            domain TEXT NOT NULL,
+            voter_peer_id TEXT NOT NULL,
+            schedule_json TEXT NOT NULL,
+            signature TEXT NOT NULL,
+            timestamp INTEGER NOT NULL,
+            UNIQUE(domain, voter_peer_id)
+        )",
+        (),
+    )
+    .await?;
+
+    conn.execute(
+        "CREATE INDEX IF NOT EXISTS idx_orchestration_votes_domain ON orchestration_votes(domain)",
+        (),
+    )
+    .await?;
+
+    tracing::info!("Migration v4 completed successfully");
+
+    Ok(())
+}
+
+/// Migration v5: Add retention_until and P2P sync columns to peer_results
+/// For databases upgraded from earlier versions that may be missing these columns
+async fn run_migration_v5(conn: &Connection) -> Result<()> {
+    tracing::info!("Running migration v5: Add retention_until and P2P sync columns to peer_results");
+
+    // Add source_peer_id column if it doesn't exist
+    match conn.execute(
+        "ALTER TABLE peer_results ADD COLUMN source_peer_id TEXT",
+        (),
+    )
+    .await
+    {
+        Ok(_) => tracing::debug!("Added source_peer_id column"),
+        Err(e) if e.to_string().contains("duplicate column") => {
+            tracing::debug!("source_peer_id column already exists")
+        }
+        Err(e) => return Err(e.into()),
+    }
+
+    // Add synced_from_peer column if it doesn't exist
+    match conn.execute(
+        "ALTER TABLE peer_results ADD COLUMN synced_from_peer INTEGER DEFAULT 0",
+        (),
+    )
+    .await
+    {
+        Ok(_) => tracing::debug!("Added synced_from_peer column"),
+        Err(e) if e.to_string().contains("duplicate column") => {
+            tracing::debug!("synced_from_peer column already exists")
+        }
+        Err(e) => return Err(e.into()),
+    }
+
+    // Add retention_until column if it doesn't exist
+    match conn.execute(
+        "ALTER TABLE peer_results ADD COLUMN retention_until INTEGER",
+        (),
+    )
+    .await
+    {
+        Ok(_) => tracing::debug!("Added retention_until column"),
+        Err(e) if e.to_string().contains("duplicate column") => {
+            tracing::debug!("retention_until column already exists")
+        }
+        Err(e) => return Err(e.into()),
+    }
+
+    tracing::info!("Migration v5 completed successfully");
     Ok(())
 }

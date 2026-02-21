@@ -1,7 +1,7 @@
 use std::sync::Arc;
 use std::time::Duration;
 use tokio::sync::mpsc;
-use tokio::time::interval;
+use tokio::time::{Instant, interval_at};
 use uuid::Uuid;
 
 use super::checker::CheckType;
@@ -40,7 +40,8 @@ impl MonitoringScheduler {
                 return;
             }
 
-            let mut timer = interval(Duration::from_secs(config.interval_seconds));
+            let duration = Duration::from_secs(config.interval_seconds);
+            let mut timer = interval_at(Instant::now() + duration, duration);
 
             loop {
                 timer.tick().await;

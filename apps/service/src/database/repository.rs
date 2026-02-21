@@ -46,11 +46,63 @@ pub trait Database: Send + Sync {
     /// Mark peer offline
     async fn mark_peer_offline(&self, peer_id: &str, now: std::time::SystemTime) -> Result<()>;
 
+    /// Get peer by ID
+    async fn get_peer_by_id(&self, peer_id: &str) -> Result<Option<Peer>>;
+
+    /// List known peers (most recent first)
+    async fn list_peers(&self, limit: usize) -> Result<Vec<Peer>>;
+
     /// Insert network stats snapshot
     async fn insert_network_stats(&self, stats: &NetworkStats) -> Result<i64>;
 
     /// Get latest network stats
     async fn get_latest_network_stats(&self) -> Result<Option<NetworkStats>>;
+
+    /// Query peer results within a time range
+    async fn query_peer_results(
+        &self,
+        since_timestamp: i64,
+        monitor_uuid: Option<Uuid>,
+        limit: usize,
+    ) -> Result<Vec<PeerResult>>;
+
+    /// Mark peer results as synced (for cleanup)
+    async fn mark_peer_results_synced(&self, source_peer_id: &str, until_timestamp: i64) -> Result<()>;
+
+    /// Clean up expired peer results based on retention policy
+    async fn cleanup_expired_peer_results(&self) -> Result<u64>;
+
+    // ===== Public Monitor Group Methods =====
+
+    /// Get public monitor group by domain
+    async fn get_public_monitor_group(
+        &self,
+        domain: &str,
+    ) -> Result<Option<peerup::distributed::PublicMonitorGroup>>;
+
+    /// Save or update public monitor group
+    async fn save_public_monitor_group(
+        &self,
+        group: &peerup::distributed::PublicMonitorGroup,
+    ) -> Result<()>;
+
+    /// Get orchestration votes for a domain
+    async fn get_orchestration_votes(
+        &self,
+        domain: &str,
+    ) -> Result<Vec<peerup::distributed::OrchestrationVote>>;
+
+    /// Save orchestration vote
+    async fn save_orchestration_vote(
+        &self,
+        vote: &peerup::distributed::OrchestrationVote,
+    ) -> Result<()>;
+
+    /// Get a setting value by key
+    async fn get_setting(&self, key: &str) -> Result<Option<String>>;
+
+    /// Set a setting value by key
+    async fn set_setting(&self, key: &str, value: &str) -> Result<()>;
 }
 
 /// LibSQL database implementation
@@ -85,7 +137,8 @@ impl Database for DatabaseImpl {
         let mut stmt = conn
             .prepare(
                 "SELECT id, uuid, name, target, check_type, interval_seconds, timeout_seconds, \
-                 enabled, created_at, updated_at FROM monitors WHERE enabled = 1",
+                 enabled, created_at, updated_at, visibility, public_domain, \
+                 public_display_name, owner_peer_id FROM monitors WHERE enabled = 1",
             )
             .await?;
 
@@ -96,6 +149,13 @@ impl Database for DatabaseImpl {
             let uuid_str: String = row.get(1)?;
             let created_at: i64 = row.get(8)?;
             let updated_at: i64 = row.get(9)?;
+            let visibility_str: String = row.get(10)?;
+
+            let visibility = match visibility_str.as_str() {
+                "Public" => crate::database::models::MonitorVisibility::Public,
+                "Internal" => crate::database::models::MonitorVisibility::Internal,
+                _ => crate::database::models::MonitorVisibility::Private,
+            };
 
             monitors.push(Monitor {
                 id: Some(row.get(0)?),
@@ -108,6 +168,10 @@ impl Database for DatabaseImpl {
                 enabled: row.get::<i64>(7)? != 0,
                 created_at: Monitor::i64_to_timestamp(created_at),
                 updated_at: Monitor::i64_to_timestamp(updated_at),
+                visibility,
+                public_domain: row.get(11)?,
+                public_display_name: row.get(12)?,
+                owner_peer_id: row.get(13)?,
             });
         }
 
@@ -119,7 +183,8 @@ impl Database for DatabaseImpl {
         let mut stmt = conn
             .prepare(
                 "SELECT id, uuid, name, target, check_type, interval_seconds, timeout_seconds, \
-                 enabled, created_at, updated_at FROM monitors WHERE uuid = ?",
+                 enabled, created_at, updated_at, visibility, public_domain, \
+                 public_display_name, owner_peer_id FROM monitors WHERE uuid = ?",
             )
             .await?;
 
@@ -129,6 +194,13 @@ impl Database for DatabaseImpl {
             let uuid_str: String = row.get(1)?;
             let created_at: i64 = row.get(8)?;
             let updated_at: i64 = row.get(9)?;
+            let visibility_str: String = row.get(10)?;
+
+            let visibility = match visibility_str.as_str() {
+                "Public" => crate::database::models::MonitorVisibility::Public,
+                "Internal" => crate::database::models::MonitorVisibility::Internal,
+                _ => crate::database::models::MonitorVisibility::Private,
+            };
 
             Ok(Some(Monitor {
                 id: Some(row.get(0)?),
@@ -141,6 +213,10 @@ impl Database for DatabaseImpl {
                 enabled: row.get::<i64>(7)? != 0,
                 created_at: Monitor::i64_to_timestamp(created_at),
                 updated_at: Monitor::i64_to_timestamp(updated_at),
+                visibility,
+                public_domain: row.get(11)?,
+                public_display_name: row.get(12)?,
+                owner_peer_id: row.get(13)?,
             }))
         } else {
             Ok(None)
@@ -152,11 +228,19 @@ impl Database for DatabaseImpl {
         let created_at = Monitor::timestamp_to_i64(monitor.created_at);
         let updated_at = Monitor::timestamp_to_i64(monitor.updated_at);
 
+        // Convert visibility to string
+        let visibility_str = match monitor.visibility {
+            crate::database::models::MonitorVisibility::Public => "Public",
+            crate::database::models::MonitorVisibility::Private => "Private",
+            crate::database::models::MonitorVisibility::Internal => "Internal",
+        };
+
         if let Some(id) = monitor.id {
             // Update existing monitor
             conn.execute(
                 "UPDATE monitors SET name = ?, target = ?, check_type = ?, interval_seconds = ?, \
-                 timeout_seconds = ?, enabled = ?, updated_at = ? WHERE id = ?",
+                 timeout_seconds = ?, enabled = ?, updated_at = ?, visibility = ?, \
+                 public_domain = ?, public_display_name = ?, owner_peer_id = ? WHERE id = ?",
                 params![
                     monitor.name.clone(),
                     monitor.target.clone(),
@@ -165,6 +249,10 @@ impl Database for DatabaseImpl {
                     monitor.timeout_seconds as i64,
                     if monitor.enabled { 1 } else { 0 },
                     updated_at,
+                    visibility_str,
+                    monitor.public_domain.clone(),
+                    monitor.public_display_name.clone(),
+                    monitor.owner_peer_id.clone(),
                     id
                 ],
             )
@@ -174,8 +262,9 @@ impl Database for DatabaseImpl {
             // Insert new monitor
             conn.execute(
                 "INSERT INTO monitors (uuid, name, target, check_type, interval_seconds, \
-                 timeout_seconds, enabled, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, \
-                 ?, ?)",
+                 timeout_seconds, enabled, created_at, updated_at, visibility, \
+                 public_domain, public_display_name, owner_peer_id) VALUES (?, ?, ?, ?, ?, ?, ?, \
+                 ?, ?, ?, ?, ?, ?)",
                 params![
                     monitor.uuid.to_string(),
                     monitor.name.clone(),
@@ -185,7 +274,11 @@ impl Database for DatabaseImpl {
                     monitor.timeout_seconds as i64,
                     if monitor.enabled { 1 } else { 0 },
                     created_at,
-                    updated_at
+                    updated_at,
+                    visibility_str,
+                    monitor.public_domain.clone(),
+                    monitor.public_display_name.clone(),
+                    monitor.owner_peer_id.clone()
                 ],
             )
             .await?;
@@ -362,6 +455,9 @@ impl Database for DatabaseImpl {
                 city: row.get(11).ok(),
                 country: row.get(12).ok(),
                 region: row.get(13).ok(),
+                source_peer_id: row.get(7).ok(),
+                synced_from_peer: false,
+                retention_until: None,
             });
         }
 
@@ -408,6 +504,93 @@ impl Database for DatabaseImpl {
         .await?;
 
         Ok(())
+    }
+
+    async fn get_peer_by_id(&self, peer_id: &str) -> Result<Option<Peer>> {
+        let conn = self.get_conn().await?;
+        
+        let mut rows = conn
+            .query(
+                "SELECT peer_id, status, last_seen, joined_at, contribution_score, \
+                 uptime_percentage, checks_per_day, location_city, location_region, location_country
+                 FROM peers WHERE peer_id = ?",
+                params![peer_id],
+            )
+            .await?;
+        
+        if let Some(row) = rows.next().await? {
+            let peer_id: String = row.get(0)?;
+            let status: String = row.get(1)?;
+            let last_seen_i64: i64 = row.get(2)?;
+            let joined_at_i64: i64 = row.get(3)?;
+            let contribution_score: f64 = row.get(4)?;
+            let uptime_percentage: f64 = row.get(5)?;
+            let checks_per_day: i64 = row.get(6)?;
+            let location_city: Option<String> = row.get(7)?;
+            let location_region: Option<String> = row.get(8)?;
+            let location_country: Option<String> = row.get(9)?;
+            
+            let last_seen = Monitor::i64_to_timestamp(last_seen_i64);
+            let joined_at = Monitor::i64_to_timestamp(joined_at_i64);
+            
+            Ok(Some(Peer {
+                peer_id,
+                status,
+                last_seen,
+                joined_at,
+                contribution_score,
+                uptime_percentage,
+                checks_per_day,
+                location_city,
+                location_region,
+                location_country,
+            }))
+        } else {
+            Ok(None)
+        }
+    }
+
+    async fn list_peers(&self, limit: usize) -> Result<Vec<Peer>> {
+        let conn = self.get_conn().await?;
+
+        let mut stmt = conn
+            .prepare(
+                "SELECT peer_id, status, last_seen, joined_at, contribution_score, \
+                 uptime_percentage, checks_per_day, location_city, location_region, location_country\
+                 FROM peers ORDER BY last_seen DESC LIMIT ?",
+            )
+            .await?;
+
+        let mut rows = stmt.query(params![limit as i64]).await?;
+        let mut peers = Vec::new();
+
+        while let Some(row) = rows.next().await? {
+            let peer_id: String = row.get(0)?;
+            let status: String = row.get(1)?;
+            let last_seen_i64: i64 = row.get(2)?;
+            let joined_at_i64: i64 = row.get(3)?;
+            let contribution_score: f64 = row.get(4)?;
+            let uptime_percentage: f64 = row.get(5)?;
+            let checks_per_day: i64 = row.get(6)?;
+            let location_city: Option<String> = row.get(7)?;
+            let location_region: Option<String> = row.get(8)?;
+            let location_country: Option<String> = row.get(9)?;
+
+            peers.push(Peer {
+                peer_id,
+                status,
+                last_seen: Monitor::i64_to_timestamp(last_seen_i64),
+                joined_at: Monitor::i64_to_timestamp(joined_at_i64),
+                contribution_score,
+                uptime_percentage,
+                checks_per_day,
+                location_city,
+                location_region,
+                location_country,
+            });
+        }
+
+        Ok(peers)
     }
 
     async fn insert_network_stats(&self, stats: &NetworkStats) -> Result<i64> {
@@ -457,5 +640,293 @@ impl Database for DatabaseImpl {
         } else {
             Ok(None)
         }
+    }
+
+    async fn query_peer_results(
+        &self,
+        since_timestamp: i64,
+        monitor_uuid: Option<Uuid>,
+        limit: usize,
+    ) -> Result<Vec<PeerResult>> {
+        let conn = self.get_conn().await?;
+        
+        let (query, _params_list): (String, Vec<String>) = if let Some(uuid) = monitor_uuid {
+            (
+                format!(
+                    "SELECT id, monitor_uuid, timestamp, status, latency_ms, status_code, \
+                     error_message, peer_id, signature, verified, created_at, city, country, \
+                     region, source_peer_id, synced_from_peer, retention_until \
+                     FROM peer_results \
+                     WHERE timestamp > ? AND monitor_uuid = ? \
+                     ORDER BY timestamp DESC LIMIT {}",
+                    limit
+                ),
+                vec![since_timestamp.to_string(), uuid.to_string()],
+            )
+        } else {
+            (
+                format!(
+                    "SELECT id, monitor_uuid, timestamp, status, latency_ms, status_code, \
+                     error_message, peer_id, signature, verified, created_at, city, country, \
+                     region, source_peer_id, synced_from_peer, retention_until \
+                     FROM peer_results \
+                     WHERE timestamp > ? \
+                     ORDER BY timestamp DESC LIMIT {}",
+                    limit
+                ),
+                vec![since_timestamp.to_string()],
+            )
+        };
+
+        let mut stmt = conn.prepare(&query).await?;
+        
+        let mut rows = if let Some(uuid) = monitor_uuid {
+            stmt.query(params![since_timestamp, uuid.to_string()]).await?
+        } else {
+            stmt.query(params![since_timestamp]).await?
+        };
+
+        let mut results = Vec::new();
+
+        while let Some(row) = rows.next().await? {
+            let monitor_uuid_str: String = row.get(1)?;
+            let status_str: String = row.get(3)?;
+            let timestamp: i64 = row.get(2)?;
+            let created_at: i64 = row.get(10)?;
+            let synced: i64 = row.get(15)?;
+            let retention: Option<i64> = row.get(16)?;
+
+            results.push(PeerResult {
+                id: Some(row.get(0)?),
+                monitor_uuid: Uuid::parse_str(&monitor_uuid_str)?,
+                timestamp: Monitor::i64_to_timestamp(timestamp),
+                status: match status_str.as_str() {
+                    "up" => crate::monitoring::types::MonitorStatus::Up,
+                    "down" => crate::monitoring::types::MonitorStatus::Down,
+                    "degraded" => crate::monitoring::types::MonitorStatus::Degraded,
+                    _ => crate::monitoring::types::MonitorStatus::Unknown,
+                },
+                latency_ms: row.get::<Option<i64>>(4)?.map(|v| v as u64),
+                status_code: row.get::<Option<i64>>(5)?.map(|v| v as u16),
+                error_message: row.get(6)?,
+                peer_id: row.get(7)?,
+                signature: row.get(8)?,
+                verified: row.get::<i64>(9)? != 0,
+                created_at: Monitor::i64_to_timestamp(created_at),
+                city: row.get(11).ok(),
+                country: row.get(12).ok(),
+                region: row.get(13).ok(),
+                source_peer_id: row.get(14).unwrap_or_default(),
+                synced_from_peer: synced != 0,
+                retention_until: retention,
+            });
+        }
+
+        Ok(results)
+    }
+
+    async fn mark_peer_results_synced(&self, source_peer_id: &str, until_timestamp: i64) -> Result<()> {
+        let conn = self.get_conn().await?;
+
+        conn.execute(
+            "UPDATE peer_results SET synced_from_peer = 1 \
+             WHERE source_peer_id = ? AND timestamp <= ?",
+            params![source_peer_id, until_timestamp],
+        )
+        .await?;
+
+        Ok(())
+    }
+
+    async fn cleanup_expired_peer_results(&self) -> Result<u64> {
+        let conn = self.get_conn().await?;
+        let now = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap_or_else(|_| std::time::Duration::from_secs(0))
+            .as_secs() as i64;
+
+        let result = conn
+            .execute(
+                "DELETE FROM peer_results \
+                 WHERE retention_until IS NOT NULL AND retention_until < ? \
+                 AND synced_from_peer = 1",
+                params![now],
+            )
+            .await?;
+
+        Ok(result as u64)
+    }
+
+    // ===== Public Monitor Group Methods =====
+
+    async fn get_public_monitor_group(
+        &self,
+        domain: &str,
+    ) -> Result<Option<peerup::distributed::PublicMonitorGroup>> {
+        let conn = self.get_conn().await?;
+
+        let mut stmt = conn
+            .prepare(
+                "SELECT domain, display_name, participating_peers, schedule_json, \
+                 total_checks, created_at, last_updated \
+                 FROM public_monitor_groups \
+                 WHERE domain = ?",
+            )
+            .await?;
+
+        let mut rows = stmt.query(params![domain]).await?;
+
+        if let Some(row) = rows.next().await? {
+            let participating_peers_json: String = row.get(2)?;
+            let schedule_json: String = row.get(3)?;
+
+            let participating_peers: Vec<String> =
+                serde_json::from_str(&participating_peers_json)?;
+            let schedule: peerup::distributed::OrchestrationSchedule =
+                serde_json::from_str(&schedule_json)?;
+
+            let group = peerup::distributed::PublicMonitorGroup {
+                domain: row.get(0)?,
+                display_name: row.get(1)?,
+                participating_peers,
+                schedule,
+                total_checks: row.get(4)?,
+                created_at: row.get(5)?,
+                last_updated: row.get(6)?,
+            };
+
+            Ok(Some(group))
+        } else {
+            Ok(None)
+        }
+    }
+
+    async fn save_public_monitor_group(
+        &self,
+        group: &peerup::distributed::PublicMonitorGroup,
+    ) -> Result<()> {
+        let conn = self.get_conn().await?;
+
+        let participating_peers_json = serde_json::to_string(&group.participating_peers)?;
+        let schedule_json = serde_json::to_string(&group.schedule)?;
+
+        conn.execute(
+            "INSERT INTO public_monitor_groups \
+             (domain, display_name, participating_peers, schedule_json, \
+              total_checks, created_at, last_updated) \
+             VALUES (?, ?, ?, ?, ?, ?, ?) \
+             ON CONFLICT(domain) DO UPDATE SET \
+             display_name = excluded.display_name, \
+             participating_peers = excluded.participating_peers, \
+             schedule_json = excluded.schedule_json, \
+             total_checks = excluded.total_checks, \
+             last_updated = excluded.last_updated",
+            params![
+                group.domain.clone(),
+                group.display_name.clone(),
+                participating_peers_json,
+                schedule_json,
+                group.total_checks,
+                group.created_at,
+                group.last_updated,
+            ],
+        )
+        .await?;
+
+        Ok(())
+    }
+
+    async fn get_orchestration_votes(
+        &self,
+        domain: &str,
+    ) -> Result<Vec<peerup::distributed::OrchestrationVote>> {
+        let conn = self.get_conn().await?;
+
+        let mut stmt = conn
+            .prepare(
+                "SELECT domain, voter_peer_id, schedule_json, signature, timestamp \
+                 FROM orchestration_votes \
+                 WHERE domain = ? \
+                 ORDER BY timestamp DESC",
+            )
+            .await?;
+
+        let mut rows = stmt.query(params![domain]).await?;
+        let mut votes = Vec::new();
+
+        while let Some(row) = rows.next().await? {
+            let schedule_json: String = row.get(2)?;
+            let schedule: peerup::distributed::OrchestrationSchedule =
+                serde_json::from_str(&schedule_json)?;
+
+            votes.push(peerup::distributed::OrchestrationVote {
+                domain: row.get(0)?,
+                voter_peer_id: row.get(1)?,
+                schedule,
+                signature: row.get(3)?,
+                public_key: None, // Not stored in DB; verified at receive time
+                timestamp: row.get(4)?,
+            });
+        }
+
+        Ok(votes)
+    }
+
+    async fn save_orchestration_vote(
+        &self,
+        vote: &peerup::distributed::OrchestrationVote,
+    ) -> Result<()> {
+        let conn = self.get_conn().await?;
+
+        let schedule_json = serde_json::to_string(&vote.schedule)?;
+
+        conn.execute(
+            "INSERT INTO orchestration_votes \
+             (domain, voter_peer_id, schedule_json, signature, timestamp) \
+             VALUES (?, ?, ?, ?, ?) \
+             ON CONFLICT(domain, voter_peer_id) DO UPDATE SET \
+             schedule_json = excluded.schedule_json, \
+             signature = excluded.signature, \
+             timestamp = excluded.timestamp",
+            params![
+                vote.domain.clone(),
+                vote.voter_peer_id.clone(),
+                schedule_json,
+                vote.signature.clone(),
+                vote.timestamp,
+            ],
+        )
+        .await?;
+
+        Ok(())
+    }
+
+    async fn get_setting(&self, key: &str) -> Result<Option<String>> {
+        let conn = self.get_conn().await?;
+        let mut rows = conn
+            .query(
+                "SELECT value FROM settings WHERE key = ?",
+                params![key],
+            )
+            .await?;
+
+        if let Some(row) = rows.next().await? {
+            let value: String = row.get(0)?;
+            Ok(Some(value))
+        } else {
+            Ok(None)
+        }
+    }
+
+    async fn set_setting(&self, key: &str, value: &str) -> Result<()> {
+        let conn = self.get_conn().await?;
+        let now = crate::database::models::Monitor::timestamp_to_i64(std::time::SystemTime::now());
+        conn.execute(
+            "INSERT INTO settings (key, value, updated_at) VALUES (?, ?, ?) \
+             ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at",
+            params![key, value, now],
+        )
+        .await?;
+        Ok(())
     }
 }

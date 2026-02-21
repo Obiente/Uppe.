@@ -17,10 +17,39 @@ pub struct Monitor {
     pub enabled: bool,
     pub created_at: SystemTime,
     pub updated_at: SystemTime,
+    
+    /// Visibility mode (Public or Private)
+    pub visibility: MonitorVisibility,
+    
+    /// Public domain (for public monitors, e.g., "google.com")
+    pub public_domain: Option<String>,
+    
+    /// Display name for public monitors
+    pub public_display_name: Option<String>,
+    
+    /// Owner peer ID (for private monitors)
+    pub owner_peer_id: Option<String>,
+}
+
+/// Monitor visibility (matches PeerUP visibility types)
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub enum MonitorVisibility {
+    /// Public monitor - community-owned, coordinated
+    Public,
+    /// Private monitor - owner-controlled, privacy-preserving  
+    Private,
+    /// Internal monitor - owner-only, never shared (for databases, secrets)
+    Internal,
+}
+
+impl Default for MonitorVisibility {
+    fn default() -> Self {
+        Self::Private
+    }
 }
 
 impl Monitor {
-    /// Create a new monitor
+    /// Create a new private monitor
     pub fn new(name: String, target: String, check_type: String) -> Self {
         let now = SystemTime::now();
         Self {
@@ -34,7 +63,94 @@ impl Monitor {
             enabled: true,
             created_at: now,
             updated_at: now,
+            visibility: MonitorVisibility::Private,
+            public_domain: None,
+            public_display_name: None,
+            owner_peer_id: None,
         }
+    }
+    
+    /// Create a new public monitor
+    pub fn new_public(name: String, target: String, check_type: String, domain: String, display_name: String) -> Self {
+        let now = SystemTime::now();
+        Self {
+            id: None,
+            uuid: Uuid::new_v4(),
+            name,
+            target,
+            check_type,
+            interval_seconds: 60, // Public monitors default to 60s
+            timeout_seconds: 10,
+            enabled: true,
+            created_at: now,
+            updated_at: now,
+            visibility: MonitorVisibility::Public,
+            public_domain: Some(domain),
+            public_display_name: Some(display_name),
+            owner_peer_id: None,
+        }
+    }
+    
+    /// Create a new private monitor with owner (peer-assisted)
+    pub fn new_private(name: String, target: String, check_type: String, owner_peer_id: String) -> Self {
+        let now = SystemTime::now();
+        Self {
+            id: None,
+            uuid: Uuid::new_v4(),
+            name,
+            target,
+            check_type,
+            interval_seconds: 30,
+            timeout_seconds: 10,
+            enabled: true,
+            created_at: now,
+            updated_at: now,
+            visibility: MonitorVisibility::Private,
+            public_domain: None,
+            public_display_name: None,
+            owner_peer_id: Some(owner_peer_id),
+        }
+    }
+    
+    /// Create a new internal monitor (owner-only, secrets)
+    pub fn new_internal(name: String, target: String, check_type: String, owner_peer_id: String) -> Self {
+        let now = SystemTime::now();
+        Self {
+            id: None,
+            uuid: Uuid::new_v4(),
+            name,
+            target,
+            check_type,
+            interval_seconds: 30,
+            timeout_seconds: 10,
+            enabled: true,
+            created_at: now,
+            updated_at: now,
+            visibility: MonitorVisibility::Internal,
+            public_domain: None,
+            public_display_name: None,
+            owner_peer_id: Some(owner_peer_id),
+        }
+    }
+    
+    /// Check if this is a public monitor
+    pub fn is_public(&self) -> bool {
+        matches!(self.visibility, MonitorVisibility::Public)
+    }
+    
+    /// Check if this is a private monitor (peer-assisted)
+    pub fn is_private(&self) -> bool {
+        matches!(self.visibility, MonitorVisibility::Private)
+    }
+    
+    /// Check if this is an internal monitor (owner-only, secrets)
+    pub fn is_internal(&self) -> bool {
+        matches!(self.visibility, MonitorVisibility::Internal)
+    }
+    
+    /// Check if monitor requires peer orchestration
+    pub fn requires_orchestration(&self) -> bool {
+        matches!(self.visibility, MonitorVisibility::Public | MonitorVisibility::Private)
     }
 
     /// Convert SystemTime to Unix timestamp
@@ -106,6 +222,12 @@ pub struct PeerResult {
     pub city: Option<String>,
     pub country: Option<String>,
     pub region: Option<String>,
+    /// The peer that originally submitted this result (for distributed monitoring)
+    pub source_peer_id: Option<String>,
+    /// Whether we synced this result from a peer (for cleanup tracking)
+    pub synced_from_peer: bool,
+    /// When to delete this result (Unix timestamp). None = keep indefinitely
+    pub retention_until: Option<i64>,
 }
 
 impl PeerResult {
@@ -129,6 +251,9 @@ impl PeerResult {
             city: None, // TODO: Add geolocation lookup
             country: None,
             region: None,
+            source_peer_id: Some(p2p_result.peer_id.clone()),
+            synced_from_peer: false,
+            retention_until: None,
         }
         .into()
     }

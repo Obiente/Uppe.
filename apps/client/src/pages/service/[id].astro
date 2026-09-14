@@ -1,24 +1,63 @@
 ---
 import Operator from '../../layouts/Operator.astro';
-import { monitorClient,resultClient } from '../../lib/api/client';
-import { health,dateTime } from '../../lib/services/health';
-import { ResultStatus } from '../../gen/result/v1/result_pb';
+import Card from '../../components/ui/Card.astro';
+import StatusBadge from '../../components/ui/StatusBadge.astro';
+import Badge from '../../components/ui/Badge.astro';
+import Chart from '../../components/ui/Chart.astro';
+import UptimeHistoryBar from '../../components/ui/UptimeHistoryBar.astro';
+import { monitorClient, resultClient } from '../../lib/api/client';
+import { health, dateTime } from '../../lib/services/health';
+import { historyRange, historyBuckets, ranges, resultLabel, badgeStatus } from '../../lib/services/history';
+import { MonitorVisibility, MonitorType } from '../../gen/monitor/v1/monitor_pb';
+import { Code, ConnectError } from '@connectrpc/connect';
 const id = Astro.params.id ?? '';
-const monitor = await monitorClient.getMonitor({id}).catch(()=>null);
-let unavailable = false;
-const results = monitor ? await resultClient.getResults({monitorId:id,limit:100}).catch(()=>{unavailable=true;return null;}) : null;
-const now = BigInt(Math.floor(Date.now()/1000));
-const stats = monitor ? await monitorClient.getMonitorStats({monitorId:id,startTime:now-86400n,endTime:now}).catch(()=>null) : null;
-if (!monitor) Astro.response.status = 503;
+const range = historyRange(Astro.url.searchParams.get('range'));
+const page = Math.max(1, Math.min(100000, Math.floor(Number(Astro.url.searchParams.get('page')) || 1)));
+let notFound = false;
+const monitor = await monitorClient.getMonitor({id}).catch(error => {notFound=ConnectError.from(error).code===Code.NotFound;return null;});
+const window = {monitorId:id,startTime:BigInt(range.start),endTime:BigInt(range.end)};
+const [latest, results, stats, series] = monitor ? await Promise.all([
+  resultClient.getResults({monitorId:id,limit:1}).catch(()=>null),
+  resultClient.getResults({...window,limit:25,offset:(page-1)*25}).catch(()=>null),
+  monitorClient.getMonitorStats(window).catch(()=>null),
+  resultClient.getAggregatedStats({...window,period:range.period}).catch(()=>null),
+]) : [null,null,null,null];
+if (!monitor) Astro.response.status = notFound ? 404 : 503;
+const state = monitor ? health(monitor,latest?.results[0]) : 'unknown';
+const buckets = historyBuckets(series?.dataPoints ?? [],range.start,range.end,range.step);
+const total = stats ? Number(stats.totalChecks) : 0;
+const visibility = monitor?.visibility === MonitorVisibility.INTERNAL ? 'Only this node' : monitor?.visibility === MonitorVisibility.PUBLIC ? 'Public sharing' : 'Peer-assisted';
+const query = (p: number) => '?range='+range.key+'&page='+p;
 ---
-<Operator title={monitor?.name ?? 'Monitor unavailable'} description={monitor?.url}>
-  {monitor && <a slot="actions" class="button secondary" href={'/service/'+id+'/edit'}>Edit monitor</a>}
-  {!monitor ? <div class="error">Unable to load this monitor. <a href="/dashboard">Return to monitors</a>.</div> : <>
-    <div class="metric-grid"><div class="panel"><p class="muted">Current status</p><strong><span class={'state '+health(monitor,results?.results[0])}>{health(monitor,results?.results[0])}</span></strong><small>Every {monitor.intervalSeconds} seconds</small></div><div class="panel"><p class="muted">Uptime, last 24 hours</p><strong>{stats && stats.totalChecks>0n ? stats.uptimePercentage.toFixed(2)+'%' : 'No data'}</strong><small>{String(stats?.totalChecks ?? 0)} checks</small></div><div class="panel"><p class="muted">Average response, last 24 hours</p><strong>{stats && stats.totalChecks>0n ? Math.round(stats.averageLatencyMs)+' ms' : 'No data'}</strong></div></div>
-    <div class="panel"><h2>Recent checks</h2>{unavailable ? <div class="error">Check history is unavailable. Please refresh.</div> : !results?.results.length ? <p class="muted">Awaiting the first check. Your node will pick up changes within 30 seconds.</p> : <div class="table-wrap"><table><thead><tr><th>Time</th><th>Result</th><th>Response</th><th>Detail</th></tr></thead><tbody>{results.results.map(r=><tr><td>{dateTime(r.timestamp)}</td><td>{ResultStatus[r.status]?.toLowerCase() ?? 'unknown'}</td><td>{r.latencyMs>0n ? r.latencyMs+' ms' : 'No measurement'}</td><td>{r.errorMessage || (r.statusCode ? 'HTTP '+r.statusCode : '')}</td></tr>)}</tbody></table></div>}</div>
-    <div id="action-error" class="error" role="alert" hidden></div><div class="actions"><a class="button secondary" href={'/service/'+id}>Refresh</a><button id="toggle" class="quiet" data-id={id} data-enabled={monitor.enabled}>{monitor.enabled ? 'Pause monitoring' : 'Resume monitoring'}</button><button id="delete" class="quiet danger" data-id={id}>Delete monitor</button></div>
-  </>}
+<Operator title={monitor?.name ?? 'Monitor unavailable'} compact>
+  <div class="detail-toolbar"><a href="/dashboard">Back to monitors</a><nav class="range-tabs" aria-label="History range">{Object.keys(ranges).map(key=><a href={'?range='+key} aria-current={key===range.key?'page':undefined}>{key}</a>)}</nav></div>
+  {!monitor ? <div class="error">{notFound ? 'Monitor not found.' : 'Unable to load this monitor. Please try again.'}</div> : <div class="detail-stack">
+    <Card class="dashboard-card">
+      <div class="service-heading"><div class="service-identity"><div class="service-title"><h1>{monitor.name}</h1><StatusBadge status={badgeStatus(state)} size="sm" /><Badge variant="secondary" size="sm">{visibility}</Badge></div><p>{monitor.url}</p></div><a class="button secondary" href={'/service/'+id+'/edit'}>Edit monitor</a></div>
+      <div class="detail-metrics">
+        <div class="detail-metric"><h2 class="section-label">Availability ({range.key})</h2><div class="stat-value positive">{stats ? total ? stats.uptimePercentage.toFixed(2)+'%' : 'No data' : 'Unavailable'}</div><small>{stats ? stats.successfulChecks+'/'+stats.totalChecks+' measured checks' : 'Refresh to retry'}</small></div>
+        <div class="detail-metric"><h2 class="section-label">Average response</h2><div class="stat-value response-value">{total ? Math.round(stats!.averageLatencyMs)+' ms' : stats ? 'No data' : 'Unavailable'}</div><small>{total ? stats!.minLatencyMs+'–'+stats!.maxLatencyMs+' ms range' : 'No measurements yet'}</small></div>
+        <div class="detail-metric"><h2 class="section-label">Checks ({range.key})</h2><div class="stat-value">{results ? results.total.toLocaleString() : 'Unavailable'}</div><small>Every {monitor.intervalSeconds}s</small></div>
+        <div class="detail-metric"><h2 class="section-label">Latest check</h2><div class="stat-value">{latest?.results[0] ? resultLabel(latest.results[0].status) : latest ? 'No data' : 'Unavailable'}</div><small>{latest?.results[0] ? dateTime(latest.results[0].timestamp) : 'Awaiting the first check'}</small></div>
+      </div>
+    </Card>
+    {!latest && <div class="error" role="alert">Current status is unavailable. Please refresh.</div>}
+    <Card class="dashboard-card history-card"><h2 class="section-label">{range.key} history</h2>{series ? <UptimeHistoryBar buckets={buckets} label={range.key} /> : <p class="error">History is unavailable. Please refresh.</p>}</Card>
+    {series ? <Chart title={'Average response time ('+range.key+')'} subtitle={range.key==='24h' ? 'Hourly averages · UTC' : 'Daily averages · UTC'} data={buckets.map(b=>({value:b.latency,label:dateTime(b.timestamp)}))} /> : <div class="error">Response history is unavailable.</div>}
+    <div class="detail-columns">
+      <Card class="dashboard-card"><h2 class="card-heading">Recent checks</h2>{!results ? <p class="error">Check history is unavailable. Please refresh.</p> : !results.results.length ? <div class="empty muted"><p>No checks on this page.</p>{page > 1 && <a href={query(1)}>Return to the first page</a>}</div> : <><div class="table-wrap"><table class="check-table"><thead><tr><th>Status</th><th>Time (UTC)</th><th>Latency</th><th>HTTP</th><th>Detail</th></tr></thead><tbody>{results.results.map(r=><tr><td class={'status-'+badgeStatus(['Timeout','Error'].includes(resultLabel(r.status)) ? 'down' : resultLabel(r.status).toLowerCase())}>{resultLabel(r.status)}</td><td>{dateTime(r.timestamp)}</td><td class="response-value">{r.latencyMs > 0n ? r.latencyMs+' ms' : 'No measurement'}</td><td>{r.statusCode || 'N/A'}</td><td>{r.errorMessage || 'Completed'}</td></tr>)}</tbody></table></div><div class="check-pagination"><small>Showing {(page-1)*25+1}–{Math.min(page*25,results.total)} of {results.total}</small><div class="actions">{page>1 && <a href={query(page-1)}>Previous</a>}{page * 25 < results.total && <a href={query(page+1)}>Next</a>}</div></div></>}</Card>
+      <aside class="detail-stack" style="align-content:start">
+        <Card class="dashboard-card"><h2 class="card-heading">Configuration</h2><dl class="config-list"><div><dt>Monitor ID</dt><dd><code>{monitor.id}</code></dd></div><div><dt>Type</dt><dd>{MonitorType[monitor.type]}</dd></div><div><dt>Check sharing</dt><dd>{visibility}</dd></div><div><dt>Interval</dt><dd>{monitor.intervalSeconds}s</dd></div><div><dt>Timeout</dt><dd>{monitor.timeoutSeconds}s</dd></div><div><dt>Created</dt><dd>{dateTime(monitor.createdAt)}</dd></div></dl></Card>
+        <Card class="dashboard-card"><h2 class="card-heading">Check source</h2><div class="source-body"><p>Local node</p><small>{latest?.results[0]?.monitorNodeId || 'Awaiting the first check'}</small></div></Card>
+      </aside>
+    </div>
+    <div id="action-error" class="error" role="alert" hidden></div><div class="actions"><a class="button secondary" href={Astro.url.pathname+Astro.url.search}>Refresh</a><button id="toggle" class="quiet" data-id={id} data-enabled={monitor.enabled}>{monitor.enabled ? 'Pause monitoring' : 'Resume monitoring'}</button><button id="delete" class="quiet danger" data-id={id}>Delete monitor</button></div>
+  </div>}
 </Operator>
+<style>
+.detail-toolbar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:20px;font-size:13px;color:#a7a2bb}.service-heading{display:flex;justify-content:space-between;gap:20px;align-items:flex-start;padding:24px}.service-identity{min-width:0}.service-title{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.service-title h1{font-size:23px;margin:0}.service-identity p{color:#a7a2bb;font-size:14px;overflow-wrap:anywhere;margin-top:5px}.history-card{padding:20px;overflow:visible}.history-card h2{margin-bottom:16px}.check-pagination{display:flex;justify-content:space-between;gap:16px;padding:16px 20px}.check-pagination a{font-size:12px;color:#c4a7e7}.source-body{padding:20px;font-size:13px}.source-body small{display:block;margin-top:8px;overflow-wrap:anywhere}
+@media(max-width:550px){.service-heading{flex-direction:column;padding:20px}.service-title h1{font-size:21px}.detail-toolbar{align-items:flex-start;flex-direction:column}}
+</style>
 <script>
   import { monitorClient } from '../../lib/api/client';
   for (const action of ['toggle','delete']) document.getElementById(action)?.addEventListener('click',async event=>{

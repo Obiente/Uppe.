@@ -1,35 +1,17 @@
 ---
-import Paragraph from "./Paragraph.astro";
-
-interface Props {
-  uptimeHistory: boolean[];
-  class?: string;
-}
-
-const { uptimeHistory, class: className = "" } = Astro.props;
-
-const uptimeDays = uptimeHistory.filter(Boolean).length;
+import type { HistoryBucket } from '../../lib/services/history';
+interface Props { uptimeHistory?: boolean[]; buckets?: HistoryBucket[]; label?: string; compact?: boolean; class?: string }
+const { uptimeHistory = [], buckets, label = '30 days', compact = false, class: className = '' } = Astro.props;
+const entries = buckets ?? uptimeHistory.map((up,i) => ({ timestamp: i, value: up ? 100 : 0, latency: null, checks: 1 }));
+const state = (value: number | null) => value === null ? 'missing' : value >= 100 ? 'up' : value > 0 ? 'mixed' : 'down';
+const description = (entry: HistoryBucket) => `${buckets ? new Date(entry.timestamp*1000).toLocaleString('en-GB',{timeZone:'UTC'})+' UTC' : 'Day '+(entry.timestamp+1)}: ${entry.value === null ? 'No data' : entry.value.toFixed(2)+'% available, '+entry.checks+' checks'}`;
 ---
-
-<div class={`flex items-center gap-2 ${className}`}>
-  <Paragraph class="text-tertiary text-xs font-medium flex-shrink-0">
-    30 days:
-  </Paragraph>
-  <div class="flex items-center gap-0.5 flex-1">
-    {
-      uptimeHistory.map((isUp, index) => (
-        <div
-          class={`w-full h-4 rounded-sm transition-all duration-200 ${
-            isUp
-              ? "bg-status-success hover:bg-status-success/80"
-              : "bg-status-error hover:bg-status-error/80"
-          }`}
-          title={`Day ${index + 1}: ${isUp ? "Up" : "Down"}`}
-        />
-      ))
-    }
+<div class:list={['uptime-history', className, { compact }]}>
+  <div class="history-track" aria-label={label + ' availability history'}>
+    {entries.map(entry => <span tabindex={compact ? undefined : 0} class={'history-cell '+state(entry.value)} aria-label={description(entry)}><span class="history-tooltip" role="tooltip">{description(entry)}</span></span>)}
   </div>
-  <Paragraph class="text-tertiary text-xs flex-shrink-0">
-    {uptimeDays}/30 days
-  </Paragraph>
+  {!compact && <><div class="history-labels"><span>{label} ago</span><span>Now</span></div><div class="history-legend"><span><i class="up"></i>Available</span><span><i class="mixed"></i>Some failures</span><span><i class="down"></i>Unavailable</span><span><i class="missing"></i>No data</span></div></>}
 </div>
+<style>
+.history-track{display:flex;gap:3px;height:20px}.history-cell{flex:1;min-width:0;border-radius:4px;position:relative}.up{background:#9ccfd8}.mixed{background:#f6c177}.down{background:#eb6f92}.missing{background:#302c42}.history-labels{display:flex;justify-content:space-between;font-size:11px;color:#a7a2bb;margin-top:8px}.history-legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:10px;font-size:11px;color:#b4afc9}.history-legend span{display:flex;align-items:center;gap:6px}.history-legend i{width:10px;height:10px;border-radius:3px}.history-tooltip{display:none;position:absolute;bottom:28px;background:#393552;color:#e0def4;padding:8px;border-radius:6px;z-index:10;width:180px;font-size:12px;left:50%;transform:translateX(-50%);pointer-events:none}.history-cell:nth-child(-n+4) .history-tooltip{left:0;transform:none}.history-cell:nth-last-child(-n+4) .history-tooltip{left:auto;right:0;transform:none}.history-cell:hover .history-tooltip,.history-cell:focus .history-tooltip{display:block}.history-cell:focus-visible{outline:2px solid #e0def4;outline-offset:3px}.compact .history-track{height:16px}
+</style>

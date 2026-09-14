@@ -1,16 +1,103 @@
 ---
-import Operator from '../layouts/Operator.astro';
-import { monitorClient,resultClient } from '../lib/api/client';
-import { AggregationPeriod } from '../gen/result/v1/result_pb';
-import { dateTime } from '../lib/services/health';
-const monitors=await monitorClient.listMonitors({page:1,pageSize:200}).catch(()=>null);
-const id=Astro.url.searchParams.get('monitor')??monitors?.monitors[0]?.id;
-const end=BigInt(Math.floor(Date.now()/1000));
-const history=id ? await resultClient.getAggregatedStats({monitorId:id,startTime:end-86400n,endTime:end,period:AggregationPeriod.HOUR}).catch(()=>null):null;
+import Operator from "../layouts/Operator.astro";
+import { monitorClient, resultClient } from "../lib/api/client";
+import Chart from '../components/ui/Chart.astro';
+import Card from '../components/ui/Card.astro';
+import UptimeHistoryBar from '../components/ui/UptimeHistoryBar.astro';
+import {historyRange,historyBuckets,ranges} from '../lib/services/history';
+const range=historyRange(Astro.url.searchParams.get('range'));
+import { dateTime } from "../lib/services/health";
+const monitors = await monitorClient
+  .listMonitors({ page: 1, pageSize: 200 })
+  .catch(() => null);
+const id = Astro.url.searchParams.get("monitor") ?? monitors?.monitors[0]?.id;
+const end = BigInt(range.end);
+const history = id
+  ? await resultClient
+      .getAggregatedStats({
+        monitorId: id,
+        startTime: BigInt(range.start),
+        endTime: end,
+        period: range.period,
+      })
+      .catch(() => null)
+  : null;
 ---
-<Operator title="Check history" description="Hourly measurements from the past 24 hours.">
-{!monitors ? <div class="error">Unable to load monitors. Please refresh.</div> : !monitors.monitors.length ? <div class="panel empty"><h2>No check history yet</h2><p class="muted">Create a monitor to start collecting measurements.</p><a class="button" style="margin-top:20px" href="/add-monitor">Add monitor</a></div> : <>
-<form class="panel narrow" method="get"><label>Service<select name="monitor">{monitors.monitors.map(m=><option value={m.id} selected={m.id===id}>{m.name}</option>)}</select></label><button type="submit">View history</button></form>
-{!history ? <div class="error">Check history is unavailable. Try again shortly.</div> : !history.dataPoints.length ? <div class="panel"><p class="muted">No measurements in this time range.</p></div> : <div class="panel table-wrap"><table><thead><tr><th>Hour (UTC)</th><th>Checks</th><th>Uptime</th><th>Average response</th></tr></thead><tbody>{history.dataPoints.map(p=><tr><td>{dateTime(p.timestamp)}</td><td>{String(p.totalChecks)}</td><td>{p.totalChecks>0n?p.uptimePercentage.toFixed(2)+'%':'No data'}</td><td>{Math.round(p.averageLatencyMs)} ms</td></tr>)}</tbody></table></div>}
-</>}
+
+<Operator
+  title="Check history"
+  description="Explore availability and response times over time."
+>
+  {
+    !monitors ? (
+      <div class="error">Unable to load monitors. Please refresh.</div>
+    ) : !monitors.monitors.length ? (
+      <div class="panel empty">
+        <>
+          <h2>No check history yet</h2>
+          <p class="muted">
+            Create a monitor to start collecting measurements.
+          </p>
+          <a class="button" style="margin-top:20px" href="/add-monitor">
+            Add monitor
+          </a>
+        </>
+      </div>
+    ) : (
+      <>
+        <form class="panel narrow" method="get">
+          <>
+            <label>
+              Service
+              <select name="monitor">
+                {monitors.monitors.map((m) => (
+                  <option value={m.id} selected={m.id === id}>
+                    {m.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>Time range<select name="range">{Object.keys(ranges).map(key=><option value={key} selected={range.key===key}>{key}</option>)}</select></label><button type="submit">View history</button>
+          </>
+        </form>
+        {history && <div class="detail-stack" style="margin-bottom:20px"><Card class="dashboard-card" style="padding:20px;overflow:visible"><h2 class="section-label" style="margin-bottom:16px">Availability history</h2><UptimeHistoryBar buckets={historyBuckets(history.dataPoints,range.start,range.end,range.step)} label={range.key} /></Card><Chart title="Average response time" subtitle={range.key==='24h'?'Hourly averages · UTC':'Daily averages · UTC'} data={historyBuckets(history.dataPoints,range.start,range.end,range.step).map(b=>({value:b.latency,label:dateTime(b.timestamp)}))} /></div>}
+        {!history ? (
+          <div class="error">
+            Check history is unavailable. Try again shortly.
+          </div>
+        ) : !history.dataPoints.length ? (
+          <div class="panel">
+            <p class="muted">No measurements in this time range.</p>
+          </div>
+        ) : (
+          <div class="panel table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Period (UTC)</th>
+                  <th>Checks</th>
+                  <th>Uptime</th>
+                  <th>Average response</th>
+                </tr>
+              </thead>
+              <tbody>
+                {history.dataPoints.map((p) => (
+                  <tr>
+                    <td>{dateTime(p.timestamp)}</td>
+                    <td>{String(p.totalChecks)}</td>
+                    <td>
+                      {p.totalChecks > 0n
+                        ? p.uptimePercentage.toFixed(2) + "%"
+                        : "No data"}
+                    </td>
+                    <td>{Math.round(p.averageLatencyMs)} ms</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </>
+    )
+  }
 </Operator>

@@ -1,19 +1,87 @@
 ---
-import Operator from '../layouts/Operator.astro';
-import { monitorClient, resultClient } from '../lib/api/client';
-import { health, dateTime } from '../lib/services/health';
-const page = Math.max(1, Math.min(100000, Number(Astro.url.searchParams.get('page')) || 1));
-const data = await monitorClient.listMonitors({page,pageSize:25}).catch(() => null);
-const rows = await Promise.all((data?.monitors ?? []).map(async monitor => {
-  try { const history = await resultClient.getResults({monitorId:monitor.id,limit:1}); const latest = history.results[0]; return {monitor,latest,state:health(monitor,latest)}; }
-  catch { return {monitor,latest:undefined,state:monitor.enabled ? 'unknown' : 'paused'}; }
-}));
+import Operator from "../layouts/Operator.astro";
+import { monitorClient, resultClient } from "../lib/api/client";
+import { health, dateTime } from "../lib/services/health";
+import MetricCard from '../components/ui/MetricCard.astro';
+import MonitorOverview from '../components/MonitorOverview.astro';
+import {historyRange,historyBuckets} from '../lib/services/history';
+const range=historyRange('24h');
+const page = Math.max(
+  1,
+  Math.min(100000, Number(Astro.url.searchParams.get("page")) || 1),
+);
+const data = await monitorClient
+  .listMonitors({ page, pageSize: 25 })
+  .catch(() => null);
+const rows = await Promise.all(
+  (data?.monitors ?? []).map(async (monitor) => {
+    try {
+      const history = await resultClient.getResults({
+        monitorId: monitor.id,
+        limit: 1,
+      });
+      const latest = history.results[0];
+      const series = await resultClient.getAggregatedStats({monitorId:monitor.id,startTime:BigInt(range.start),endTime:BigInt(range.end),period:range.period}).catch(()=>null);
+      const points=series?.dataPoints ?? [];
+      const count=points.reduce((n,p)=>n+Number(p.totalChecks),0);
+      return { monitor, latest, state: health(monitor, latest), series, count, uptime:count?points.reduce((n,p)=>n+Number(p.successfulChecks),0)/count*100:null, latency:count?points.reduce((n,p)=>n+p.averageLatencyMs*Number(p.totalChecks),0)/count:null };
+    } catch {
+      return {
+        monitor,
+        latest: undefined,
+        series:null,count:0,uptime:null,latency:null,
+        state: monitor.enabled ? "unknown" : "paused",
+      };
+    }
+  }),
+);
 ---
-<Operator title="Your monitors" description="A current view of the services you depend on.">
+
+<Operator
+  title="Your monitors"
+  description="A current view of the services you depend on."
+>
   <a slot="actions" class="button" href="/add-monitor">Add monitor</a>
-  {!data ? <div class="error" role="alert">Unable to load your monitors. <a href="/dashboard">Try again</a>.</div> : <>
-    <div class="metric-grid"><div class="panel"><p class="muted">Total monitors</p><strong>{data.total}</strong></div><div class="panel"><p class="muted">Healthy on this page</p><strong>{rows.filter(r=>r.state==='up').length}</strong></div><div class="panel"><p class="muted">Need attention on this page</p><strong>{rows.filter(r=>['down','degraded'].includes(r.state)).length}</strong></div></div>
-    {rows.length ? <div class="panel table-wrap"><table><thead><tr><th>Service</th><th>Status</th><th>Response</th><th>Last check</th></tr></thead><tbody>{rows.map(({monitor,latest,state})=><tr><td><a href={'/service/'+monitor.id}>{monitor.name}</a><br/><small>{monitor.url}</small></td><td><span class={'state '+state}>{state}</span></td><td>{latest && latest.latencyMs > 0n ? latest.latencyMs+' ms' : 'No measurement'}</td><td>{latest ? dateTime(latest.timestamp) : 'Awaiting first check'}</td></tr>)}</tbody></table></div> : <div class="panel empty"><h2>No monitors yet</h2><p class="muted">Add a website or TCP service to start collecting checks.</p><a class="button" style="margin-top:24px" href="/add-monitor">Create your first monitor</a></div>}
-    <div class="actions">{page>1 && <a class="button secondary" href={'?page='+(page-1)}>Previous</a>}{page * 25 < data.total && <a class="button secondary" href={'?page='+(page+1)}>Next</a>}<a class="button secondary" href={Astro.url.pathname+Astro.url.search}>Refresh</a></div>
-  </>}
+  {
+    !data ? (
+      <div class="error" role="alert">
+        Unable to load your monitors. <a href="/dashboard">Try again</a>.
+      </div>
+    ) : (
+      <>
+        <div class="metric-grid"><MetricCard class="dashboard-card" title="Total monitors" value={String(data.total)} icon="DASHBOARD" /><MetricCard class="dashboard-card" title="Healthy on this page" value={String(rows.filter(r=>r.state==='up').length)} icon="SUCCESS" /><MetricCard class="dashboard-card" title="Need attention on this page" value={String(rows.filter(r=>['down','degraded'].includes(r.state)).length)} icon="WARNING" /></div>
+        {rows.length ? (
+          <MonitorOverview monitors={rows.map(r=>({id:r.monitor.id,name:r.monitor.name,url:r.monitor.url,state:r.state,uptime:r.uptime,avgPing:r.latency,totalChecks:r.series?r.count:null,history:historyBuckets(r.series?.dataPoints??[],range.start,range.end,range.step),lastCheck:r.latest?dateTime(r.latest.timestamp):'Awaiting first check',historyUnavailable:!r.series}))} />
+        ) : (
+          <div class="panel empty">
+            <h2>No monitors yet</h2>
+            <p class="muted">
+              Add a website or TCP service to start collecting checks.
+            </p>
+            <a class="button" style="margin-top:24px" href="/add-monitor">
+              Create your first monitor
+            </a>
+          </div>
+        )}
+        <div class="actions">
+          {page > 1 && (
+            <a class="button secondary" href={"?page=" + (page - 1)}>
+              Previous
+            </a>
+          )}
+          {page * 25 < data.total && (
+            <a class="button secondary" href={"?page=" + (page + 1)}>
+              Next
+            </a>
+          )}
+          <a
+            class="button secondary"
+            href={Astro.url.pathname + Astro.url.search}
+          >
+            Refresh
+          </a>
+        </div>
+      </>
+    )
+  }
 </Operator>

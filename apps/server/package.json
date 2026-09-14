@@ -3,6 +3,6 @@
   "scripts": {
     "build": "go build ./cmd/uppe-api",
     "test": "go test ./...",
-    "dev": "go run ./cmd/uppe-api"
+    "dev": "node ../../scripts/dev.mjs server"
   }
 }

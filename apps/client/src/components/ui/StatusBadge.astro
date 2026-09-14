@@ -2,7 +2,7 @@
 import Badge from './Badge.astro';
 
 export interface Props {
-  status: 'online' | 'offline' | 'degraded' | 'maintenance' | 'unknown';
+  status: 'online' | 'offline' | 'degraded' | 'maintenance' | 'unknown' | 'paused';
   showIndicator?: boolean;
   size?: 'sm' | 'md' | 'lg';
   class?: string;
@@ -12,6 +12,7 @@ export interface Props {
 const { status, showIndicator = true, size = 'md', class: className = '', ...rest } = Astro.props;
 
 const statusConfig = {
+  paused: { variant: 'neutral' as const, text: 'Paused' },
   online: { variant: 'success' as const, text: 'Online' },
   offline: { variant: 'error' as const, text: 'Offline' },
   degraded: { variant: 'warning' as const, text: 'Degraded' },

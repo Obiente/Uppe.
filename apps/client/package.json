@@ -3,12 +3,12 @@
   "type": "module",
   "version": "0.0.1",
   "scripts": {
-    "dev": "astro dev",
+    "dev": "node ../../scripts/dev.mjs client",
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
     "check": "astro check",
-    "test": "node --experimental-strip-types --test src/lib/server/auth.test.ts"
+    "test": "node --experimental-transform-types --import ../../scripts/resolve-typescript.mjs --test src/lib/server/auth.test.ts src/lib/services/history.test.ts"
   },
   "dependencies": {
     "@astrojs/node": "^11.1.5",

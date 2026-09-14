@@ -1,6 +1,10 @@
 {
   "$schema": "https://turborepo.com/schema.json",
+  "globalPassThroughEnv": ["UPPE_*", "HOST", "PORT", "LocalAppData", "LOCALAPPDATA", "GOCACHE", "GOPATH", "GOMODCACHE", "GOPROXY", "CARGO_HOME", "CARGO_TARGET_DIR", "RUSTUP_HOME", "RUST_LOG"],
   "tasks": {
+    "//#dev:bootstrap": {
+      "cache": false
+    },
     "build": {
       "dependsOn": [
         "^build"
@@ -17,11 +21,13 @@
       ]
     },
     "dev": {
+      "dependsOn": ["//#dev:bootstrap"],
       "persistent": true,
       "cache": false,
       "env": ["LocalAppData", "GOCACHE", "GOPATH"]
     },
     "@uppe/server#dev": {
+      "dependsOn": ["//#dev:bootstrap"],
       "persistent": true,
       "cache": false,
       "interruptible": true,

@@ -1,4 +1,6 @@
 ---
+import StatusPageCard from '../components/ui/StatusPageCard.astro';
+import {dateTime} from '../lib/services/health';
 import Operator from '../layouts/Operator.astro';
 import { statusPageClient } from '../lib/api/client';
 const page = Math.max(1,Math.min(100000,Number(Astro.url.searchParams.get('page'))||1));
@@ -6,6 +8,7 @@ const response = await statusPageClient.listStatusPages({page,pageSize:25}).catc
 ---
 <Operator title="Status pages" description="Share service availability with the people who rely on you.">
   <a slot="actions" class="button" href="/status-pages-new">Create status page</a>
-  {!response ? <div class="error">Unable to load status pages. Please refresh.</div> : !response.statusPages.length ? <div class="panel empty"><h2>Your status pages will appear here</h2><p class="muted">Choose your services, add a title, and publish when you are ready.</p></div> : <div class="panel table-wrap"><table><thead><tr><th>Page</th><th>Publication</th><th>Services</th><th>Actions</th></tr></thead><tbody>{response.statusPages.map(p=><tr><td><a href={'/status-pages/'+p.slug+'/edit'}>{p.title}</a><br/><small>/public/{p.slug}</small></td><td><span class="state">{p.isActive?'Published':'Hidden'}</span></td><td>{p.monitorIds.length}</td><td><div class="actions"><a href={'/status-pages/'+p.slug+'/edit'}>Edit</a>{p.isActive&&<a href={'/public/'+p.slug} target="_blank" rel="noopener">View page</a>}</div></td></tr>)}</tbody></table></div>}
+  {!response ? <div class="error">Unable to load status pages. Please refresh.</div> : !response.statusPages.length ? <div class="panel empty"><h2>Your status pages will appear here</h2><p class="muted">Choose your services, add a title, and publish when you are ready.</p></div> : <div class="status-page-grid">{response.statusPages.map(p=><StatusPageCard title={p.title} slug={p.slug} isActive={p.isActive} serviceCount={p.monitorIds.length} visits={String(p.visits)} created={dateTime(p.createdAt)} description={p.description} />)}</div>}
   <div class="actions">{page>1&&<a href={'?page='+(page-1)}>Previous</a>}{page * 25 < (response?.total??0)&&<a href={'?page='+(page+1)}>Next</a>}</div>
 </Operator>
+<style>.status-page-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;margin-bottom:24px}@media(max-width:800px){.status-page-grid{grid-template-columns:1fr}}</style>

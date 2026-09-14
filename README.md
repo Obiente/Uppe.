@@ -14,7 +14,7 @@ pnpm start --debug
 
 Open http://127.0.0.1:4321. Sign in with the generated key in `.uppe/access.key`. Create an HTTP or TCP monitor, wait for its first check, then create and publish a status page. New status pages stay hidden until explicitly published. Pause and edit monitors from their detail pages. Changes reach the scheduler within 30 seconds.
 
-For optimized binaries, use `pnpm build` and `pnpm start` without `--debug`. The launcher migrates the database before starting Rust, Go, and Astro, and stops the installation if a required process exits. Ctrl+C stops the processes. For frontend iteration, run `pnpm dev:client` against an already running API with the same access key and `UPPE_API_URL`.
+For optimized binaries, use `pnpm build` and `pnpm start` without `--debug`. The launcher migrates the database before starting Rust, Go, and Astro, and stops the installation if a required process exits. Ctrl+C stops the processes.
 
 Local HTTP monitors may reach your private services. Checks use each monitor's timeout, accept HTTP 200-399, and do not follow redirects. ICMP and custom HTTP bodies, headers, or accepted status codes are not currently supported; the API rejects these options. Disabled or stale checks show as unknown or paused, never as healthy by default.
 
@@ -55,6 +55,17 @@ Schema version 8 moves new peer evidence to this bounded store and discards pend
 Automatic offline history recovery, Sybil-resistant consensus, replicated status-page hosting, capability delegation, and operational admin-key distribution remain unfinished. They are not required for local monitoring and status pages. See [implementation status](docs/implementation-status.md) and [architecture](ARCHITECTURE.md).
 
 ## Development
+
+```sh
+pnpm install --frozen-lockfile
+pnpm dev
+```
+
+`pnpm dev` runs Turbo. A shared, uncached bootstrap task creates or reuses `.uppe/access.key`, builds the Rust service and Go API, and migrates the database before any dev server starts. Astro runs in development mode with live frontend updates. No production frontend build or manually exported token is needed. Restart `pnpm dev` after Rust or Go source changes to rebuild the backends. Ctrl+C stops the dev tasks.
+
+Direct `pnpm exec turbo run dev` and the root `pnpm dev:client`, `pnpm dev:server`, and `pnpm dev:service` commands use the same bootstrap dependency. Filtered commands start only the selected component after bootstrap. Use these root commands rather than running individual package scripts directly. Stop existing Uppe processes using the same ports or data directory before starting a new dev installation. A frontend-only task can use an already running API, provided both use the same operator credential.
+
+Development and `pnpm start` share the same ignored `.uppe` state by default. Set `UPPE_DATA_DIR` for a separate development installation. All components resolve relative runtime paths from the repository root, including when Turbo runs them from different package directories. Turbo passes `UPPE_*`, `HOST`, and `PORT` overrides through without caching credentials. An explicit `UPPE_OPERATOR_TOKEN` is used without writing it to disk; otherwise the existing access key is reused. An invalid key stops startup rather than silently rotating it.
 
 `pnpm check` runs Rust formatting, Clippy and tests; builds Rust; tests Go against the actual Rust-created schema; checks protobuf generation; and checks, tests, and builds Astro. CI runs it on Linux and Windows. `pnpm proto` regenerates committed bindings from apps/server/proto; edit schemas, not generated files.
 

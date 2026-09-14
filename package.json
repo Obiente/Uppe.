@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "build": "node scripts/run.mjs build",
-    "dev": "node scripts/run.mjs start --debug",
+    "dev": "turbo run dev",
+    "dev:bootstrap": "node scripts/dev.mjs bootstrap",
+    "test:scripts": "node --test scripts/runtime.test.mjs",
     "dev:server": "turbo run dev --filter=@uppe/server",
     "dev:service": "turbo run dev --filter=@uppe/service",
     "dev:client": "turbo run dev --filter=@uppe/client",

@@ -11,6 +11,7 @@ function pnpm(args) {
  if(!process.env.npm_execpath) throw new Error('Run through pnpm check.');
  run(process.execPath,[process.env.npm_execpath,...args]);
 }
+run(process.execPath,['--test','scripts/runtime.test.mjs']);
 run('cargo',['fmt','--all','--','--check']);
 run('cargo',['clippy','--locked','--workspace','--all-targets','-j','2','--','-D','warnings']);
 run('cargo',['test','--locked','--workspace','-j','2']);

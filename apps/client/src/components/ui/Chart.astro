@@ -1,37 +1,48 @@
 ---
-export interface Props {
-  title: string;
-  data?: Array<{ value: number; label: string; color?: string }>;
-  height?: string;
-  class?: string;
-}
-
-const { title, data = [], height = 'h-64', class: className = '' } = Astro.props;
-
-// Generate default data if none provided
-const chartData = data.length > 0 ? data : Array.from({ length: 24 }).map((_, i) => {
-  const value = Math.random() * 80 + 20;
-  const color = value > 70 ? 'bg-error' : value > 40 ? 'bg-warning' : 'bg-success';
-  return {
-    value,
-    label: `${i}:00`,
-    color
-  };
-});
+import Card from './Card.astro';
+interface Props { title: string; data?: Array<{ value: number | null; label: string; timestamp?: number; color?: string }>; height?: string; class?: string; subtitle?: string }
+const { title, data = [], class: className = '', subtitle } = Astro.props;
+const measured = data.filter(point => point.value !== null);
 ---
-
-<div class={`bg-surface rounded-lg p-6 border border-outline ${className}`}>
-  <h3 class="text-lg font-semibold text mb-6">{title}</h3>
-  <div class={`${height} flex items-end justify-between gap-1`}>
-    {chartData.map((item) => (
-      <div class="flex-1 flex flex-col items-center">
-        <div
-          class={`w-full rounded-t ${item.color} hover:opacity-80 transition-opacity cursor-pointer`}
-          style={`height: ${item.value}%`}
-          title={`${item.label} - ${Math.round(item.value * 3)}ms`}
-        ></div>
-        <div class="text-xs text-secondary mt-1">{item.label}</div>
-      </div>
-    ))}
-  </div>
-</div>
+<Card class={'dashboard-card response-chart '+className}>
+  <div class="chart-heading"><h2 class="section-label">{title}</h2><small>{subtitle ?? (measured.length ? measured.length+' measured periods' : 'No measurements')}</small></div>
+  {measured.length ? <uppe-response-chart data-points={JSON.stringify(data)}>
+    <canvas role="img" aria-label={title + '. Use the data table below for exact values.'}></canvas>
+    <details><summary>View chart data</summary><div class="table-wrap"><table><thead><tr><th>Period (UTC)</th><th>Average response</th></tr></thead><tbody>{data.map(p=><tr><td>{p.label}</td><td>{p.value === null ? 'No data' : Math.round(p.value)+' ms'}</td></tr>)}</tbody></table></div></details>
+  </uppe-response-chart> : <p class="chart-empty">Response times will appear as checks arrive.</p>}
+</Card>
+<style>
+.response-chart{padding:20px}.chart-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}.chart-heading small{font-size:11px}uppe-response-chart{display:block;min-width:0}canvas{display:block;width:100%;height:70px}details{margin-top:12px;font-size:11px;color:#a7a2bb}summary{cursor:pointer;width:fit-content}details .table-wrap{max-height:260px}.chart-empty{min-height:100px;display:flex;align-items:center;justify-content:center;color:#a7a2bb;font-size:13px}
+</style>
+<script>
+class ResponseChart extends HTMLElement {
+  observer?: ResizeObserver;
+  connectedCallback() {
+    const canvas = this.querySelector('canvas')!;
+    const points: {value:number|null}[] = JSON.parse(this.dataset.points || '[]');
+    const draw = () => {
+      const width = this.clientWidth, height = 70, scale = window.devicePixelRatio || 1;
+      canvas.width = width*scale; canvas.height = height*scale;
+      const ctx = canvas.getContext('2d'); if(!ctx || !width) return;
+      ctx.scale(scale,scale);
+      const max = Math.max(1,...points.map(p=>p.value ?? 0));
+      ctx.strokeStyle='#393552';ctx.lineWidth=1;
+      for(const y of [10,35,60]){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(width,y);ctx.stroke();}
+      let previous=false;
+      ctx.strokeStyle='#c4a7e7';ctx.lineWidth=1.6;ctx.beginPath();
+      points.forEach((p,i)=>{
+        if(p.value===null){previous=false;return;}
+        const x=points.length>1 ? i/(points.length-1)*width : width/2;
+        const y=60-p.value/max*50;
+        if(previous)ctx.lineTo(x,y);else ctx.moveTo(x,y);
+        previous=true;
+      });ctx.stroke();
+      ctx.fillStyle='#c4a7e7';
+      points.forEach((p,i)=>{if(p.value===null)return;const x=points.length>1?i/(points.length-1)*width:width/2;ctx.beginPath();ctx.arc(x,60-p.value/max*50,2.5,0,Math.PI*2);ctx.fill();});
+    };
+    this.observer = new ResizeObserver(draw); this.observer.observe(this); draw();
+  }
+  disconnectedCallback(){this.observer?.disconnect();}
+}
+if(!customElements.get('uppe-response-chart'))customElements.define('uppe-response-chart',ResponseChart);
+</script>

@@ -22,7 +22,7 @@ Run an installation, authenticate, create HTTP/TCP monitors, read real checks an
 3. Design capability delegation, durable revocation distribution and admin-key operations. Locally pinned roots are mandatory for chain acceptance; bootstrap URLs cannot supply their own trust roots.
 4. Build replicated signed status-page bundles and independent hosting. The public view currently needs the owner's running API.
 5. Add notification delivery and custom HTTP checks through an explicit execution contract. The UI does not offer simulated settings for these.
-6. Define signed audit archival and resource budgets for large installations. Raw result retention does not prune audit history.
+6. Define archival for the permanent operator/local-check audit ledger at large installations. Remote peer observations already use bounded, expiring signed receipts and do not append to that ledger.
 
 Encrypted result envelopes now use version 2, authenticated metadata and corrected key conversion. Old experimental encrypted messages are rejected; restart participating nodes on the same version. Static owner keys do not provide forward secrecy against later owner-key compromise.
 

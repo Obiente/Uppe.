@@ -47,13 +47,6 @@ pub async fn install(conn: &Connection) -> Result<()> {
             "INSERT",
         ),
         (
-            "peer_results",
-            "peer_result",
-            "id",
-            "'monitor_uuid', {row}.monitor_uuid, 'timestamp', {row}.timestamp, 'status', {row}.status, 'peer_id', {row}.peer_id, 'signature', hex({row}.signature), 'verified', {row}.verified",
-            "INSERT",
-        ),
-        (
             "status_pages",
             "status_page",
             "uuid",

@@ -29,7 +29,12 @@ pub trait Database: Send + Sync {
     async fn save_result(&self, result: &CheckResult) -> Result<i64>;
 
     /// Save a peer result (result from another peer)
-    async fn save_peer_result(&self, result: &PeerResult) -> Result<i64>;
+    async fn save_peer_result(
+        &self,
+        result: &PeerResult,
+        target: &str,
+        receipt: &str,
+    ) -> Result<super::peer_storage::SaveOutcome>;
 
     /// Get recent results for a monitor
     async fn get_recent_results(
@@ -401,40 +406,14 @@ impl Database for DatabaseImpl {
         Ok(conn.last_insert_rowid())
     }
 
-    async fn save_peer_result(&self, result: &PeerResult) -> Result<i64> {
+    async fn save_peer_result(
+        &self,
+        result: &PeerResult,
+        target: &str,
+        receipt: &str,
+    ) -> Result<super::peer_storage::SaveOutcome> {
         let conn = self.get_conn().await?;
-        let timestamp = Monitor::timestamp_to_i64(result.timestamp);
-        let created_at = Monitor::timestamp_to_i64(result.created_at);
-
-        conn.execute(
-            "INSERT INTO peer_results (monitor_uuid, timestamp, status, latency_ms, status_code, \
-             error_message, peer_id, signature, verified, created_at, city, country, region, source_peer_id, synced_from_peer, retention_until) \
-             SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? WHERE NOT EXISTS (SELECT 1 FROM peer_results WHERE peer_id = ? AND monitor_uuid = ? AND timestamp = ?)",
-            params![
-                result.monitor_uuid.to_string(),
-                timestamp,
-                result.status.to_string(),
-                result.latency_ms.map(|v| v as i64),
-                result.status_code.map(|v| v as i64),
-                result.error_message.clone(),
-                result.peer_id.clone(),
-                result.signature.clone(),
-                if result.verified { 1 } else { 0 },
-                created_at,
-                result.city.clone(),
-                result.country.clone(),
-                result.region.clone(),
-                result.source_peer_id.clone(),
-                if result.synced_from_peer { 1 } else { 0 },
-                result.retention_until.unwrap_or(created_at + 604800),
-                result.peer_id.clone(),
-                result.monitor_uuid.to_string(),
-                timestamp
-            ],
-        )
-        .await?;
-
-        Ok(conn.last_insert_rowid())
+        super::peer_storage::save(&conn, result, target, receipt).await
     }
 
     async fn get_recent_results(
@@ -535,10 +514,12 @@ impl Database for DatabaseImpl {
 
     async fn upsert_peer(&self, peer: &Peer) -> Result<()> {
         let conn = self.get_conn().await?;
+        let tx = conn.transaction_with_behavior(libsql::TransactionBehavior::Immediate).await?;
+        tx.execute("DELETE FROM peers WHERE peer_id != ? AND peer_id IN (SELECT peer_id FROM peers WHERE peer_id != ? ORDER BY last_seen DESC,peer_id LIMIT -1 OFFSET 4095)", params![peer.peer_id.clone(),peer.peer_id.clone()]).await?;
         let last_seen = Monitor::timestamp_to_i64(peer.last_seen);
         let joined_at = Monitor::timestamp_to_i64(peer.joined_at);
 
-        conn.execute(
+        tx.execute(
             "INSERT INTO peers (peer_id, status, last_seen, joined_at, contribution_score, \
              uptime_percentage, checks_per_day, location_city, location_region, location_country)
              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -559,6 +540,7 @@ impl Database for DatabaseImpl {
         )
         .await?;
 
+        tx.commit().await?;
         Ok(())
     }
 
@@ -824,7 +806,7 @@ impl Database for DatabaseImpl {
 
         let result = conn
             .execute(
-                "DELETE FROM peer_results WHERE id IN (SELECT id FROM peer_results WHERE COALESCE(retention_until, created_at + 604800) < ? LIMIT 10000)",
+                "DELETE FROM peer_results WHERE id IN (SELECT id FROM peer_results WHERE COALESCE(retention_until, created_at + 604800) < ?)",
                 params![now],
             )
             .await?;

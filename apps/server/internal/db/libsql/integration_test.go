@@ -66,6 +66,28 @@ func TestRustSchemaContract(t *testing.T) {
 	if _, err = d.GetAggregatedStats(ctx, m.ID, time.Now().Add(-time.Hour), time.Now(), types.AggregationPeriodHour); err != nil {
 		t.Fatal(err)
 	}
+	// Unexecuted checks remain visible in history but never reduce target uptime.
+	for i, status := range []string{"up", "down", "unknown"} {
+		if _, err = d.db.Exec("INSERT INTO monitor_results(monitor_uuid,timestamp,status,latency_ms,peer_id,created_at) VALUES(?,?,?,?,?,?)", m.ID, time.Now().Unix()-int64(2-i), status, 20, "synthetic", time.Now().Unix()); err != nil {
+			t.Fatal(err)
+		}
+	}
+	stats, err = d.GetMonitorStats(ctx, m.ID, time.Now().Add(-time.Hour), time.Now())
+	if err != nil || stats.TotalChecks != 2 || stats.UptimePercentage != 50 {
+		t.Fatal("unknown result reduced uptime", stats, err)
+	}
+	history, err := d.GetAggregatedStats(ctx, m.ID, time.Now().Add(-time.Hour), time.Now(), types.AggregationPeriodHour)
+	var measured int64
+	for _, point := range history {
+		measured += point.TotalChecks
+	}
+	if err != nil || measured != 2 {
+		t.Fatal("history counted an unexecuted check", measured, err)
+	}
+	latest, _, err := d.GetResults(ctx, &types.ResultQuery{MonitorID: m.ID, StartTime: time.Now().Add(-time.Hour), EndTime: time.Now(), Limit: 1, SkipTotal: true})
+	if err != nil || len(latest) != 1 || latest[0].Status != 0 {
+		t.Fatal("unknown latest result was hidden", latest, err)
+	}
 	p := &models.StatusPage{Title: "Synthetic status", Slug: "synthetic-status", MonitorIDs: []string{m.ID}, IsActive: false}
 	if err = d.CreateStatusPage(ctx, p); err != nil {
 		t.Fatal(err)
@@ -107,7 +129,7 @@ func TestRustSchemaContract(t *testing.T) {
 	}
 	var before, after int
 	d.db.QueryRow("SELECT COUNT(*) FROM audit_outbox").Scan(&before)
-	if err = d.RecordStatusPageVisit(ctx, p.ID); err != nil {
+	if err = d.AddStatusPageVisits(ctx, p.ID, 1); err != nil {
 		t.Fatal(err)
 	}
 	d.db.QueryRow("SELECT COUNT(*) FROM audit_outbox").Scan(&after)

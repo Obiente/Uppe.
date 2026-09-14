@@ -9,6 +9,7 @@ import (
 	resultv1 "github.com/Obiente/Uppe/apps/server/gen/result/v1"
 	"github.com/Obiente/Uppe/apps/server/internal/db"
 	"github.com/Obiente/Uppe/apps/server/internal/db/types"
+	"github.com/Obiente/Uppe/apps/server/internal/models"
 	"go.uber.org/zap"
 	"time"
 )
@@ -18,10 +19,15 @@ import (
 type Service struct {
 	database db.Database
 	logger   *zap.Logger
+	cache    *pageCache
 }
 
-func New(d db.Database, l *zap.Logger) *Service { return &Service{d, l} }
+func New(d db.Database, l *zap.Logger) *Service {
+	return &Service{database: d, logger: l, cache: newCache()}
+}
 func (s *Service) GetPublicStatusPage(ctx context.Context, r *connect.Request[pagev1.GetPublicStatusPageRequest]) (*connect.Response[pagev1.PublicStatusPage], error) {
+	ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
+	defer cancel()
 	if len(r.Msg.Slug) < 3 || len(r.Msg.Slug) > 63 {
 		return nil, connect.NewError(connect.CodeNotFound, errors.New("page not found"))
 	}
@@ -36,18 +42,24 @@ func (s *Service) GetPublicStatusPage(ctx context.Context, r *connect.Request[pa
 	if len(page.MonitorIDs) > 100 {
 		return nil, connect.NewError(connect.CodeResourceExhausted, errors.New("too many monitors"))
 	}
+	return s.cached(ctx, page)
+}
+func (s *Service) build(ctx context.Context, page *models.StatusPage) (*connect.Response[pagev1.PublicStatusPage], error) {
 	now := time.Now()
 	start := now.Add(-24 * time.Hour)
 	out := &pagev1.PublicStatusPage{Title: page.Title, Slug: page.Slug, Description: page.Description, LogoUrl: stringValue(page.LogoURL), PrimaryColor: page.PrimaryColor, UpdatedAt: page.UpdatedAt.Unix()}
 	for _, id := range page.MonitorIDs {
 		summary := &pagev1.PublicMonitorSummary{Id: id, Name: "Unavailable service", Status: resultv1.ResultStatus_RESULT_STATUS_UNSPECIFIED}
+		if ctx.Err() != nil {
+			return nil, connect.NewError(connect.CodeUnavailable, ctx.Err())
+		}
 		monitor, err := s.database.GetMonitor(ctx, id)
 		if err == nil {
 			summary.Name = monitor.Name
 			if monitor.PublicDisplayName != nil && *monitor.PublicDisplayName != "" {
 				summary.Name = *monitor.PublicDisplayName
 			}
-			results, _, readErr := s.database.GetResults(ctx, &types.ResultQuery{MonitorID: id, StartTime: start, EndTime: now, Limit: 1})
+			results, _, readErr := s.database.GetResults(ctx, &types.ResultQuery{MonitorID: id, StartTime: start, EndTime: now, Limit: 1, SkipTotal: true})
 			if readErr == nil && len(results) > 0 {
 				summary.LastChecked = results[0].Timestamp.Unix()
 				// A formerly healthy result must not stay green when monitoring stops.
@@ -74,10 +86,6 @@ func (s *Service) GetPublicStatusPage(ctx context.Context, r *connect.Request[pa
 			}
 		}
 		out.Monitors = append(out.Monitors, summary)
-	}
-	// Visit counters are best-effort and must never determine availability.
-	if err := s.database.RecordStatusPageVisit(ctx, page.ID); err != nil {
-		s.logger.Warn("Visit counter unavailable", zap.Error(err))
 	}
 	return connect.NewResponse(out), nil
 }

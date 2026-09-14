@@ -271,6 +271,7 @@ impl SignedAuditAttestation {
         Ok(verifying_key.verify_strict(&self.signing_bytes()?, &signature).is_ok())
     }
 
+    #[allow(dead_code, reason = "Conversion for retained operator-ledger attestations")]
     pub fn to_model(&self) -> AuditAttestation {
         AuditAttestation {
             id: None,
@@ -451,35 +452,23 @@ pub async fn record_local_result_event(
     .await
 }
 
-pub async fn record_peer_result_event(
-    database: &dyn Database,
+/// Sign an expiring receipt without appending remote claims to the permanent ledger.
+pub fn peer_result_receipt(
     keypair: &KeyPair,
     actor_id: &str,
     source: &str,
     result: &PeerResult,
-) -> Result<Uuid> {
+    target: &str,
+) -> Result<String> {
     let resource_id = result.monitor_uuid.to_string();
-    let payload = ResultAuditPayload {
-        source,
-        monitor_uuid: result.monitor_uuid,
-        target: "",
-        check_type: "",
-        status: &result.status,
-        latency_ms: result.latency_ms,
-        status_code: result.status_code,
-        error_message: result.error_message.as_deref(),
-        peer_id: &result.peer_id,
-        timestamp: system_time_to_i64(result.timestamp),
-        verified: Some(result.verified),
-        source_peer_id: result.source_peer_id.as_deref(),
-        synced_from_peer: Some(result.synced_from_peer),
-    };
-
-    save_signed_event(
-        database,
-        keypair,
+    let payload = serde_json::json!({"source":source, "monitor_uuid":resource_id,
+        "target":target, "timestamp":system_time_to_i64(result.timestamp), "status":result.status,
+        "latency_ms":result.latency_ms, "status_code":result.status_code,
+        "error_message":result.error_message, "peer_id":result.peer_id,
+        "peer_signature":hex::encode(&result.signature), "verified":result.verified});
+    let envelope = SignedEventEnvelope::sign(
         NewSignedEvent::<_, Value> {
-            event_type: "peer.result_recorded",
+            event_type: "peer.result_verified",
             actor_id,
             resource_type: "monitor",
             resource_id: &resource_id,
@@ -487,33 +476,23 @@ pub async fn record_peer_result_event(
             payload: &payload,
             capability_id: None,
             delegated_by: None,
-            expires_at: None,
+            expires_at: Some(SystemTime::now() + std::time::Duration::from_secs(604800)),
             context: None,
-        },
-    )
-    .await
-}
-
-pub async fn record_result_verification_attestation(
-    database: &dyn Database,
-    keypair: &KeyPair,
-    actor_id: &str,
-    subject_event_id: Uuid,
-    verified: bool,
-    reason: Option<&str>,
-) -> Result<Uuid> {
-    let attestation = SignedAuditAttestation::sign(
-        NewAuditAttestation {
-            subject_event_id,
-            attestor_id: actor_id,
-            decision: if verified { AuditDecision::Accepted } else { AuditDecision::Rejected },
-            reason,
         },
         keypair,
     )?;
-    let attestation_id = attestation.attestation_id;
-    database.save_audit_attestation(&attestation.to_model()).await?;
-    Ok(attestation_id)
+    let attestation = SignedAuditAttestation::sign(
+        NewAuditAttestation {
+            subject_event_id: envelope.event_id,
+            attestor_id: actor_id,
+            decision: AuditDecision::Accepted,
+            reason: Some("signature valid"),
+        },
+        keypair,
+    )?;
+    Ok(serde_json::to_string(
+        &serde_json::json!({"event":envelope,"attestation":attestation}),
+    )?)
 }
 
 #[allow(

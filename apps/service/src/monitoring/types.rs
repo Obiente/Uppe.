@@ -94,6 +94,13 @@ impl CheckResult {
     }
 
     /// Mark the check as failed with error
+    pub fn unavailable(mut self, reason: String) -> Self {
+        self.status = MonitorStatus::Unknown;
+        self.error_message = Some(reason);
+        self
+    }
+
+    /// Mark an executed check as failed.
     pub fn failure(mut self, error: String) -> Self {
         self.status = MonitorStatus::Down;
         self.error_message = Some(error);

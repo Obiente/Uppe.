@@ -11,6 +11,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	commonv1 "github.com/Obiente/Uppe/apps/server/gen/common/v1"
@@ -23,7 +24,7 @@ import (
 
 // Minimum required schema version (must match Rust service migrations)
 // v4 added visibility, owner_peer_id, public_domain, public_display_name to monitors.
-const MinRequiredSchemaVersion = 7
+const MinRequiredSchemaVersion = 8
 
 func min(a, b int) int {
 	if a < b {
@@ -68,6 +69,24 @@ func resultStatusToString(status resultv1.ResultStatus) string {
 		return "Error"
 	default:
 		return "Error"
+	}
+}
+
+// Unknown or future statuses are missing monitoring evidence, never a target failure.
+func parseResultStatus(status string) resultv1.ResultStatus {
+	switch strings.ToLower(status) {
+	case "up":
+		return resultv1.ResultStatus_RESULT_STATUS_UP
+	case "down":
+		return resultv1.ResultStatus_RESULT_STATUS_DOWN
+	case "degraded":
+		return resultv1.ResultStatus_RESULT_STATUS_DEGRADED
+	case "timeout":
+		return resultv1.ResultStatus_RESULT_STATUS_TIMEOUT
+	case "error":
+		return resultv1.ResultStatus_RESULT_STATUS_ERROR
+	default:
+		return resultv1.ResultStatus_RESULT_STATUS_UNSPECIFIED
 	}
 }
 
@@ -592,13 +611,17 @@ func (d *LibSQLDatabase) GetResults(ctx context.Context, query *types.ResultQuer
 		AND timestamp >= ? AND timestamp <= ?
 	`
 	var total int
-	err := d.db.QueryRowContext(ctx, countQuery,
-		query.MonitorID,
-		query.StartTime.Unix(),
-		query.EndTime.Unix(),
-	).Scan(&total)
-	if err != nil {
-		return nil, 0, fmt.Errorf("failed to count results: %w", err)
+	var err error
+	if !query.SkipTotal {
+		err = d.db.QueryRowContext(ctx, countQuery,
+			query.MonitorID,
+			query.StartTime.Unix(),
+			query.EndTime.Unix(),
+		).Scan(&total)
+		if err != nil {
+			return nil, 0, fmt.Errorf("failed to count results: %w", err)
+		}
+
 	}
 
 	// Get results
@@ -680,20 +703,7 @@ func (d *LibSQLDatabase) GetResults(ctx context.Context, query *types.ResultQuer
 		}
 
 		// Parse status - Rust stores as Up, Down, Timeout, Error
-		switch statusStr {
-		case "Up", "UP", "up":
-			result.Status = resultv1.ResultStatus_RESULT_STATUS_UP
-		case "Down", "DOWN", "down":
-			result.Status = resultv1.ResultStatus_RESULT_STATUS_DOWN
-		case "Timeout", "TIMEOUT", "timeout":
-			result.Status = resultv1.ResultStatus_RESULT_STATUS_TIMEOUT
-		case "Error", "ERROR", "error":
-			result.Status = resultv1.ResultStatus_RESULT_STATUS_ERROR
-		case "Degraded", "degraded":
-			result.Status = resultv1.ResultStatus_RESULT_STATUS_DEGRADED
-		default:
-			result.Status = resultv1.ResultStatus_RESULT_STATUS_ERROR
-		}
+		result.Status = parseResultStatus(statusStr)
 
 		if statusCode.Valid {
 			result.StatusCode = &statusCode.Int32
@@ -728,7 +738,7 @@ func (d *LibSQLDatabase) GetMonitorStats(ctx context.Context, monitorID string, 
 			COALESCE(MIN(latency_ms), 0) as min_latency,
 			COALESCE(MAX(latency_ms), 0) as max_latency
 		FROM monitor_results
-		WHERE monitor_uuid = ? AND timestamp >= ? AND timestamp <= ?
+		WHERE monitor_uuid = ? AND timestamp >= ? AND timestamp <= ? AND lower(status) IN ('up', 'down', 'degraded', 'error', 'timeout')
 	`
 
 	stats := &models.MonitorStats{MonitorID: monitorID}
@@ -777,7 +787,7 @@ func (d *LibSQLDatabase) GetAggregatedStats(ctx context.Context, monitorID strin
 			SUM(CASE WHEN status IN ('Up', 'UP', 'up', 'Degraded', 'degraded') THEN 1 ELSE 0 END) as successful_checks,
 			COALESCE(AVG(CAST(latency_ms AS REAL)), 0) as avg_latency
 		FROM monitor_results
-		WHERE monitor_uuid = ? AND timestamp >= ? AND timestamp <= ?
+		WHERE monitor_uuid = ? AND timestamp >= ? AND timestamp <= ? AND lower(status) IN ('up', 'down', 'degraded', 'error', 'timeout')
 		GROUP BY strftime('%s', datetime(timestamp, 'unixepoch'))
 		ORDER BY bucket_ts ASC
 	`, bucketFmt)
@@ -824,7 +834,7 @@ func (d *LibSQLDatabase) GetGlobalPingSamples(ctx context.Context, monitorID str
 		SELECT id, monitor_uuid, timestamp, status, latency_ms, status_code,
 			peer_id, signature, error_message, created_at
 		FROM monitor_results
-		WHERE monitor_uuid = ? AND timestamp >= ? AND timestamp <= ?
+		WHERE monitor_uuid = ? AND timestamp >= ? AND timestamp <= ? AND lower(status) IN ('up', 'down', 'degraded', 'error', 'timeout')
 		ORDER BY timestamp DESC
 	`
 
@@ -881,20 +891,7 @@ func (d *LibSQLDatabase) GetGlobalPingSamples(ctx context.Context, monitorID str
 		}
 
 		// Parse status - Rust stores as Up, Down, Timeout, Error
-		switch statusStr {
-		case "Up", "UP", "up":
-			result.Status = resultv1.ResultStatus_RESULT_STATUS_UP
-		case "Down", "DOWN", "down":
-			result.Status = resultv1.ResultStatus_RESULT_STATUS_DOWN
-		case "Timeout", "TIMEOUT", "timeout":
-			result.Status = resultv1.ResultStatus_RESULT_STATUS_TIMEOUT
-		case "Error", "ERROR", "error":
-			result.Status = resultv1.ResultStatus_RESULT_STATUS_ERROR
-		case "Degraded", "degraded":
-			result.Status = resultv1.ResultStatus_RESULT_STATUS_DEGRADED
-		default:
-			result.Status = resultv1.ResultStatus_RESULT_STATUS_ERROR
-		}
+		result.Status = parseResultStatus(statusStr)
 
 		if statusCode.Valid {
 			result.StatusCode = &statusCode.Int32
@@ -1397,12 +1394,12 @@ func (d *LibSQLDatabase) DeleteStatusPage(ctx context.Context, id string) error 
 	return nil
 }
 
-func (d *LibSQLDatabase) RecordStatusPageVisit(ctx context.Context, id string) error {
+func (d *LibSQLDatabase) AddStatusPageVisits(ctx context.Context, id string, count int64) error {
 	_, err := d.db.ExecContext(ctx, `
 		UPDATE status_pages
-		SET visits = visits + 1
+		SET visits = visits + ?
 		WHERE uuid = ?
-	`, id)
+	`, count, id)
 	if err != nil {
 		return fmt.Errorf("failed to record status page visit: %w", err)
 	}

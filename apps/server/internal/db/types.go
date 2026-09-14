@@ -44,7 +44,7 @@ type Database interface {
 	ListStatusPages(ctx context.Context, page, pageSize int, activeOnly bool) ([]*models.StatusPage, int, error)
 	UpdateStatusPage(ctx context.Context, id string, update *models.StatusPageUpdate) error
 	DeleteStatusPage(ctx context.Context, id string) error
-	RecordStatusPageVisit(ctx context.Context, id string) error
+	AddStatusPageVisits(ctx context.Context, id string, count int64) error
 
 	// Health check
 	Ping(ctx context.Context) error

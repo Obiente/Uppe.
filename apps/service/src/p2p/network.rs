@@ -145,7 +145,7 @@ impl P2PNetwork {
             let mut ingress_window = std::time::Instant::now();
             let mut ingress_count = 0u32;
             let mut author_counts: HashMap<String, u32> = HashMap::new();
-            let mut identities: HashMap<String, String> = HashMap::new();
+            let mut identities = super::identities::Identities::new(1024);
             tracing::info!("P2P event loop started");
             let mut last_dht_snapshot = std::time::Instant::now();
             let dht_snapshot_interval = std::time::Duration::from_secs(30);
@@ -382,8 +382,8 @@ impl P2PNetwork {
                                     if let Ok(key)=serde_json::from_slice::<Vec<u8>>(&message.data)
                                         && peerup::crypto::transport_peer_id(&key).ok().as_deref()==Some(&peer.to_string()) {
                                             let app=hex::encode(key);
-                                            if identities.len()<1024||identities.contains_key(&peer.to_string()) {
-                                                identities.insert(peer.to_string(),app.clone());
+                                            {
+                                                identities.insert(peer.to_string(),app.clone(),std::time::Instant::now());
                                                 let _=event_tx.send(P2PEvent::NodeAnnounced{libp2p_peer_id:peer.to_string(),app_peer_id:app}).await;
                                             }
                                         }
@@ -397,7 +397,7 @@ impl P2PNetwork {
                                         let domain = group_message.domain().to_string();
                                         let claimed = group_message.peer_id();
                                         if domain.len() <= 253 && topic_str == format!("/uppe/public-monitors/{domain}")
-                                            && claimed.is_some() && identities.get(&peer.to_string()).map(String::as_str) == claimed {
+                                            && claimed.is_some() && identities.matches(&peer.to_string(), claimed.unwrap_or_default(), std::time::Instant::now()) {
                                             let _ = event_tx.send(P2PEvent::PublicMonitorGroupMessage { _from_peer:peer.to_string(), domain, message:Box::new(group_message) }).await;
                                         }
                                     }
@@ -419,7 +419,7 @@ impl P2PNetwork {
                                     if let Ok(msg_str) = String::from_utf8(message.data.clone()) {
                                         if let Ok(request) = serde_json::from_str::<crate::p2p::messages::HelperAssignmentRequest>(&msg_str) {
                                             if request.owner_libp2p_peer_id!=peer.to_string()
-                                                || identities.get(&peer.to_string())!=Some(&request.owner_peer_id)
+                                                || !identities.matches(&peer.to_string(), &request.owner_peer_id, std::time::Instant::now())
                                                 || request.assigned_at>chrono::Utc::now().timestamp()+30
                                                 || request.assigned_at<chrono::Utc::now().timestamp()-300 {continue;}
                                             tracing::debug!(
@@ -478,6 +478,8 @@ impl P2PNetwork {
                                 if let Ok(msg_str) = String::from_utf8(message.data.clone())
                                     && let Ok(signed_msg) = serde_json::from_str::<SignedMessage>(&msg_str)
                                 {
+                                    // Bound attacker-controlled fields before signature/audit work.
+                                    if signed_msg.result.target.len()>2048 || signed_msg.result.error_message.as_ref().is_some_and(|e| e.len()>512) {continue;}
                                     // Validate public key size
                                     let pubkey_bytes = signed_msg.public_key;
                                     if peerup::crypto::transport_peer_id(&pubkey_bytes).ok().as_deref() != Some(&peer.to_string()) {continue;}
@@ -555,7 +557,8 @@ impl P2PNetwork {
                                 let _ = event_tx.send(P2PEvent::PeerConnected(peer.to_string())).await;
                             }
                             SwarmEvent::Behaviour(PeerUPEvent::PeerRemoved(peer)) |
-                            SwarmEvent::ConnectionClosed { peer_id: peer, .. } => {
+                            SwarmEvent::ConnectionClosed { peer_id: peer, num_established: 0, .. } => {
+                                identities.remove(&peer.to_string());
                                 let _ = event_tx.send(P2PEvent::PeerDisconnected(peer.to_string())).await;
                             }
                             // High-level DHT events from peerup

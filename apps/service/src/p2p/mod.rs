@@ -1,3 +1,4 @@
+mod identities;
 /// P2P networking layer using PeerUP
 ///
 /// This module handles:

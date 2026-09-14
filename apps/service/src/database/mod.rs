@@ -1,6 +1,7 @@
 pub mod audit_outbox;
 pub mod migrations;
 pub mod models;
+pub mod peer_storage;
 /// Database abstraction layer
 ///
 /// This module provides a unified interface for database operations,

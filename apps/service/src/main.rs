@@ -1,6 +1,7 @@
 // Removed unstable feature to avoid warnings
 use std::path;
 
+use crate::database::models::MonitorVisibility;
 use clap::{Parser, Subcommand, crate_authors, crate_version};
 
 mod audit;
@@ -16,6 +17,23 @@ mod pool;
 mod tui;
 mod validation;
 
+#[derive(Debug, Clone, Copy, clap::ValueEnum)]
+enum Visibility {
+    Public,
+    Private,
+    Internal,
+}
+
+impl From<Visibility> for MonitorVisibility {
+    fn from(value: Visibility) -> Self {
+        match value {
+            Visibility::Private => MonitorVisibility::Private,
+            Visibility::Public => MonitorVisibility::Public,
+            Visibility::Internal => MonitorVisibility::Internal,
+        }
+    }
+}
+
 #[derive(Subcommand, Debug)]
 enum MonitorCmd {
     /// List all monitors
@@ -28,6 +46,9 @@ enum MonitorCmd {
         /// Target (URL/host)
         #[arg(long)]
         target: String,
+        /// Monitor Visibility
+        #[arg(long, value_enum, default_value_t = Visibility::Private)]
+        visibility: Visibility,
         /// Check type (http, https, tcp, icmp)
         #[arg(long, default_value = "http")]
         check_type: String,
@@ -188,7 +209,7 @@ async fn main() -> anyhow::Result<()> {
                         }
                     }
                 }
-                MonitorCmd::Add { name, target, check_type, interval, timeout } => {
+                MonitorCmd::Add { name, target, visibility, check_type, interval, timeout } => {
                     // Validate inputs before creating monitor
                     use crate::validation::*;
 
@@ -219,6 +240,7 @@ async fn main() -> anyhow::Result<()> {
                     let mut monitor = database::models::Monitor::new(name, target, check_type);
                     monitor.interval_seconds = interval;
                     monitor.timeout_seconds = timeout;
+                    monitor.visibility = visibility.into();
                     let id = dbi.save_monitor(&monitor).await?;
                     match audit::load_local_keypair() {
                         Ok(keypair) => {

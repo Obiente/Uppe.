@@ -35,6 +35,16 @@ async fn create_test_database() -> Result<(TempDir, LibsqlPool, String)> {
     Ok((temp_dir, pool, db_path_str))
 }
 
+// Retention fixtures represent already-admitted history, not fresh network input.
+async fn seed_peer_history(
+    pool: &LibsqlPool,
+    result: &crate::database::models::PeerResult,
+) -> Result<()> {
+    let conn = pool.get().await?;
+    conn.execute("INSERT INTO peer_results(monitor_uuid,timestamp,status,peer_id,signature,verified,created_at,retention_until) VALUES(?,?,?,?,?,?,?,?)",libsql::params![result.monitor_uuid.to_string(), crate::database::models::Monitor::timestamp_to_i64(result.timestamp), result.status.to_string(),result.peer_id.clone(),result.signature.clone(),1,chrono::Utc::now().timestamp(),result.retention_until]).await?;
+    Ok(())
+}
+
 /// Helper to create test keypair
 fn create_test_keypair() -> KeyPair {
     let temp_dir = tempdir().unwrap();
@@ -60,7 +70,7 @@ fn create_test_p2p_network(peer_id: String, public_key: [u8; 32]) -> Arc<P2PNetw
 #[tokio::test]
 async fn test_retention_policy_integration() -> Result<()> {
     let (_temp_dir, pool, _db_path) = create_test_database().await?;
-    let database = Arc::new(DatabaseImpl::new_from_pool(pool));
+    let database = Arc::new(DatabaseImpl::new_from_pool(pool.clone()));
 
     // Create custom retention policy: 1 second for all types
     let policy =
@@ -89,7 +99,7 @@ async fn test_retention_policy_integration() -> Result<()> {
         retention_until: Some(chrono::Utc::now().timestamp() - 1),
     };
 
-    database.save_peer_result(&old_result).await?;
+    seed_peer_history(&pool, &old_result).await?;
 
     // Run cleanup
     cleanup.cleanup_expired_results().await?;
@@ -102,7 +112,7 @@ async fn test_retention_policy_integration() -> Result<()> {
 #[tokio::test]
 async fn test_private_orchestrator_creation() -> Result<()> {
     let (_temp_dir, pool, _db_path) = create_test_database().await?;
-    let database = Arc::new(DatabaseImpl::new_from_pool(pool));
+    let database = Arc::new(DatabaseImpl::new_from_pool(pool.clone()));
     let keypair = create_test_keypair();
     let peer_id = keypair.public_key_hex();
     let owner_pubkey = keypair.x25519_public_key();
@@ -119,7 +129,7 @@ async fn test_private_orchestrator_creation() -> Result<()> {
 #[tokio::test]
 async fn test_owner_sync_with_empty_dht() -> Result<()> {
     let (_temp_dir, pool, _db_path) = create_test_database().await?;
-    let database = Arc::new(DatabaseImpl::new_from_pool(pool));
+    let database = Arc::new(DatabaseImpl::new_from_pool(pool.clone()));
     let keypair = create_test_keypair();
     let peer_id = keypair.public_key_hex();
     let owner_pubkey = keypair.x25519_public_key();
@@ -137,7 +147,7 @@ async fn test_owner_sync_with_empty_dht() -> Result<()> {
 #[tokio::test]
 async fn test_retention_cleanup_with_recent_results() -> Result<()> {
     let (_temp_dir, pool, _db_path) = create_test_database().await?;
-    let database = Arc::new(DatabaseImpl::new_from_pool(pool));
+    let database = Arc::new(DatabaseImpl::new_from_pool(pool.clone()));
 
     // Default policy: 7 days for private, 30 for public/peer
     let policy = RetentionPolicy::default();
@@ -164,7 +174,7 @@ async fn test_retention_cleanup_with_recent_results() -> Result<()> {
         retention_until: None,
     };
 
-    database.save_peer_result(&recent_result).await?;
+    seed_peer_history(&pool, &recent_result).await?;
 
     // Run cleanup
     cleanup.cleanup_expired_results().await?;
@@ -223,7 +233,7 @@ async fn test_encryption_roundtrip_integration() -> Result<()> {
 #[tokio::test]
 async fn test_retention_periodic_cleanup_starts() -> Result<()> {
     let (_temp_dir, pool, _db_path) = create_test_database().await?;
-    let database = Arc::new(DatabaseImpl::new_from_pool(pool));
+    let database = Arc::new(DatabaseImpl::new_from_pool(pool.clone()));
 
     let policy = RetentionPolicy::default();
     let cleanup = RetentionCleanup::new(database.clone(), policy);
@@ -247,7 +257,7 @@ mod helper_assignment_tests {
     #[tokio::test]
     async fn test_helper_assignment_flow() -> Result<()> {
         let (_temp_dir, pool, _db_path) = create_test_database().await?;
-        let database = Arc::new(DatabaseImpl::new_from_pool(pool));
+        let database = Arc::new(DatabaseImpl::new_from_pool(pool.clone()));
         let keypair = create_test_keypair();
         let peer_id = keypair.public_key_hex();
         let owner_pubkey = keypair.x25519_public_key();

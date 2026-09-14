@@ -2,7 +2,7 @@ use anyhow::Result;
 use libsql::Connection;
 
 /// Schema version - increment when making schema changes
-pub const SCHEMA_VERSION: i32 = 7;
+pub const SCHEMA_VERSION: i32 = 8;
 
 /// Run database migrations
 ///
@@ -73,6 +73,13 @@ pub async fn run_migrations(conn: &Connection) -> Result<()> {
     if current_version < 7 {
         super::audit_outbox::install(conn).await?;
         record_migration(conn, 7, "Durable signed audit outbox").await?;
+    }
+    if current_version < 8 {
+        conn.execute_batch("ALTER TABLE peer_results ADD COLUMN receipt_json TEXT NOT NULL DEFAULT ''; DROP TRIGGER IF EXISTS audit_peer_results_INSERT;
+            DELETE FROM audit_outbox WHERE resource_type='peer_result';
+            CREATE INDEX IF NOT EXISTS idx_peer_results_retention ON peer_results(retention_until);").await?;
+        record_migration(conn, 8, "Bounded peer receipts separate from operator audit ledger")
+            .await?;
     }
     tracing::info!(
         "Database migrations completed successfully (now at version {})",
@@ -658,4 +665,41 @@ async fn run_migration_v5(conn: &Connection) -> Result<()> {
 
     tracing::info!("Migration v5 completed successfully");
     Ok(())
+}
+
+#[cfg(test)]
+mod upgrade_tests {
+    #[tokio::test]
+    async fn peer_receipt_upgrade_preserves_operator_ledger() -> anyhow::Result<()> {
+        let db = libsql::Builder::new_local(":memory:").build().await?;
+        let conn = db.connect()?;
+        super::run_migrations(&conn).await?;
+        // Recreate the v7 differences on the actual schema for an upgrade fixture.
+        conn.execute_batch(
+            "ALTER TABLE peer_results DROP COLUMN receipt_json;
+            DELETE FROM schema_migrations WHERE version=8;
+            CREATE TRIGGER audit_peer_results_INSERT AFTER INSERT ON peer_results BEGIN
+                INSERT INTO audit_outbox(event_type,resource_type,resource_id,payload_json)
+                VALUES('storage.peer_result.created','peer_result','1','{}'); END;
+            INSERT INTO monitors(uuid,name,target,check_type,created_at,updated_at)
+                VALUES('synthetic-upgrade','Before','https://example.invalid','http',0,0);",
+        )
+        .await?;
+        let key = peerup::crypto::generate_keypair();
+        assert_eq!(super::super::audit_outbox::drain(&conn, &key).await?, 1);
+        conn.execute_batch(
+            "UPDATE monitors SET name='After' WHERE uuid='synthetic-upgrade';
+            INSERT INTO audit_outbox(event_type,resource_type,resource_id,payload_json)
+                VALUES('storage.peer_result.created','peer_result','1','{}');",
+        )
+        .await?;
+        super::run_migrations(&conn).await?;
+        let mut rows=conn.query("SELECT (SELECT count(*) FROM audit_events), (SELECT count(*) FROM audit_outbox), (SELECT count(*) FROM sqlite_master WHERE name='audit_peer_results_INSERT')",()).await?;
+        let row = rows.next().await?.unwrap();
+        assert_eq!(row.get::<i64>(0)?, 1);
+        assert_eq!(row.get::<i64>(1)?, 1);
+        assert_eq!(row.get::<i64>(2)?, 0);
+        assert!(conn.execute("DELETE FROM audit_events", ()).await.is_err());
+        Ok(())
+    }
 }

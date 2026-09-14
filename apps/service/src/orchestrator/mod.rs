@@ -523,32 +523,6 @@ impl Orchestrator {
                         P2PEvent::ResultReceived { peer_id, result } => {
                             info!("Received monitoring result from peer {}", peer_id);
 
-                            total_peers_seen.insert(peer_id.clone());
-
-                            // A peer delivering gossipsub results is reachable AND running
-                            // uppe-service.  Populate the tracking sets in case
-                            // ConnectionEstablished / NodeAnnounced events were missed
-                            // (race at startup, or the peer was already connected).
-                            {
-                                let newly_connected = connected_peers.insert(peer_id.clone());
-                                let newly_uppe = uppe_service_peers.insert(peer_id.clone());
-                                if newly_connected || newly_uppe {
-                                    if let Some(private_orch) = &self.private_orchestrator {
-                                        if newly_connected {
-                                            private_orch.handle_peer_connected(peer_id.clone()).await;
-                                        }
-                                        private_orch.update_uppe_service_peers(uppe_service_peers.clone()).await;
-                                        if let Err(e) = private_orch.retry_unhelped_monitors().await {
-                                            tracing::debug!("retry_unhelped from ResultReceived: {}", e);
-                                        }
-                                    }
-                                    tracing::debug!(
-                                        peer = %peer_id,
-                                        "Discovered uppe-service peer via gossipsub result"
-                                    );
-                                }
-                            }
-
                             // Convert P2P result to database model
                             if let Some(mut db_result) = crate::database::models::PeerResult::from_p2p_result(&result) {
                                 // Verify signature if public key is available
@@ -602,56 +576,14 @@ impl Orchestrator {
                                 }
                                 db_result.verified = true;
 
-                                // Keep peer record fresh when results arrive
-                                let peer_model = Peer::new_online(peer_id.clone(), SystemTime::now());
-                                if let Err(e) = self.database.upsert_peer(&peer_model).await {
-                                    warn!("Failed to upsert peer {} on result: {}", peer_id, e);
+                                let subscribed = self.database.get_monitor_by_uuid(db_result.monitor_uuid).await.ok().flatten()
+                                    .is_some_and(|m| m.enabled && m.is_public() && m.target == result.result.target);
+                                if !subscribed { continue; }
+                                let receipt = crate::audit::peer_result_receipt(&self.keypair, &self.actor_id, "p2p_gossipsub", &db_result, &result.result.target)?;
+                                if let Err(e) = self.database.save_peer_result(&db_result, &result.result.target, &receipt).await {
+                                    warn!("Failed to save peer observation: {}", e);
                                 }
 
-                                if let Err(e) = self.database.save_peer_result(&db_result).await {
-                                    error!("Failed to save peer result: {}", e);
-                                } else {
-                                    match crate::audit::record_peer_result_event(
-                                        self.database.as_ref(),
-                                        self.keypair.as_ref(),
-                                        &self.actor_id,
-                                        "p2p_gossipsub",
-                                        &db_result,
-                                    )
-                                    .await
-                                    {
-                                        Ok(event_id) => {
-                                            let reason = if result.public_key.is_none() {
-                                                Some("missing public key")
-                                            } else if verified {
-                                                Some("signature valid")
-                                            } else {
-                                                Some("signature invalid")
-                                            };
-                                            if let Err(e) = crate::audit::record_result_verification_attestation(
-                                                self.database.as_ref(),
-                                                self.keypair.as_ref(),
-                                                &self.actor_id,
-                                                event_id,
-                                                verified,
-                                                reason,
-                                            )
-                                            .await
-                                            {
-                                                warn!("Failed to record peer result verification attestation: {}", e);
-                                            }
-                                        }
-                                        Err(e) => {
-                                            warn!("Failed to record peer result audit event: {}", e);
-                                        }
-                                    }
-                                    let status = if verified { "verified" } else { "unverified" };
-                                    debug!("Successfully saved {} peer result from {}", status, peer_id);
-                                }
-
-                                // Public observations remain separate from authoritative local measurements.
-                                // Update stats for received results
-                                checks_received += 1;
                             } else {
                                 warn!("Received peer result without signature from {}", peer_id);
                             }
@@ -660,7 +592,8 @@ impl Orchestrator {
                             let is_new = !uppe_service_peers.contains(&libp2p_peer_id);
                             if is_new {
                                 info!(peer = %libp2p_peer_id, "uppe-service peer announced");
-                                uppe_service_peers.insert(libp2p_peer_id.clone());
+                                if uppe_service_peers.len() >= 1024 { uppe_service_peers.retain(|p| connected_peers.contains(p)); }
+                                if uppe_service_peers.len() < 1024 { uppe_service_peers.insert(libp2p_peer_id.clone()); }
                             }
                             // Update the private orchestrator's allowed helper set
                             if let Some(private_orch) = &self.private_orchestrator {
@@ -694,6 +627,7 @@ impl Orchestrator {
 
                             let now = SystemTime::now();
                             connected_peers.insert(peer_id.clone());
+                            if total_peers_seen.len() >= 4096 { total_peers_seen.clear(); }
                             total_peers_seen.insert(peer_id.clone());
 
                             // Publish live peers to TUI bus
@@ -945,37 +879,16 @@ impl Orchestrator {
                                             || peerup::crypto::transport_peer_id(&key).ok().as_deref() != Some(&from_peer)
                                             || !verify_result(&observation,&key,&decrypted.target).unwrap_or(false)
                                             || SystemTime::now().duration_since(decrypted.timestamp).map_or(true, |age| age > Duration::from_secs(300)) { continue; }
-                                        if let Err(e) = self.database.save_peer_result(&observation).await {
-                                            warn!(
-                                                monitor = %monitor_id,
-                                                from = %from_peer,
-                                                "Failed to save decrypted private result: {}",
-                                                e
-                                            );
-                                        } else {
-                                            if let Err(e) = crate::audit::record_local_result_event(
-                                                self.database.as_ref(),
-                                                self.keypair.as_ref(),
-                                                &self.actor_id,
-                                                "helper_decrypted_result",
-                                                &decrypted,
-                                            )
-                                            .await
-                                            {
-                                                warn!(
-                                                    monitor = %monitor_id,
-                                                    "Failed to record decrypted private result audit event: {}",
-                                                    e
-                                                );
+                                        let receipt = crate::audit::peer_result_receipt(&self.keypair, &self.actor_id, "helper_decrypted_result", &observation, &decrypted.target)?;
+                                        match self.database.save_peer_result(&observation, &decrypted.target, &receipt).await {
+                                            Ok(crate::database::peer_storage::SaveOutcome::Inserted) => {
+                                                if let Some(orch) = &self.private_orchestrator { orch.handle_helper_result(&from_peer).await; }
+                                                checks_received += 1;
                                             }
-                                            info!(
-                                                monitor = %monitor_id,
-                                                helper = %from_peer,
-                                                "Saved decrypted private result"
-                                            );
-                                            if let Some(orch) = &self.private_orchestrator { orch.handle_helper_result(&from_peer).await; }
-                                            checks_received += 1;
+                                            Ok(_) => {},
+                                            Err(e) => warn!("Failed to save helper observation: {}", e),
                                         }
+
                                     }
                                     Err(e) => {
                                         warn!(

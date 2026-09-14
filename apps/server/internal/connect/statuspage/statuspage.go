@@ -181,7 +181,7 @@ func (s *StatusPageService) RecordVisit(
 	ctx context.Context,
 	req *connect.Request[statuspagev1.RecordVisitRequest],
 ) (*connect.Response[emptypb.Empty], error) {
-	if err := s.database.RecordStatusPageVisit(ctx, req.Msg.StatusPageId); err != nil {
+	if err := s.database.AddStatusPageVisits(ctx, req.Msg.StatusPageId, 1); err != nil {
 		s.logger.Error("Failed to record status page visit", zap.String("id", req.Msg.StatusPageId), zap.Error(err))
 		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to record status page visit"))
 	}

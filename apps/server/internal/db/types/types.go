@@ -13,6 +13,7 @@ type MonitorFilters struct {
 
 // ResultQuery for querying results
 type ResultQuery struct {
+	SkipTotal bool // Avoid a count scan for callers that only need the latest result.
 	MonitorID string
 	StartTime time.Time
 	EndTime   time.Time

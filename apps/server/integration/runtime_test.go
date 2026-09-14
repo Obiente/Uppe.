@@ -154,6 +154,13 @@ func TestRuntimeAndOpenPeerObservations(t *testing.T) {
 		return d
 	}
 	local, peer := readDB(dbA), readDB(dbB)
+	// The receiving node explicitly subscribes to this public monitor. Its first
+	// local check is delayed so the assertion below distinguishes peer evidence
+	// from locally measured health.
+	if _, err = peer.Exec("INSERT INTO monitors(uuid,name,target,check_type,interval_seconds,timeout_seconds,enabled,visibility,created_at,updated_at) VALUES(?,'Synthetic subscription',?,'http',86400,2,1,'Public',?,?)", publicID, base+"/health", time.Now().Unix(), time.Now().Unix()); err != nil {
+		t.Fatal(err)
+	}
+
 	eventually(func() bool {
 		var count int
 		_ = local.QueryRow("SELECT COUNT(*) FROM monitor_results WHERE monitor_uuid=? AND status='up'", localID).Scan(&count)

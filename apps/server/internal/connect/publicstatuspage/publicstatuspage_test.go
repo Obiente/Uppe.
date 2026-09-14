@@ -46,7 +46,7 @@ func (f fixture) GetMonitorStats(context.Context, string, time.Time, time.Time) 
 func (f fixture) GetAggregatedStats(context.Context, string, time.Time, time.Time, types.AggregationPeriod) ([]*models.TimeSeriesDataPoint, error) {
 	return nil, nil
 }
-func (f fixture) RecordStatusPageVisit(context.Context, string) error {
+func (f fixture) AddStatusPageVisits(context.Context, string, int64) error {
 	return errors.New("counter unavailable")
 }
 

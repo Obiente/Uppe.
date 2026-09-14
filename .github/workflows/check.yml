@@ -17,37 +17,34 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest]
-    # The repository's trailing dot is not a portable Windows directory name.
     steps:
-      - name: Prepare portable workspace
+      # A trailing dot in the repository name breaks the default Windows checkout.
+      # Fetch the exact event revision into a portable, runner-owned directory.
+      - name: Check out event revision
         shell: pwsh
         working-directory: ${{ runner.temp }}
-        run: New-Item -ItemType Directory -Force -Path "${{ runner.temp }}/uppe" | Out-Null
-      - uses: actions/checkout@v5
         env:
-          GITHUB_WORKSPACE: ${{ runner.temp }}/uppe
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $uppeCheckout = Join-Path $env:RUNNER_TEMP 'uppe'
+          gh repo clone $env:GITHUB_REPOSITORY $uppeCheckout -- --no-checkout --depth 1
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          git -C $uppeCheckout fetch --depth 1 origin $env:GITHUB_SHA
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          git -C $uppeCheckout checkout --detach FETCH_HEAD
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - uses: actions/setup-node@v6
-        env:
-          GITHUB_WORKSPACE: ${{ runner.temp }}/uppe
         with:
           node-version: 24
           package-manager-cache: false
       - uses: pnpm/action-setup@v4
-        env:
-          GITHUB_WORKSPACE: ${{ runner.temp }}/uppe
         with:
+          version: 10.12.1
           package_json_file: ${{ runner.temp }}/uppe/package.json
       - uses: actions/setup-go@v6
-        env:
-          GITHUB_WORKSPACE: ${{ runner.temp }}/uppe
         with:
           go-version-file: ${{ runner.temp }}/uppe/apps/server/go.mod
-          cache-dependency-path: ${{ runner.temp }}/uppe/apps/server/go.sum
-      - uses: Swatinem/rust-cache@v2
-        env:
-          GITHUB_WORKSPACE: ${{ runner.temp }}/uppe
-        with:
-          workspaces: ${{ runner.temp }}/uppe -> target
+          cache: false
       - run: pnpm install --frozen-lockfile
         working-directory: ${{ runner.temp }}/uppe
       - run: pnpm check

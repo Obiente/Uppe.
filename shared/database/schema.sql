@@ -1,10 +1,11 @@
 -- ============================================================================
--- Uppe. Database Schema (Source of Truth)
+-- Uppe. Historical Database Schema Snapshot
 -- ============================================================================
 --
--- This file documents the canonical database schema.
--- The Rust service (apps/service) is responsible for running migrations.
--- The Go API (apps/server) reads from this schema but does NOT run migrations.
+-- Documentation only: this older snapshot is not the current executable schema.
+-- apps/service/src/database/migrations.rs is the canonical source of truth.
+-- Start through the launcher or run `uppe-service migrate` to create schema 7.
+-- The Go API verifies compatibility but does NOT run migrations.
 --
 -- Schema Version: 2.0.0
 -- Last Updated: 2026-01-11

@@ -6,7 +6,7 @@ The Rust service owns the database schema.
 
 Canonical schema source:
 
-- [apps/service/src/database/migrations.rs](apps/service/src/database/migrations.rs)
+- [Rust migrations](../service/src/database/migrations.rs)
 
 Go API behavior:
 
@@ -17,9 +17,9 @@ Go API behavior:
 
 Schema documentation:
 
-- [shared/database/schema.sql](shared/database/schema.sql)
+- [Historical SQL snapshot](../../shared/database/schema.sql)
 
-That file is documentation only. It must not be treated as the executable authority over the Rust migrations.
+That file is an older documentation snapshot, not the current schema. Rust migrations create schema 7, and Go requires that exact version and its expected tables at startup. The integration tests exercise Go queries against a database created by the real Rust binary.
 
 ## Shared Database Model
 
@@ -28,7 +28,7 @@ The intended deployment model is:
 - Rust service and Go API point at the same SQLite/LibSQL database
 - Rust initializes and migrates the schema
 - Go waits for the schema to exist and verifies compatibility
-- frontend talks only to the Go API
+- Astro talks to the Go API; browser mutations use Astro's authenticated same-origin proxy
 
 ## Startup Order
 
@@ -55,7 +55,4 @@ Do not:
 
 ## Follow-Up Work
 
-The longer-term cleanup is:
-
-- remove obsolete Go migration helpers entirely
-- generate schema docs from Rust migration state or keep them explicitly documentation-only
+Generate schema documentation from Rust migration state when maintaining a current SQL snapshot becomes useful. Do not edit the historical snapshot to introduce schema changes.

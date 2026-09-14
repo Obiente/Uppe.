@@ -1,0 +1,272 @@
+---
+import Button from './ui/Button.astro';
+
+interface MonitorOption {
+  id: string;
+  name: string;
+  url?: string;
+}
+
+interface ExistingPage {
+  id: string;
+  title: string;
+  slug: string;
+  description?: string;
+  logoUrl?: string;
+  isActive: boolean;
+  monitorIds: string[];
+}
+
+interface Props {
+  mode: 'create' | 'edit';
+  monitors: MonitorOption[];
+  page?: ExistingPage | null;
+}
+
+const { mode, monitors, page = null } = Astro.props;
+const isEdit = mode === 'edit';
+const pageId = page?.id ?? '';
+const originalSlug = page?.slug ?? '';
+---
+
+<div
+  id="statusPageFormRoot"
+  data-mode={mode}
+  data-page-id={pageId}
+  data-original-slug={originalSlug}
+  class="space-y-5 narrow"
+>
+  <div id="formMsg" class="hidden rounded-lg px-4 py-3 text-sm font-medium"></div>
+
+  <form id="statusPageForm" class="space-y-5 narrow">
+    <div class="rounded-xl border border-primary bg-bg-secondary overflow-hidden">
+      <div class="px-5 py-3.5 border-b border-primary">
+        <p class="text-sm font-semibold text-primary">Status Page Details</p>
+      </div>
+      <div class="px-5 py-5 space-y-4">
+        <div>
+          <label for="title" class="block text-sm text-secondary mb-1.5">
+            Title <span style="color: #eb6f92;">*</span>
+          </label>
+          <input
+            id="title"
+            name="title"
+            type="text"
+            required
+            value={page?.title ?? ''}
+            placeholder="Production API Status"
+            class="w-full rounded-lg border border-primary px-3 py-2 text-sm text-primary placeholder-secondary focus:outline-none focus:border-accent-primary/60 transition-colors"
+            style="background: #26233a;"
+          />
+        </div>
+
+        <div>
+          <label for="slug" class="block text-sm text-secondary mb-1.5">
+            Slug <span style="color: #eb6f92;">*</span>
+          </label>
+          <input
+            id="slug"
+            name="slug"
+            type="text"
+            required
+            value={page?.slug ?? ''}
+            placeholder="production-api"
+            class="w-full rounded-lg border border-primary px-3 py-2 text-sm text-primary font-mono placeholder-secondary focus:outline-none focus:border-accent-primary/60 transition-colors"
+            style="background: #26233a;"
+          />
+          <p class="text-xs text-secondary mt-1">Lowercase letters, numbers, and hyphens only.</p>
+        </div>
+
+        <div>
+          <label for="description" class="block text-sm text-secondary mb-1.5">Description</label>
+          <textarea
+            id="description"
+            name="description"
+            rows="3"
+            placeholder="Real-time status and uptime monitoring for our production systems."
+            class="w-full rounded-lg border border-primary px-3 py-2 text-sm text-primary placeholder-secondary focus:outline-none focus:border-accent-primary/60 transition-colors"
+            style="background: #26233a;"
+          >{page?.description ?? ''}</textarea>
+        </div>
+
+        <div>
+          <label for="logoUrl" class="block text-sm text-secondary mb-1.5">Logo URL</label>
+          <input
+            id="logoUrl"
+            name="logoUrl"
+            type="url"
+            value={page?.logoUrl ?? ''}
+            placeholder="https://example.com/logo.png"
+            class="w-full rounded-lg border border-primary px-3 py-2 text-sm text-primary placeholder-secondary focus:outline-none focus:border-accent-primary/60 transition-colors"
+            style="background: #26233a;"
+          />
+        </div>
+
+        <div class="flex items-center justify-between pt-2">
+          <div>
+            <p class="text-sm text-primary font-medium">Publish this page</p>
+            <p class="text-xs text-secondary mt-0.5">Hidden pages are only available to you. Publish when you are ready to share.</p>
+          </div>
+          <label class="relative inline-flex items-center cursor-pointer">
+            <input
+              type="checkbox"
+              id="isPublished" aria-label="Publish this page"
+              name="isPublished"
+              class="sr-only peer"
+              checked={page?.isActive ?? false}
+            />
+            <div class="w-9 h-5 rounded-full peer-checked:bg-status-success bg-bg-tertiary border border-primary transition-colors peer-focus:outline-none after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-4" style="border-color: #393552;"></div>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <div class="rounded-xl border border-primary bg-bg-secondary overflow-hidden">
+      <div class="px-5 py-3.5 border-b border-primary">
+        <p class="text-sm font-semibold text-primary">Included Monitors</p>
+        <p class="text-xs text-secondary mt-0.5">Choose which services appear on the public page.</p>
+      </div>
+      <div class="px-5 py-5 space-y-3">
+        {monitors.length > 0 ? monitors.map((monitor) => (
+          <label class="flex items-start justify-between gap-4 rounded-lg border border-primary px-4 py-3 cursor-pointer hover:border-accent-primary/30 transition-colors" style="background: #26233a;">
+            <div class="min-w-0">
+              <p class="text-sm font-medium text-primary">{monitor.name}</p>
+              <p class="text-xs text-secondary font-mono truncate">{monitor.url ?? monitor.id}</p>
+            </div>
+            <input
+              class="mt-1"
+              type="checkbox"
+              name="monitorIds"
+              value={monitor.id}
+              checked={page?.monitorIds.includes(monitor.id)}
+            />
+          </label>
+        )) : (
+          <p class="text-sm text-secondary">No monitors are available yet.</p>
+        )}
+      </div>
+    </div>
+
+    <div class="flex items-center justify-between gap-3">
+      <div>
+        {isEdit && (
+          <Button id="deleteStatusPageBtn" variant="danger" size="sm" type="button">
+            Delete Page
+          </Button>
+        )}
+      </div>
+      <div class="flex items-center gap-3">
+        <Button variant="secondary" size="sm" href="/status-pages">
+          Cancel
+        </Button>
+        <Button id="submitStatusPageBtn" variant="primary" size="sm" type="submit">
+          {isEdit ? 'Save Changes' : 'Create Status Page'}
+        </Button>
+      </div>
+    </div>
+  </form>
+</div>
+
+<script>
+  import {
+    createStatusPage,
+    deleteStatusPage,
+    updateStatusPage,
+    validateSlug,
+  } from '../lib/services/statusPageService';
+
+  const root = document.getElementById('statusPageFormRoot') as HTMLElement | null;
+  const form = document.getElementById('statusPageForm') as HTMLFormElement | null;
+  const submitBtn = document.getElementById('submitStatusPageBtn') as HTMLButtonElement | null;
+  const deleteBtn = document.getElementById('deleteStatusPageBtn') as HTMLButtonElement | null;
+  const formMsg = document.getElementById('formMsg') as HTMLElement | null;
+
+  const mode = root?.dataset.mode ?? 'create';
+  const pageId = root?.dataset.pageId ?? '';
+  const originalSlug = root?.dataset.originalSlug ?? '';
+
+  function showMsg(msg: string, isError: boolean) {
+    if (!formMsg) return;
+    formMsg.textContent = msg;
+    formMsg.className = `rounded-lg px-4 py-3 text-sm font-medium ${isError
+      ? 'text-status-error bg-status-error/10 border border-status-error/20'
+      : 'text-status-success bg-status-success/10 border border-status-success/20'}`;
+    formMsg.classList.remove('hidden');
+  }
+
+  form?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    if (!form || !submitBtn) return;
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = mode === 'edit' ? 'Saving…' : 'Creating…';
+    formMsg?.classList.add('hidden');
+
+    try {
+      const formData = new FormData(form);
+      const title = String(formData.get('title') ?? '').trim();
+      const slug = String(formData.get('slug') ?? '').trim();
+      const description = String(formData.get('description') ?? '').trim();
+      const logoUrl = String(formData.get('logoUrl') ?? '').trim();
+      const isPublished = formData.get('isPublished') === 'on';
+      const monitorIds = formData.getAll('monitorIds').map((value) => String(value));
+
+      if (!title || !slug) {
+        throw new Error('Title and slug are required.');
+      }
+
+      const slugCheck = await validateSlug(slug, originalSlug);
+      if (!slugCheck.valid) {
+        throw new Error(slugCheck.message ?? 'Slug validation failed.');
+      }
+
+      if (mode === 'edit') {
+        const result = await updateStatusPage(pageId, {
+          name: title,
+          slug,
+          description,
+          monitorIds,
+          isPublished,
+          companyLogo: logoUrl || undefined,
+        });
+        if (!result.success) {
+          throw new Error(result.error ?? 'Failed to update status page.');
+        }
+      } else {
+        const result = await createStatusPage({
+          name: title,
+          slug,
+          description,
+          monitorIds,
+          isPublished,
+          logoUrl: logoUrl || undefined,
+        });
+        if (!result.success) {
+          throw new Error(result.error ?? 'Failed to create status page.');
+        }
+      }
+
+      window.location.href = '/status-pages';
+    } catch (error: any) {
+      showMsg(error?.message ?? 'Unable to save status page.', true);
+      submitBtn.disabled = false;
+      submitBtn.textContent = mode === 'edit' ? 'Save Changes' : 'Create Status Page';
+    }
+  });
+
+  deleteBtn?.addEventListener('click', async () => {
+    if (!pageId) return;
+    const confirmed = window.confirm('Delete this status page? This cannot be undone.');
+    if (!confirmed) return;
+
+    try {
+      deleteBtn.disabled = true;
+      const result = await deleteStatusPage(pageId);
+      if (!result.success) throw new Error(result.error);
+      window.location.href = '/status-pages';
+    } catch (error: any) {
+      showMsg(error?.message ?? 'Unable to delete status page.', true);
+      deleteBtn.disabled = false;
+    }
+  });
+</script>

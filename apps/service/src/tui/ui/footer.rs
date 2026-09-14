@@ -1,43 +1,60 @@
 use ratatui::Frame;
-use ratatui::layout::{Alignment, Constraint, Direction, Layout, Rect};
-use ratatui::style::{Color, Modifier, Style};
+use ratatui::layout::Rect;
+use ratatui::style::{Modifier, Style};
 use ratatui::text::{Line, Span};
 use ratatui::widgets::{Clear, Paragraph};
 
-pub fn render(f: &mut Frame, area: Rect, show_help: bool) -> Vec<(String, Rect)> {
-    let mut action_buttons: Vec<(String, Rect)> = Vec::new();
+use super::{COLOR_BRAND, COLOR_LABEL};
+use crate::tui::state::AppState;
+use crate::tui::types::ViewMode;
 
-    if !show_help {
-        // Clear the footer area first
-        f.render_widget(Clear, area);
+/// Render a single key hint: key highlighted, label plain
+fn hint<'a>(key: &'a str, label: &'a str) -> Vec<Span<'a>> {
+    vec![
+        Span::styled(key, Style::default().fg(COLOR_BRAND).add_modifier(Modifier::BOLD)),
+        Span::styled(format!(":{label} "), Style::default().fg(COLOR_LABEL)),
+    ]
+}
 
-        let footer_chunks = Layout::default()
-            .direction(Direction::Horizontal)
-            .constraints([
-                Constraint::Percentage(16),
-                Constraint::Percentage(14),
-                Constraint::Percentage(16),
-                Constraint::Percentage(16),
-                Constraint::Percentage(16),
-                Constraint::Percentage(22),
-            ])
-            .split(area);
+pub fn render(f: &mut Frame, area: Rect, state: &AppState) -> Vec<(String, Rect)> {
+    if state.show_help {
+        return vec![];
+    }
 
-        let labels = ["Add", "Edit", "Delete", "Refresh", "Help", "Quit"];
-        let keys = ["A", "E", "D", "R", "H/?", "Q/Esc"];
+    f.render_widget(Clear, area);
 
-        for (i, (label, key)) in labels.iter().zip(keys.iter()).enumerate() {
-            let text = format!("{key}: {label}");
-            let btn = Paragraph::new(Line::from(Span::styled(
-                text,
-                Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD),
-            )))
-            .alignment(Alignment::Center);
+    let mut spans: Vec<Span> = Vec::new();
 
-            f.render_widget(btn, footer_chunks[i]);
-            action_buttons.push((label.to_string(), footer_chunks[i]));
+    // Common hints
+    spans.extend(hint("Tab", "views"));
+
+    match state.view_mode {
+        ViewMode::Dashboard => {
+            spans.extend(hint("a/A", "add"));
+            spans.extend(hint("e", "edit"));
+            spans.extend(hint("d", "del"));
+            spans.extend(hint("r", "refresh"));
+            spans.extend(hint("Enter", "detail"));
+        }
+        ViewMode::Distributed | ViewMode::AdminKeys => {
+            spans.extend(hint("</>", "tabs"));
+            spans.extend(hint("j/k", "nav"));
+        }
+        ViewMode::DhtDebug => {
+            spans.extend(hint("x", "query"));
+            spans.extend(hint("g", "custom"));
+            spans.extend(hint("j/k", "bucket"));
+        }
+        ViewMode::Statistics | ViewMode::Network => {
+            spans.extend(hint("r", "refresh"));
         }
     }
 
-    action_buttons
+    spans.extend(hint("?", "help"));
+    spans.extend(hint("q", "quit"));
+
+    let footer = Paragraph::new(Line::from(spans));
+    f.render_widget(footer, area);
+
+    vec![]
 }

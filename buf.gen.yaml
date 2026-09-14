@@ -1,0 +1,11 @@
+version: v2
+plugins:
+  - local: [go, run, google.golang.org/protobuf/cmd/protoc-gen-go@v1.36.11]
+    out: apps/server/gen
+    opt: paths=source_relative
+  - local: [go, run, connectrpc.com/connect/cmd/protoc-gen-connect-go@v1.19.1]
+    out: apps/server/gen
+    opt: paths=source_relative
+  - local: protoc-gen-es
+    out: apps/client/src/gen
+    opt: target=ts

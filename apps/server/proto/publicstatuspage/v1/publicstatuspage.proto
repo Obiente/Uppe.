@@ -1,0 +1,31 @@
+syntax = "proto3";
+package publicstatuspage.v1;
+
+import "result/v1/result.proto";
+
+option go_package = "github.com/Obiente/Uppe/apps/server/gen/publicstatuspage/v1;publicstatuspagev1";
+message GetPublicStatusPageRequest {
+  string slug = 1;
+}
+message PublicMonitorSummary {
+  string id = 1;
+  string name = 2;
+  result.v1.ResultStatus status = 3;
+  int64 last_checked = 4;
+  double uptime_percentage = 5;
+  double average_latency_ms = 6;
+  int64 total_checks = 7;
+  repeated result.v1.TimeSeriesDataPoint history = 8;
+}
+message PublicStatusPage {
+  string title = 1;
+  string slug = 2;
+  string description = 3;
+  string logo_url = 4;
+  string primary_color = 5;
+  repeated PublicMonitorSummary monitors = 6;
+  int64 updated_at = 7;
+}
+service PublicStatusPageService {
+  rpc GetPublicStatusPage(GetPublicStatusPageRequest) returns (PublicStatusPage);
+}

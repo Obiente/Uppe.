@@ -1,0 +1,31 @@
+---
+import { MonitorVisibility, type Monitor } from '../gen/monitor/v1/monitor_pb';
+interface Props { monitor?: Monitor }
+const { monitor } = Astro.props;
+---
+<form id="monitor-form" data-id={monitor?.id ?? ''} class="panel narrow">
+  <div id="form-error" role="alert" class="error" hidden></div>
+  <label>Service name<input name="name" required maxlength="200" value={monitor?.name} placeholder="Website" /></label>
+  {!monitor && <label>Check type<select name="type"><option value="1">HTTP / HTTPS</option><option value="2">TCP port</option></select></label>}
+  <label>Target<input name="url" required maxlength="2048" value={monitor?.url} placeholder="https://example.com" /><small>HTTP URL or host:port for TCP. Redirects are recorded without following them.</small></label>
+  <div class="form-grid"><label>Check interval (seconds)<input name="interval" type="number" min="10" max="86400" value={monitor?.intervalSeconds ?? 60} required /></label><label>Timeout (seconds)<input name="timeout" type="number" min="1" max="300" value={monitor?.timeoutSeconds ?? 10} required /></label></div>
+  <label>Check sharing<select name="visibility"><option value="3" selected={!monitor || monitor.visibility === MonitorVisibility.INTERNAL}>Only this node</option><option value="1" selected={monitor?.visibility === MonitorVisibility.PUBLIC}>Public network</option></select><small>Public sharing exposes the target and signed check results when network participation is enabled. Use it only for public services.</small></label>
+  <label class="check"><input type="checkbox" name="enabled" checked={monitor?.enabled ?? true} />Enable monitoring</label>
+  <p class="muted" style="margin-bottom:24px">Checks run from your node. You can choose which services to share on a status page.</p>
+  <div class="actions"><button type="submit">{monitor ? 'Save changes' : 'Create monitor'}</button><a class="button secondary" href={monitor ? `/service/${monitor.id}` : '/dashboard'}>Cancel</a></div>
+</form>
+<script>
+  import { monitorClient } from '../lib/api/client';
+  import { MonitorType, MonitorVisibility } from '../gen/monitor/v1/monitor_pb';
+  import { ConnectError } from '@connectrpc/connect';
+  const form = document.querySelector<HTMLFormElement>('#monitor-form')!;
+  form.addEventListener('submit',async event => {
+    event.preventDefault(); const button = form.querySelector<HTMLButtonElement>('button[type=submit]')!; const error = document.querySelector<HTMLElement>('#form-error')!;
+    button.disabled = true; error.hidden = true;
+    const data = new FormData(form); const values = {name:String(data.get('name')).trim(),url:String(data.get('url')).trim(),intervalSeconds:Number(data.get('interval')),timeoutSeconds:Number(data.get('timeout')),enabled:data.has('enabled'),visibility:Number(data.get('visibility')) as MonitorVisibility};
+    try {
+      const monitor = form.dataset.id ? await monitorClient.updateMonitor({id:form.dataset.id,...values}) : await monitorClient.createMonitor({...values,type:Number(data.get('type')) as MonitorType});
+      window.location.assign(`/service/${monitor.id}`);
+    } catch (e) { error.textContent = e instanceof ConnectError ? e.rawMessage : 'Unable to save. Check your connection and try again.'; error.hidden = false; button.disabled = false; }
+  });
+</script>

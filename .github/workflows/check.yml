@@ -1,0 +1,53 @@
+name: Application checks
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+concurrency:
+  group: checks-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  application:
+    name: Application (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    # The repository's trailing dot is not a portable Windows directory name.
+    env:
+      GITHUB_WORKSPACE: ${{ runner.temp }}/uppe
+    defaults:
+      run:
+        working-directory: ${{ runner.temp }}/uppe
+    steps:
+      - name: Prepare portable workspace
+        shell: pwsh
+        working-directory: ${{ runner.temp }}
+        run: New-Item -ItemType Directory -Force -Path $env:GITHUB_WORKSPACE | Out-Null
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          package-manager-cache: false
+      - uses: pnpm/action-setup@v4
+        with:
+          package_json_file: ${{ runner.temp }}/uppe/package.json
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: ${{ runner.temp }}/uppe/apps/server/go.mod
+          cache-dependency-path: ${{ runner.temp }}/uppe/apps/server/go.sum
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: ${{ runner.temp }}/uppe -> target
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm check
+      - name: Dependency security checks
+        if: runner.os == 'Linux'
+        run: |
+          pnpm audit --prod --audit-level=moderate
+          cd apps/server
+          go run golang.org/x/vuln/cmd/govulncheck@latest ./...

@@ -43,6 +43,11 @@ impl NodeConfig {
 }
 
 impl NodeConfigBuilder {
+    pub fn identity_from_ed25519_secret(mut self, secret: &mut [u8]) -> anyhow::Result<Self> {
+        self.config.identity = Some(libp2p::identity::Keypair::ed25519_from_bytes(secret)?);
+        Ok(self)
+    }
+
     /// Build the configuration
     pub fn build(self) -> NodeConfig {
         self.config

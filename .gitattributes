@@ -1,0 +1,6 @@
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.ico binary
+apps/client/src/gen/** linguist-generated=true whitespace=-blank-at-eof
+apps/server/gen/** linguist-generated=true

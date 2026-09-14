@@ -32,6 +32,9 @@ pub struct CheckResult {
     /// URL or target that was checked
     pub target: String,
 
+    /// Type of check performed (http, https, tcp, icmp)
+    pub check_type: String,
+
     /// Timestamp when the check was performed
     pub timestamp: SystemTime,
 
@@ -50,24 +53,36 @@ pub struct CheckResult {
     /// ID of the peer that performed this check
     pub peer_id: String,
 
+    /// For private monitors: ID of the owner peer
+    pub owner_peer_id: Option<String>,
+
     /// Cryptographic signature of this result
     pub signature: Option<Vec<u8>>,
 }
 
 impl CheckResult {
     /// Create a new check result
-    pub fn new(monitor_id: Uuid, target: String, peer_id: String) -> Self {
+    pub fn new(monitor_id: Uuid, target: String, check_type: String, peer_id: String) -> Self {
         Self {
             monitor_id,
             target,
+            check_type,
             timestamp: SystemTime::now(),
             status: MonitorStatus::Unknown,
             latency_ms: None,
             status_code: None,
             error_message: None,
             peer_id,
+            owner_peer_id: None,
             signature: None,
         }
+    }
+
+    /// Set the owner peer ID for private monitors
+    #[allow(dead_code, reason = "Optional owner metadata builder")]
+    pub fn with_owner(mut self, owner_peer_id: String) -> Self {
+        self.owner_peer_id = Some(owner_peer_id);
+        self
     }
 
     /// Mark the check as successful with latency

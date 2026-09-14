@@ -1,0 +1,12 @@
+syntax = "proto3";
+package common.v1;
+
+option go_package = "github.com/Obiente/Uppe/apps/server/gen/common/v1;commonv1";
+
+message Location {
+  string city = 1;
+  string country = 2;
+  string region = 3;
+  double latitude = 4;
+  double longitude = 5;
+}

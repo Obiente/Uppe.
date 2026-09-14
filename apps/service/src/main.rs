@@ -3,6 +3,7 @@ use std::path;
 
 use clap::{Parser, Subcommand, crate_authors, crate_version};
 
+mod audit;
 mod config;
 mod crypto;
 mod database;
@@ -92,41 +93,16 @@ async fn main() -> anyhow::Result<()> {
 
     // Initialize database pool - use shared database location
     // Default to shared/data/libsql.db in project root, using CARGO_MANIFEST_DIR when available
-    let db_path = std::env::var("DATABASE_LIBSQL_PATH").unwrap_or_else(|_| {
-        use std::path::PathBuf;
-
-        // Build candidate paths in priority order
-        let mut candidates: Vec<PathBuf> = Vec::new();
-
-        // Prefer a path relative to the workspace root (two levels up from this crate),
-        // using CARGO_MANIFEST_DIR as a stable base instead of the current working directory
-        if let Ok(manifest_dir) = std::env::var("CARGO_MANIFEST_DIR") {
-            let mut workspace_root = PathBuf::from(manifest_dir);
-            workspace_root.pop(); // up from apps/service to apps
-            workspace_root.pop(); // up from apps to workspace root
-            candidates.push(workspace_root.join("shared").join("data").join("libsql.db"));
-        }
-
-        // Fallbacks relative to the current working directory, kept for compatibility
-        candidates.push(PathBuf::from("../../shared/data/libsql.db"));
-        candidates.push(PathBuf::from("shared/data/libsql.db"));
-        candidates.push(PathBuf::from("libsql.db"));
-
-        // Only select a path whose parent directory either exists or can be created successfully
-        for candidate in candidates {
-            if let Some(parent) = candidate.parent() {
-                if parent.exists() || std::fs::create_dir_all(parent).is_ok() {
-                    return candidate.to_string_lossy().into_owned();
-                }
-            } else {
-                // No parent directory (e.g., "libsql.db" in current dir) — accept it directly
-                return candidate.to_string_lossy().into_owned();
-            }
-        }
-
-        // As a last resort, fall back to a database file in the current directory
-        "libsql.db".to_string()
-    });
+    let db_path = std::env::var("UPPE_DATABASE_PATH")
+        .or_else(|_| std::env::var("DATABASE_LIBSQL_PATH"))
+        .unwrap_or_else(|_| {
+            std::path::PathBuf::from(
+                std::env::var("UPPE_DATA_DIR").unwrap_or_else(|_| ".uppe".into()),
+            )
+            .join("uppe.db")
+            .to_string_lossy()
+            .into_owned()
+        });
 
     // Ensure parent directory exists
     if let Some(parent) = std::path::Path::new(&db_path).parent() {
@@ -244,21 +220,34 @@ async fn main() -> anyhow::Result<()> {
                     monitor.interval_seconds = interval;
                     monitor.timeout_seconds = timeout;
                     let id = dbi.save_monitor(&monitor).await?;
+                    match audit::load_local_keypair() {
+                        Ok(keypair) => {
+                            let actor_id = keypair.public_key_hex();
+                            if let Err(e) = audit::record_monitor_event(
+                                &dbi, &keypair, &actor_id, "created", &monitor,
+                            )
+                            .await
+                            {
+                                tracing::warn!(
+                                    "Failed to record monitor create audit event: {}",
+                                    e
+                                );
+                            }
+                        }
+                        Err(e) => {
+                            tracing::warn!("Failed to load local audit keypair: {}", e);
+                        }
+                    }
                     println!("Added monitor with id {} and uuid {}", id, monitor.uuid);
                 }
             }
         }
         Commands::Tui => {
-            // Get peer ID and P2P status
-            let keypair_path = path::PathBuf::from("uppe_keypair.key");
-            let peer_id = if let Ok(kp) = crypto::load_or_generate_keypair(&keypair_path) {
-                kp.public_key_hex()
-            } else {
-                "unknown".to_string()
-            };
+            let peer_id = audit::load_local_keypair()?.public_key_hex();
             let p2p_enabled = cfg.preferences.use_peerup_layer;
 
-            // Use LocalSet for P2P network (libp2p Swarm is !Send)
+            // TUI reads persisted state and edits configuration; the backend runs separately
+            // via `uppe-service run` for live data to flow.
             let local = tokio::task::LocalSet::new();
             local
                 .run_until(async move { tui::run_tui_with_p2p(pool, peer_id, p2p_enabled).await })

@@ -1,12 +1,16 @@
 [workspace]
 resolver = "3"
-members = ["crates/*", "apps/server", "apps/service"]
+members = ["crates/*", "apps/service"]
 
 [workspace.dependencies]
-actix-web = "=4.11.0"
+actix-web = { version = "4.11.0", default-features = false }
 thiserror = "2.0.12"
 tracing = "0.1.41"
 peerup = { path = "crates/peerup" }
 anyhow = "1.0.98"
 
 dotenvy = "0.15.7"
+
+[profile.dev]
+# Keep repeated workspace builds from accumulating large incremental caches.
+incremental = false

@@ -1,0 +1,105 @@
+syntax = "proto3";
+package monitor.v1;
+
+import "google/protobuf/empty.proto";
+
+option go_package = "github.com/Obiente/Uppe/apps/server/gen/monitor/v1;monitorv1";
+enum MonitorType {
+  MONITOR_TYPE_UNSPECIFIED = 0;
+  MONITOR_TYPE_HTTP = 1;
+  MONITOR_TYPE_TCP = 2;
+  MONITOR_TYPE_ICMP = 3;
+}
+enum MonitorVisibility {
+  MONITOR_VISIBILITY_UNSPECIFIED = 0;
+  MONITOR_VISIBILITY_PUBLIC = 1;
+  MONITOR_VISIBILITY_PRIVATE = 2;
+  MONITOR_VISIBILITY_INTERNAL = 3;
+}
+message Monitor {
+  string id = 1;
+  string name = 2;
+  string url = 3;
+  MonitorType type = 4;
+  int32 interval_seconds = 5;
+  int32 timeout_seconds = 6;
+  bool enabled = 7;
+  repeated string expected_status_codes = 8;
+  map<string, string> headers = 9;
+  string body = 10;
+  MonitorVisibility visibility = 11;
+  string owner_peer_id = 12;
+  string public_domain = 13;
+  string public_display_name = 14;
+  int64 created_at = 15;
+  int64 updated_at = 16;
+}
+message CreateMonitorRequest {
+  string name = 1;
+  string url = 2;
+  MonitorType type = 3;
+  int32 interval_seconds = 4;
+  int32 timeout_seconds = 5;
+  bool enabled = 6;
+  repeated string expected_status_codes = 7;
+  map<string, string> headers = 8;
+  string body = 9;
+  MonitorVisibility visibility = 10;
+  string public_domain = 11;
+  string public_display_name = 12;
+}
+message UpdateMonitorRequest {
+  string id = 1;
+  optional string name = 2;
+  optional string url = 3;
+  optional int32 interval_seconds = 4;
+  optional int32 timeout_seconds = 5;
+  optional bool enabled = 6;
+  repeated string expected_status_codes = 7;
+  map<string, string> headers = 8;
+  optional string body = 9;
+  optional MonitorVisibility visibility = 10;
+  optional string public_domain = 11;
+  optional string public_display_name = 12;
+}
+message GetMonitorRequest {
+  string id = 1;
+}
+message DeleteMonitorRequest {
+  string id = 1;
+}
+message ListMonitorsRequest {
+  int32 page = 1;
+  int32 page_size = 2;
+  optional bool enabled = 3;
+  optional MonitorVisibility visibility = 4;
+}
+message ListMonitorsResponse {
+  repeated Monitor monitors = 1;
+  int32 total = 2;
+  int32 page = 3;
+  int32 page_size = 4;
+}
+message GetMonitorStatsRequest {
+  string monitor_id = 1;
+  int64 start_time = 2;
+  int64 end_time = 3;
+}
+message MonitorStats {
+  string monitor_id = 1;
+  int64 total_checks = 2;
+  int64 successful_checks = 3;
+  int64 failed_checks = 4;
+  double uptime_percentage = 5;
+  double average_latency_ms = 6;
+  int64 min_latency_ms = 7;
+  int64 max_latency_ms = 8;
+}
+service MonitorService {
+  rpc CreateMonitor(CreateMonitorRequest) returns (Monitor);
+  rpc GetMonitor(GetMonitorRequest) returns (Monitor);
+  rpc ListMonitors(ListMonitorsRequest) returns (ListMonitorsResponse);
+  rpc UpdateMonitor(UpdateMonitorRequest) returns (Monitor);
+  rpc DeleteMonitor(DeleteMonitorRequest) returns (google.protobuf.Empty);
+  rpc GetMonitorStats(GetMonitorStatsRequest) returns (MonitorStats);
+}

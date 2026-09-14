@@ -9,6 +9,7 @@ pub mod checker;
 pub mod executor;
 pub mod scheduler;
 pub mod types;
+pub mod validation;
 
 pub use executor::MonitoringExecutor;
 pub use scheduler::MonitoringScheduler;

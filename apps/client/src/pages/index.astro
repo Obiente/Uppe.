@@ -1,44 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import Hero from '../components/landing/Hero.astro';
-import Features from '../components/landing/Features.astro';
-import Benefits from '../components/landing/Benefits.astro';
-import Community from '../components/landing/Community.astro';
-import CTA from '../components/landing/CTA.astro';
-import Footer from '../components/landing/Footer.astro';
-
-// Mock network stats for demonstration
-const networkStats = {
-  totalPeers: 1847,
-  onlinePeers: 1623,
-  checksPerHour: "2.4M",
-  coverage: "99.7%"
-};
-
-const benefits = [
-  {
-    title: "Your Node, Your Rules",
-    description: "Run monitoring checks for others while getting coverage for your own services. It's mutual aid for the internet."
-  },
-  {
-    title: "No Blind Spots",
-    description: "Traditional monitoring misses regional outages. Our distributed network catches what centralized systems can't."
-  },
-  {
-    title: "Privacy First",
-    description: "You monitor what you care about. No centralized analytics, no data harvesting, no hidden agendas."
-  }
-];
 ---
-
-<Layout 
-  title="Uppe. - Monitoring that doesn't let you down!" 
-  description="Community-driven, decentralized uptime monitoring. No single points of failure. No gatekeepers. Just pure uptime, powered by people."
->
-  <Hero networkStats={networkStats} />
-  <Features />
-  <Benefits benefits={benefits} />
-  <Community />
-  <CTA />
-  <Footer />
+<Layout title="Uppe. | Keep your services in view">
+<main><a class="brand" href="/">Uppe<span>.</span></a><p class="eyebrow">SERVICE MONITORING, ON YOUR TERMS</p><h1>Know when your<br/>services need you.</h1><p class="intro">Monitor websites and TCP services from your own node. Keep a record of each check, and share availability through a public status page.</p><a class="open" href="/dashboard">Open your dashboard <span aria-hidden="true">→</span></a><div class="features"><section><span>01</span><h2>Make every check count.</h2><p>See recent responses and uptime history for the services you depend on.</p></section><section><span>02</span><h2>Keep people informed.</h2><p>Choose which services to publish. Your internal targets stay in your dashboard.</p></section><section><span>03</span><h2>Run it yourself.</h2><p>Your node stores your monitoring history and signs its audit records.</p></section></div><footer>Uppe. <span>Monitoring that doesn't let you down.</span></footer></main>
 </Layout>
+<style>main{max-width:1120px;margin:auto;padding:48px 28px;color:#e0def4}.brand{font-size:34px;font-weight:750;letter-spacing:-2px}.brand span{color:#c4a7e7}.eyebrow{margin-top:100px;color:#c4a7e7;font-size:11px;letter-spacing:2px}h1{font-size:clamp(42px,7vw,80px);font-weight:600;letter-spacing:-3px;line-height:1.06;margin:22px 0}.intro{max-width:590px;color:#a7a2bb;font-size:18px;line-height:1.8}.open{display:inline-flex;gap:28px;background:#c4a7e7;color:#232033;border-radius:8px;padding:15px 22px;margin-top:32px;font-weight:600}.features{display:grid;grid-template-columns:repeat(3,1fr);gap:40px;margin:90px 0 70px;padding-top:30px;border-top:1px solid #393552}.features span{font-size:12px;color:#c4a7e7}h2{font-size:18px;margin:20px 0 10px}.features p,footer{color:#a7a2bb;line-height:1.7;font-size:14px}footer{border-top:1px solid #393552;padding-top:25px;display:flex;justify-content:space-between}@media(max-width:650px){.features{grid-template-columns:1fr;gap:26px}.eyebrow{margin-top:65px}footer{gap:20px}}</style>

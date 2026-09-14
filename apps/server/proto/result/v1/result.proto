@@ -1,0 +1,85 @@
+syntax = "proto3";
+package result.v1;
+
+import "common/v1/common.proto";
+
+option go_package = "github.com/Obiente/Uppe/apps/server/gen/result/v1;resultv1";
+enum ResultStatus {
+  RESULT_STATUS_UNSPECIFIED = 0;
+  RESULT_STATUS_UP = 1;
+  RESULT_STATUS_DOWN = 2;
+  RESULT_STATUS_DEGRADED = 3;
+  RESULT_STATUS_TIMEOUT = 4;
+  RESULT_STATUS_ERROR = 5;
+}
+enum AggregationPeriod {
+  AGGREGATION_PERIOD_UNSPECIFIED = 0;
+  AGGREGATION_PERIOD_HOUR = 1;
+  AGGREGATION_PERIOD_DAY = 2;
+  AGGREGATION_PERIOD_WEEK = 3;
+  AGGREGATION_PERIOD_MONTH = 4;
+}
+message MonitoringResult {
+  string id = 1;
+  string monitor_id = 2;
+  int64 timestamp = 3;
+  ResultStatus status = 4;
+  int64 latency_ms = 5;
+  optional int32 status_code = 6;
+  string monitor_node_id = 7;
+  bytes signature = 8;
+  optional string error_message = 9;
+  common.v1.Location location = 10;
+  int64 created_at = 11;
+}
+message GetResultsRequest {
+  string monitor_id = 1;
+  int64 start_time = 2;
+  int64 end_time = 3;
+  int32 limit = 4;
+  int32 offset = 5;
+}
+message GetResultsResponse {
+  repeated MonitoringResult results = 1;
+  int32 total = 2;
+}
+message GetAggregatedStatsRequest {
+  string monitor_id = 1;
+  int64 start_time = 2;
+  int64 end_time = 3;
+  AggregationPeriod period = 4;
+}
+message TimeSeriesDataPoint {
+  int64 timestamp = 1;
+  int64 total_checks = 2;
+  int64 successful_checks = 3;
+  double uptime_percentage = 4;
+  double average_latency_ms = 5;
+}
+message AggregatedStats {
+  repeated TimeSeriesDataPoint data_points = 1;
+}
+message StreamResultsRequest {
+  string monitor_id = 1;
+}
+message GetGlobalPingRequest {
+  string monitor_id = 1;
+  int64 start_time = 2;
+  int64 end_time = 3;
+}
+message GlobalPingSample {
+  string peer_id = 1;
+  common.v1.Location location = 2;
+  int32 latency_ms = 3;
+  ResultStatus status = 4;
+  int64 timestamp = 5;
+}
+message GetGlobalPingResponse {
+  repeated GlobalPingSample samples = 1;
+}
+service ResultService {
+  rpc GetResults(GetResultsRequest) returns (GetResultsResponse);
+  rpc GetAggregatedStats(GetAggregatedStatsRequest) returns (AggregatedStats);
+  rpc GetGlobalPing(GetGlobalPingRequest) returns (GetGlobalPingResponse);
+  rpc StreamResults(StreamResultsRequest) returns (stream MonitoringResult);
+}

@@ -18,34 +18,42 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest]
     # The repository's trailing dot is not a portable Windows directory name.
-    env:
-      GITHUB_WORKSPACE: ${{ runner.temp }}/uppe
-    defaults:
-      run:
-        working-directory: ${{ runner.temp }}/uppe
     steps:
       - name: Prepare portable workspace
         shell: pwsh
         working-directory: ${{ runner.temp }}
-        run: New-Item -ItemType Directory -Force -Path $env:GITHUB_WORKSPACE | Out-Null
+        run: New-Item -ItemType Directory -Force -Path "${{ runner.temp }}/uppe" | Out-Null
       - uses: actions/checkout@v5
+        env:
+          GITHUB_WORKSPACE: ${{ runner.temp }}/uppe
       - uses: actions/setup-node@v6
+        env:
+          GITHUB_WORKSPACE: ${{ runner.temp }}/uppe
         with:
           node-version: 24
           package-manager-cache: false
       - uses: pnpm/action-setup@v4
+        env:
+          GITHUB_WORKSPACE: ${{ runner.temp }}/uppe
         with:
           package_json_file: ${{ runner.temp }}/uppe/package.json
       - uses: actions/setup-go@v6
+        env:
+          GITHUB_WORKSPACE: ${{ runner.temp }}/uppe
         with:
           go-version-file: ${{ runner.temp }}/uppe/apps/server/go.mod
           cache-dependency-path: ${{ runner.temp }}/uppe/apps/server/go.sum
       - uses: Swatinem/rust-cache@v2
+        env:
+          GITHUB_WORKSPACE: ${{ runner.temp }}/uppe
         with:
           workspaces: ${{ runner.temp }}/uppe -> target
       - run: pnpm install --frozen-lockfile
+        working-directory: ${{ runner.temp }}/uppe
       - run: pnpm check
+        working-directory: ${{ runner.temp }}/uppe
       - name: Dependency security checks
+        working-directory: ${{ runner.temp }}/uppe
         if: runner.os == 'Linux'
         run: |
           pnpm audit --prod --audit-level=moderate

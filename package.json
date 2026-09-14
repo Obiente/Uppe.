@@ -4,14 +4,17 @@
   "description": "Monitoring that doesn't let you down!",
   "main": "index.js",
   "scripts": {
-    "build": "turbo run build",
-    "dev": "turbo run dev",
+    "build": "node scripts/run.mjs build",
+    "dev": "node scripts/run.mjs start --debug",
     "dev:server": "turbo run dev --filter=@uppe/server",
     "dev:service": "turbo run dev --filter=@uppe/service",
     "dev:client": "turbo run dev --filter=@uppe/client",
-    "lint": "turbo run lint",
-    "proto": "turbo run proto",
-    "test": "turbo run test"
+    "lint": "pnpm check",
+    "proto": "buf generate",
+    "test": "pnpm check",
+    "proto:check": "buf lint",
+    "start": "node scripts/run.mjs start",
+    "check": "node scripts/check.mjs"
   },
   "keywords": [
     "uppe",
@@ -30,6 +33,11 @@
   "license": "ISC",
   "packageManager": "pnpm@10.12.1",
   "devDependencies": {
-    "turbo": "^2.7.3"
+    "turbo": "^2.7.3",
+    "@bufbuild/buf": "1.63.0",
+    "@bufbuild/protoc-gen-es": "2.15.0"
+  },
+  "engines": {
+    "node": ">=24.0.0 <25"
   }
 }

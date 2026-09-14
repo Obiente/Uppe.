@@ -5,7 +5,6 @@
 
 use std::io;
 
-use async_trait::async_trait;
 use futures::{AsyncRead, AsyncReadExt, AsyncWrite, AsyncWriteExt};
 use libp2p::{request_response::Codec, StreamProtocol};
 
@@ -15,7 +14,6 @@ use super::types::{ProbeRequest, ProbeResponse};
 #[derive(Debug, Clone, Default)]
 pub struct ProbeCodec;
 
-#[async_trait]
 impl Codec for ProbeCodec {
     type Protocol = StreamProtocol;
     type Request = ProbeRequest;
@@ -26,7 +24,13 @@ impl Codec for ProbeCodec {
         T: AsyncRead + Unpin + Send,
     {
         let mut buf = Vec::new();
-        io.read_to_end(&mut buf).await?;
+        io.take(65_537).read_to_end(&mut buf).await?;
+        if buf.len() > 65_536 {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidData,
+                "Protocol message exceeds 64 KiB",
+            ));
+        }
 
         let request = serde_json::from_slice(&buf)
             .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))?;
@@ -43,7 +47,13 @@ impl Codec for ProbeCodec {
         T: AsyncRead + Unpin + Send,
     {
         let mut buf = Vec::new();
-        io.read_to_end(&mut buf).await?;
+        io.take(65_537).read_to_end(&mut buf).await?;
+        if buf.len() > 65_536 {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidData,
+                "Protocol message exceeds 64 KiB",
+            ));
+        }
 
         let response = serde_json::from_slice(&buf)
             .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))?;

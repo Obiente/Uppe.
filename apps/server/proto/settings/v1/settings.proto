@@ -1,0 +1,77 @@
+syntax = "proto3";
+package settings.v1;
+
+option go_package = "github.com/Obiente/Uppe/apps/server/gen/settings/v1;settingsv1";
+
+enum PeerDiscoveryMethod {
+  PEER_DISCOVERY_UNSPECIFIED = 0;
+  PEER_DISCOVERY_DHT_AND_BOOTSTRAP = 1;
+  PEER_DISCOVERY_DHT_ONLY = 2;
+  PEER_DISCOVERY_BOOTSTRAP_ONLY = 3;
+  PEER_DISCOVERY_MANUAL = 4;
+}
+enum ClusterJoinPolicy {
+  CLUSTER_JOIN_POLICY_UNSPECIFIED = 0;
+  CLUSTER_JOIN_POLICY_OPEN = 1;
+  CLUSTER_JOIN_POLICY_APPROVAL = 2;
+  CLUSTER_JOIN_POLICY_INVITE = 3;
+}
+message AccountSettings {
+  string display_name = 1;
+  string email = 2;
+  string timezone = 3;
+}
+message NotificationSettings {
+  bool email_notifications = 1;
+  bool incident_reports = 2;
+  bool network_updates = 3;
+  int32 downtime_alert_threshold_seconds = 4;
+  int32 latency_alert_threshold_ms = 5;
+}
+message NetworkSettings {
+  PeerDiscoveryMethod discovery_method = 1;
+  bool contribute_to_network = 2;
+  int64 max_bandwidth_mb_per_day = 3;
+  int32 max_concurrent_checks = 4;
+  bool auto_accept_requests = 5;
+  repeated string bootstrap_nodes = 6;
+  repeated string manual_peers = 7;
+}
+message MonitoringSettings {
+  int32 default_interval_seconds = 1;
+  int32 default_timeout_seconds = 2;
+  bool detailed_logging = 3;
+  int32 result_retention_days = 4;
+}
+message ClusterSettings {
+  string cluster_name = 1;
+  bool is_public = 2;
+  int32 max_cluster_size = 3;
+  ClusterJoinPolicy join_policy = 4;
+  double min_contribution_score = 5;
+}
+message Settings {
+  AccountSettings account = 1;
+  NotificationSettings notifications = 2;
+  NetworkSettings network = 3;
+  MonitoringSettings monitoring = 4;
+  ClusterSettings cluster = 5;
+}
+message GetSettingsRequest {}
+message UpdateSettingsRequest {
+  Settings settings = 1;
+}
+message GetNodeIdentityRequest {}
+message NodeIdentity {
+  string node_id = 1;
+  string node_name = 2;
+  int64 joined_network_at = 3;
+  double contribution_score = 4;
+  int64 total_checks_performed = 5;
+  int64 total_checks_received = 6;
+}
+service SettingsService {
+  rpc GetSettings(GetSettingsRequest) returns (Settings);
+  rpc UpdateSettings(UpdateSettingsRequest) returns (Settings);
+  rpc GetNodeIdentity(GetNodeIdentityRequest) returns (NodeIdentity);
+}

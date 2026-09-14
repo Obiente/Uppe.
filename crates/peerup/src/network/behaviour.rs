@@ -28,6 +28,7 @@ use crate::{
 #[derive(NetworkBehaviour)]
 #[behaviour(to_swarm = "PeerUPEvent")]
 pub struct PeerUPBehaviour {
+    pub limits: libp2p::connection_limits::Behaviour,
     /// Gossipsub for pub/sub messaging (result broadcasting)
     pub gossipsub: gossipsub::Behaviour,
     /// Request/response protocol for probes
@@ -98,6 +99,14 @@ impl PeerUPBehaviour {
         };
 
         Ok(Self {
+            limits: libp2p::connection_limits::Behaviour::new(
+                libp2p::connection_limits::ConnectionLimits::default()
+                    .with_max_pending_incoming(Some(32))
+                    .with_max_pending_outgoing(Some(32))
+                    .with_max_established_incoming(Some(96))
+                    .with_max_established(Some(128))
+                    .with_max_established_per_peer(Some(2)),
+            ),
             gossipsub,
             request_response,
             mdns: mdns.into(),

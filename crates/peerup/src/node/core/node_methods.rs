@@ -2,7 +2,7 @@
 
 use anyhow::Result;
 use libp2p::PeerId;
-use tracing::info;
+use tracing::{debug, info};
 
 use super::peer_node::PeerNode;
 use crate::{
@@ -20,9 +20,10 @@ impl PeerNode {
     /// Create a new PeerUP node with the specified configuration
     pub async fn with_config(config: NodeConfig) -> Result<Self> {
         // Generate or load keypair
-        let keypair = match &config.keypair_path {
-            Some(path) => load_or_generate_keypair(path)?,
-            None => libp2p::identity::Keypair::generate_ed25519(),
+        let keypair = match (&config.identity, &config.keypair_path) {
+            (Some(identity), _) => identity.clone(),
+            (_, Some(path)) => load_or_generate_keypair(path)?,
+            (_, None) => libp2p::identity::Keypair::generate_ed25519(),
         };
 
         // Get peer ID from keypair
@@ -36,7 +37,7 @@ impl PeerNode {
         let behaviour = PeerUPBehaviour::new(&keypair, &config).await?;
 
         // Build the swarm
-        let swarm = libp2p::SwarmBuilder::with_new_identity()
+        let swarm = libp2p::SwarmBuilder::with_existing_identity(keypair)
             .with_tokio()
             .with_tcp(
                 libp2p::tcp::Config::default(),
@@ -114,10 +115,14 @@ impl PeerNode {
                 info!("Added Kademlia bootstrap peer: {} at {}", peer_id, addr);
             }
 
-            // Trigger bootstrap to populate the routing table
-            match kademlia.bootstrap() {
-                Ok(_) => info!("Kademlia bootstrap initiated with {} peer(s)", peers.len()),
-                Err(e) => tracing::warn!("Kademlia bootstrap error: {:?}", e),
+            // Only trigger bootstrap if we have peers to bootstrap from
+            if !peers.is_empty() {
+                match kademlia.bootstrap() {
+                    Ok(_) => info!("Kademlia bootstrap initiated with {} peer(s)", peers.len()),
+                    Err(e) => tracing::warn!("Kademlia bootstrap error: {:?}", e),
+                }
+            } else {
+                debug!("No bootstrap peers provided, skipping Kademlia bootstrap (will discover via mDNS/connections)");
             }
         } else {
             tracing::warn!("Kademlia is not enabled, cannot add bootstrap peers");

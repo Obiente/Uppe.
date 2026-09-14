@@ -1,0 +1,42 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { boundedBody } from '../lib/server/body';
+import { allowLogin, authenticate, issueSession, sessionCookie, sessionMaxAge } from '../lib/server/auth';
+
+let error = '';
+if (Astro.request.method === 'POST') {
+  if (!allowLogin(Astro.clientAddress)) {
+    Astro.response.status = 429;
+    error = 'Too many attempts. Try again in a minute.';
+  } else if (Number(Astro.request.headers.get('content-length') ?? 0) > 4096) {
+    Astro.response.status = 413;
+    error = 'Unable to sign in.';
+  } else {
+    const body = await boundedBody(Astro.request, 4096).catch(() => null);
+    if (!body) return new Response('Request body too large', {status:413});
+    const form = new URLSearchParams(new TextDecoder().decode(body));
+    const token = String(form.get('token') ?? '');
+    if (authenticate(token)) {
+      Astro.cookies.set(sessionCookie, issueSession(), {
+        path: '/', httpOnly: true, sameSite: 'strict', secure: Astro.url.protocol === 'https:', maxAge: sessionMaxAge,
+      });
+      return Astro.redirect('/dashboard', 303);
+    }
+    Astro.response.status = 401;
+    error = 'That access key was not accepted.';
+  }
+}
+---
+<Layout title="Sign in">
+  <main class="min-h-screen flex items-center justify-center px-6">
+    <form method="post" class="w-full max-w-md space-y-6 rounded-xl border border-primary bg-bg-secondary p-8">
+      <a href="/" class="text-accent-primary font-semibold text-xl">Uppe.</a>
+      <div><h1 class="text-2xl font-semibold text-primary">Open your node</h1><p class="mt-2 text-secondary">Enter the access key saved during setup.</p></div>
+      {error && <p role="alert" class="text-status-error">{error}</p>}
+      <label class="block text-sm text-primary">Access key
+        <input name="token" type="password" required maxlength="256" autocomplete="current-password" class="mt-2 w-full rounded-lg border border-primary bg-bg-primary p-3" />
+      </label>
+      <button type="submit" class="w-full rounded-lg bg-accent-primary p-3 font-semibold text-bg-primary">Sign in</button>
+    </form>
+  </main>
+</Layout>

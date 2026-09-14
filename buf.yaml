@@ -1,0 +1,8 @@
+version: v2
+modules:
+  - path: apps/server/proto
+lint:
+  use: [STANDARD]
+  except: [RPC_REQUEST_RESPONSE_UNIQUE, RPC_RESPONSE_STANDARD_NAME, ENUM_VALUE_PREFIX]
+breaking:
+  use: [FILE]

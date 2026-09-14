@@ -1,8 +1,8 @@
 {
   "name": "@uppe/server",
   "scripts": {
-    "build": "cargo build --release",
-    "build:debug": "cargo build",
-    "format": "rustfmt **/**/*.rs"
+    "build": "go build ./cmd/uppe-api",
+    "test": "go test ./...",
+    "dev": "go run ./cmd/uppe-api"
   }
 }

@@ -1,0 +1,58 @@
+name: Application checks
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+concurrency:
+  group: checks-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  application:
+    name: Application (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      # A trailing dot in the repository name breaks the default Windows checkout.
+      # Fetch the exact event revision into a portable, runner-owned directory.
+      - name: Check out event revision
+        shell: pwsh
+        working-directory: ${{ runner.temp }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $uppeCheckout = Join-Path $env:RUNNER_TEMP 'uppe'
+          gh repo clone $env:GITHUB_REPOSITORY $uppeCheckout -- --no-checkout --depth 1
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          git -C $uppeCheckout fetch --depth 1 origin $env:GITHUB_SHA
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          git -C $uppeCheckout checkout --detach FETCH_HEAD
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          package-manager-cache: false
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.12.1
+          package_json_file: ${{ runner.temp }}/uppe/package.json
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: ${{ runner.temp }}/uppe/apps/server/go.mod
+          cache: false
+      - run: pnpm install --frozen-lockfile
+        working-directory: ${{ runner.temp }}/uppe
+      - run: pnpm check
+        working-directory: ${{ runner.temp }}/uppe
+      - name: Dependency security checks
+        working-directory: ${{ runner.temp }}/uppe
+        if: runner.os == 'Linux'
+        run: |
+          pnpm audit --prod --audit-level=moderate
+          cd apps/server
+          go run golang.org/x/vuln/cmd/govulncheck@latest ./...

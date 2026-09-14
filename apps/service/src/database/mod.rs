@@ -1,3 +1,4 @@
+pub mod audit_outbox;
 pub mod migrations;
 pub mod models;
 /// Database abstraction layer

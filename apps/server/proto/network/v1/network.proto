@@ -1,0 +1,77 @@
+syntax = "proto3";
+package network.v1;
+
+import "common/v1/common.proto";
+
+option go_package = "github.com/Obiente/Uppe/apps/server/gen/network/v1;networkv1";
+enum PeerStatus {
+  PEER_STATUS_UNSPECIFIED = 0;
+  PEER_STATUS_ONLINE = 1;
+  PEER_STATUS_SLOW = 2;
+  PEER_STATUS_OFFLINE = 3;
+}
+message GetNetworkStatsRequest {}
+message GetNetworkHealthRequest {}
+message GetPeerDistributionRequest {}
+message NetworkStats {
+  int64 total_peers = 1;
+  int64 online_peers = 2;
+  int64 checks_per_hour = 3;
+  double coverage_percentage = 4;
+  double share_ratio = 5;
+  int64 monitoring_for_others = 6;
+  int64 receiving_from_others = 7;
+  double contribution_score = 8;
+  string my_node_id = 9;
+  int64 bandwidth_used_mb = 10;
+  int64 bandwidth_limit_mb = 11;
+  int64 checks_performed_today = 12;
+  int64 checks_received_today = 13;
+}
+message ListPeersRequest {
+  int32 page = 1;
+  int32 page_size = 2;
+  string sort_by = 3;
+  PeerStatus filter_status = 4;
+}
+message ListPeersResponse {
+  repeated Peer peers = 1;
+  int32 total = 2;
+  int32 page = 3;
+  int32 page_size = 4;
+}
+message GetPeerRequest {
+  string peer_id = 1;
+}
+message Peer {
+  string peer_id = 1;
+  common.v1.Location location = 2;
+  PeerStatus status = 3;
+  int64 checks_per_day = 4;
+  int64 last_seen = 5;
+  double uptime_percentage = 6;
+  double contribution_score = 7;
+  int64 joined_at = 8;
+}
+message NetworkHealth {
+  double consensus_rate = 1;
+  double avg_latency_ms = 2;
+  double redundancy_factor = 3;
+  double churn_rate = 4;
+}
+message RegionStats {
+  string region = 1;
+  int64 peer_count = 2;
+  int64 online_count = 3;
+  double avg_latency_ms = 4;
+}
+message PeerDistribution {
+  repeated RegionStats regions = 1;
+}
+service NetworkService {
+  rpc GetNetworkStats(GetNetworkStatsRequest) returns (NetworkStats);
+  rpc ListPeers(ListPeersRequest) returns (ListPeersResponse);
+  rpc GetPeer(GetPeerRequest) returns (Peer);
+  rpc GetNetworkHealth(GetNetworkHealthRequest) returns (NetworkHealth);
+  rpc GetPeerDistribution(GetPeerDistributionRequest) returns (PeerDistribution);
+}

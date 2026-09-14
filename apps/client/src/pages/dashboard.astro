@@ -1,158 +1,19 @@
 ---
-import Header from "$components/Header.astro";
-import Hero from "$components/Hero.astro";
-import StatsOverview from "$components/StatsOverview.astro";
-import MonitorOverview from "$components/MonitorOverview.astro";
-import ShareRatio from "$components/ShareRatio.astro";
-import NetworkStatus from "$components/NetworkStatus.astro";
-import GlobalPingMap from "$components/GlobalPingMap.astro";
-import UptimeChart from "$components/UptimeChart.astro";
-import AlertCenter from "$components/AlertCenter.astro";
-import IncidentList from "$components/IncidentList.astro";
-import Layout from "$layouts/Layout.astro";
-
-import ActionCard from "../components/ui/ActionCard.astro";
-import Section from "../components/ui/Section.astro";
-import Grid from "../components/ui/Grid.astro";
-
-// Import mock data
-import { mockMonitors, mockDetailedMonitors } from "../mock/monitors";
-import { mockGlobalPingData } from "../mock/network";
-import { mockIncidents } from "../mock/incidents";
-import { mockAlerts } from "../mock/alerts";
-import { mockUptimeData, mockHours, mockNetworkStats } from "../mock/stats";
-
-// Calculate stats from mock data
-const totalMonitors = mockMonitors.length;
-const onlineMonitors = mockMonitors.filter((m) => m.status === "online").length;
-const offlineMonitors = mockMonitors.filter(
-  (m) => m.status === "offline"
-).length;
-const avgResponseTime = Math.round(
-  mockMonitors.reduce((acc, m) => acc + m.responseTime, 0) / totalMonitors
-);
-const avgUptime =
-  Math.round(
-    (mockMonitors.reduce((acc, m) => acc + m.uptime, 0) / totalMonitors) * 10
-  ) / 10;
-
-const {
-  shareRatio,
-  monitoringForOthers,
-  receivingFromOthers,
-  contributionScore,
-  connectedPeers,
-  totalPeers,
-  networkHealth,
-  myNodeId,
-  bandwidthUsed,
-  bandwidthLimit,
-  checksPerformedToday,
-  checksReceivedToday,
-} = mockNetworkStats;
+import Operator from '../layouts/Operator.astro';
+import { monitorClient, resultClient } from '../lib/api/client';
+import { health, dateTime } from '../lib/services/health';
+const page = Math.max(1, Math.min(100000, Number(Astro.url.searchParams.get('page')) || 1));
+const data = await monitorClient.listMonitors({page,pageSize:25}).catch(() => null);
+const rows = await Promise.all((data?.monitors ?? []).map(async monitor => {
+  try { const history = await resultClient.getResults({monitorId:monitor.id,limit:1}); const latest = history.results[0]; return {monitor,latest,state:health(monitor,latest)}; }
+  catch { return {monitor,latest:undefined,state:monitor.enabled ? 'unknown' : 'paused'}; }
+}));
 ---
-
-<Layout>
-  <Header />
-
-  <main class="min-h-screen">
-    <!-- Hero Section -->
-    <Section>
-      <Hero
-        title="Decentralized Uptime Monitoring"
-        description="Monitor your services with our peer-to-peer network. Get real-time alerts, detailed analytics, and guaranteed 100% coverage even when your node is offline."
-        actionText="Add Your First Monitor"
-        actionUrl="/add-monitor"
-      />
-    </Section>
-
-    <!-- Stats Overview -->
-    <Section>
-      <StatsOverview
-        totalMonitors={totalMonitors}
-        onlineMonitors={onlineMonitors}
-        offlineMonitors={offlineMonitors}
-        avgResponseTime={avgResponseTime}
-        avgUptime={avgUptime}
-      />
-    </Section>
-    <!-- P2P Network Status and Share Ratio -->
-    <Section>
-      <Grid cols="2">
-        <NetworkStatus
-          connectedPeers={connectedPeers}
-          totalPeers={totalPeers}
-          networkHealth={networkHealth}
-          myNodeId={myNodeId}
-          bandwidthUsed={bandwidthUsed}
-          bandwidthLimit={bandwidthLimit}
-          checksPerformedToday={checksPerformedToday}
-          checksReceivedToday={checksReceivedToday}
-        />
-
-        <ShareRatio
-          shareRatio={shareRatio}
-          monitoringForOthers={monitoringForOthers}
-          receivingFromOthers={receivingFromOthers}
-          contributionScore={contributionScore}
-        />
-      </Grid>
-    </Section>
-
-    <!-- Global Ping Map -->
-    <Section>
-      <GlobalPingMap
-        peerData={mockGlobalPingData}
-        targetUrl="https://myapp.com"
-      />
-    </Section>
-
-    <!-- Alerts and Monitor Overview  -->
-    <Section>
-      <Grid cols="2">
-        <MonitorOverview monitors={mockDetailedMonitors} />
-        <AlertCenter alerts={mockAlerts} />
-      </Grid>
-    </Section>
-
-    <!-- Recent Incidents -->
-    <Section>
-      <Grid cols="2">
-
-      <UptimeChart hours={mockHours} uptimeData={mockUptimeData} />
-
-      <IncidentList recentIncidents={mockIncidents} />
-      </Grid>
-    </Section>
-
-    <!-- Quick Actions -->
-    <Section title="Quick Actions">
-      <Grid cols="4">
-        <ActionCard
-          href="/add-monitor"
-          icon="ADD"
-          title="Add Monitor"
-          description="Monitor new service"
-        />
-        <ActionCard
-          href="/status-pages"
-          icon="DOCUMENT"
-          title="Status Pages"
-          description="Manage public pages"
-        />
-        <ActionCard
-          href="/network-map"
-          icon="GLOBAL"
-          title="Network Map"
-          description="View peer network"
-        />
-        <ActionCard
-          href="/analytics"
-          icon="ANALYTICS"
-          title="Analytics"
-          description="View detailed stats"
-        />
-      </Grid>
-    </Section>
-  </main>
-</Layout>
+<Operator title="Your monitors" description="A current view of the services you depend on.">
+  <a slot="actions" class="button" href="/add-monitor">Add monitor</a>
+  {!data ? <div class="error" role="alert">Unable to load your monitors. <a href="/dashboard">Try again</a>.</div> : <>
+    <div class="metric-grid"><div class="panel"><p class="muted">Total monitors</p><strong>{data.total}</strong></div><div class="panel"><p class="muted">Healthy on this page</p><strong>{rows.filter(r=>r.state==='up').length}</strong></div><div class="panel"><p class="muted">Need attention on this page</p><strong>{rows.filter(r=>['down','degraded'].includes(r.state)).length}</strong></div></div>
+    {rows.length ? <div class="panel table-wrap"><table><thead><tr><th>Service</th><th>Status</th><th>Response</th><th>Last check</th></tr></thead><tbody>{rows.map(({monitor,latest,state})=><tr><td><a href={'/service/'+monitor.id}>{monitor.name}</a><br/><small>{monitor.url}</small></td><td><span class={'state '+state}>{state}</span></td><td>{latest && latest.latencyMs > 0n ? latest.latencyMs+' ms' : 'No measurement'}</td><td>{latest ? dateTime(latest.timestamp) : 'Awaiting first check'}</td></tr>)}</tbody></table></div> : <div class="panel empty"><h2>No monitors yet</h2><p class="muted">Add a website or TCP service to start collecting checks.</p><a class="button" style="margin-top:24px" href="/add-monitor">Create your first monitor</a></div>}
+    <div class="actions">{page>1 && <a class="button secondary" href={'?page='+(page-1)}>Previous</a>}{page * 25 < data.total && <a class="button secondary" href={'?page='+(page+1)}>Next</a>}<a class="button secondary" href={Astro.url.pathname+Astro.url.search}>Refresh</a></div>
+  </>}
+</Operator>

@@ -15,17 +15,17 @@ pub enum Error {
 pub enum LocationPrivacy {
     /// Disable location tracking completely
     #[serde(rename = "disabled")]
+    #[default]
     Disabled,
     /// Only track country (no city or region details)
     #[serde(rename = "country_only")]
     CountryOnly,
     /// Full location details (city, country, region)
     #[serde(rename = "full")]
-    #[default]
     Full,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Config {
     pub zeromq: ZeroMQ,
     pub preferences: Preferences,
@@ -33,10 +33,13 @@ pub struct Config {
     pub peerup: PeerUPConfig,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Preferences {
     pub use_peerup_layer: bool,
     pub allow_peer_leech: bool,
+    /// Explicit consent to execute requests originating from the public network.
+    #[serde(default)]
+    pub accept_remote_checks: bool,
     pub minimum_peer_mr: isize,
     pub timeout_seconds: Option<u64>,
     pub degraded_threshold_ms: Option<u64>,
@@ -46,6 +49,15 @@ pub struct Preferences {
     /// Location privacy level: "disabled", "country_only", or "full"
     #[serde(default)]
     pub location_privacy: LocationPrivacy,
+    /// Enable distributed monitoring (other peers monitor your services)
+    #[serde(default)]
+    pub enable_distributed_monitoring: bool,
+    /// Days to retain peer results before auto-deleting (default 7 days)
+    #[serde(default = "default_peer_result_retention_days")]
+    pub peer_result_retention_days: u64,
+    /// Automatically sync results from peers on startup
+    #[serde(default)]
+    pub auto_sync_peer_results: bool,
 }
 
 /// PeerUP P2P network configuration
@@ -95,7 +107,11 @@ impl Default for PeerUPConfig {
 fn default_location_update_interval() -> u64 {
     300 // 5 minutes default for mobile devices
 }
-#[derive(Debug, Serialize, Deserialize)]
+
+fn default_peer_result_retention_days() -> u64 {
+    7 // Keep peer results for 7 days by default
+}
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ZeroMQ {
     pub bind: String,
     pub port: u16,
@@ -129,13 +145,17 @@ impl Default for Config {
         Self {
             zeromq: ZeroMQ { bind: "*".into(), port: 5555 },
             preferences: Preferences {
-                use_peerup_layer: true,
+                use_peerup_layer: false,
                 allow_peer_leech: false,
+                accept_remote_checks: false,
                 minimum_peer_mr: 0,
                 timeout_seconds: Some(10),
                 degraded_threshold_ms: Some(1000),
                 location_update_interval_secs: 300,
-                location_privacy: LocationPrivacy::Full,
+                location_privacy: LocationPrivacy::Disabled,
+                enable_distributed_monitoring: false,
+                peer_result_retention_days: 7,
+                auto_sync_peer_results: false,
             },
             peerup: PeerUPConfig::default(),
         }

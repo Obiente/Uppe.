@@ -22,17 +22,14 @@ reorder_modules = true
 
 # Wrapping & line breaking
 ## wrap_comments = true  # unstable
-format_strings = true
 match_arm_leading_pipes = "Preserve"
 ## match_block_trailing_comma = true  # unstable
 ## trailing_comma = "Vertical"  # unstable
 chain_width = 80
 
 # Miscellaneous
-condense_wildcard_suffixes = true
 force_explicit_abi = true
 merge_derives = true
-normalize_comments = true
 ## normalize_doc_attributes = true  # unstable
 use_field_init_shorthand = true
 use_try_shorthand = true

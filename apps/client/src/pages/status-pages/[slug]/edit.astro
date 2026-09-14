@@ -1,0 +1,9 @@
+---
+import Operator from '../../../layouts/Operator.astro';
+import StatusPageForm from '../../../components/StatusPageForm.astro';
+import { monitorClient,statusPageClient } from '../../../lib/api/client';
+const data=await Promise.all([monitorClient.listMonitors({page:1,pageSize:200}),statusPageClient.getStatusPage({identifier:{case:'slug',value:Astro.params.slug??''}})]).catch(()=>null);
+---
+<Operator title="Edit status page" description="Update the page and choose when it is public.">
+{data ? <StatusPageForm mode="edit" monitors={data[0].monitors} page={data[1]} /> : <div class="error">Unable to load this status page. Please try again or <a href="/status-pages">return to your pages</a>.</div>}
+</Operator>

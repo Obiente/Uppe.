@@ -19,7 +19,13 @@ impl managed::Manager for LibsqlManager {
     type Error = LibsqlError;
 
     async fn create(&self) -> Result<Self::Type, Self::Error> {
-        self.database.connect()
+        let connection = self.database.connect()?;
+        connection
+            .execute_batch(
+                "PRAGMA busy_timeout=5000; PRAGMA foreign_keys=ON; PRAGMA journal_mode=WAL;",
+            )
+            .await?;
+        Ok(connection)
     }
 
     async fn recycle(

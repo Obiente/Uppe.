@@ -1,0 +1,71 @@
+syntax = "proto3";
+package statuspage.v1;
+
+import "google/protobuf/empty.proto";
+
+option go_package = "github.com/Obiente/Uppe/apps/server/gen/statuspage/v1;statuspagev1";
+message StatusPage {
+  string id = 1;
+  string title = 2;
+  string slug = 3;
+  string description = 4;
+  repeated string monitor_ids = 5;
+  string custom_domain = 6;
+  bool is_active = 7;
+  string logo_url = 8;
+  string primary_color = 9;
+  double uptime = 10;
+  int64 visits = 11;
+  optional int64 last_incident = 12;
+  int64 created_at = 13;
+  int64 updated_at = 14;
+}
+message CreateStatusPageRequest {
+  string title = 1;
+  string slug = 2;
+  string description = 3;
+  repeated string monitor_ids = 4;
+  string logo_url = 5;
+  string primary_color = 6;
+  bool is_active = 7;
+}
+message GetStatusPageRequest {
+  oneof identifier {
+    string id = 1;
+    string slug = 2;
+  }
+}
+message ListStatusPagesRequest {
+  int32 page = 1;
+  int32 page_size = 2;
+  bool active_only = 3;
+}
+message ListStatusPagesResponse {
+  repeated StatusPage status_pages = 1;
+  int32 total = 2;
+}
+message UpdateStatusPageRequest {
+  string id = 1;
+  optional string title = 2;
+  optional string slug = 3;
+  optional string description = 4;
+  repeated string monitor_ids = 5;
+  optional bool is_active = 6;
+  optional string logo_url = 7;
+  optional string primary_color = 8;
+  bool replace_monitor_ids = 9;
+}
+message DeleteStatusPageRequest {
+  string id = 1;
+}
+message RecordVisitRequest {
+  string status_page_id = 1;
+}
+service StatusPageService {
+  rpc CreateStatusPage(CreateStatusPageRequest) returns (StatusPage);
+  rpc GetStatusPage(GetStatusPageRequest) returns (StatusPage);
+  rpc ListStatusPages(ListStatusPagesRequest) returns (ListStatusPagesResponse);
+  rpc UpdateStatusPage(UpdateStatusPageRequest) returns (StatusPage);
+  rpc DeleteStatusPage(DeleteStatusPageRequest) returns (google.protobuf.Empty);
+  rpc RecordVisit(RecordVisitRequest) returns (google.protobuf.Empty);
+}

@@ -23,6 +23,7 @@ interface Props {
   visits: number;
   lastIncident: string;
   created: string;
+  editHref?: string;
 }
 
 const {
@@ -34,6 +35,7 @@ const {
   visits,
   lastIncident,
   created,
+  editHref = `/status-pages/${slug}/edit`,
 } = Astro.props;
 
 // Format date for better display
@@ -187,7 +189,7 @@ const getDomain = () => {
           href={`/public/${slug}`}
           class="my-auto"
         />
-        <Button variant="secondary" size="sm"> Edit </Button>
+        <Button variant="secondary" size="sm" href={editHref}> Edit </Button>
       </Flex>
     </Flex>
   </CardBody>

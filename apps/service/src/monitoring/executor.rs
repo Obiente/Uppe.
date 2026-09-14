@@ -1,78 +1,40 @@
-use anyhow::Result;
-use std::sync::Arc;
-use uuid::Uuid;
-
-use super::checker::{CheckType, Checker, HttpChecker, IcmpChecker, TcpChecker};
 use super::types::CheckResult;
+use anyhow::Result;
 
-/// Monitoring executor - executes individual monitoring checks
+/// Executes checks using each monitor's timeout and destination policy.
 pub struct MonitoringExecutor {
-    http_checker: Arc<HttpChecker>,
-    tcp_checker: Arc<TcpChecker>,
-    icmp_checker: Arc<IcmpChecker>,
     peer_id: String,
     degraded_threshold_ms: u64,
+    permits: tokio::sync::Semaphore,
 }
-
 impl MonitoringExecutor {
-    /// Create a new monitoring executor
-    pub fn new(peer_id: String, timeout_seconds: u64, degraded_threshold_ms: u64) -> Result<Self> {
-        Ok(Self {
-            http_checker: Arc::new(HttpChecker::new(timeout_seconds)?),
-            tcp_checker: Arc::new(TcpChecker::new(timeout_seconds)),
-            icmp_checker: Arc::new(IcmpChecker::new(timeout_seconds)),
-            peer_id,
-            degraded_threshold_ms,
-        })
+    pub fn new(peer_id: String, _timeout_seconds: u64, degraded_threshold_ms: u64) -> Result<Self> {
+        Ok(Self { peer_id, degraded_threshold_ms, permits: tokio::sync::Semaphore::new(64) })
     }
-
-    /// Execute a monitoring check
-    pub async fn execute_check(
-        &self,
-        monitor_id: Uuid,
-        target: String,
-        check_type: CheckType,
-    ) -> CheckResult {
-        let mut result = CheckResult::new(monitor_id, target.clone(), self.peer_id.clone());
-
-        let checker: &dyn Checker = match check_type {
-            CheckType::Http | CheckType::Https => self.http_checker.as_ref(),
-            CheckType::Tcp => self.tcp_checker.as_ref(),
-            CheckType::Icmp => self.icmp_checker.as_ref(),
+    pub async fn execute_config(&self, config: &super::scheduler::MonitorConfig) -> CheckResult {
+        let result = CheckResult::new(
+            config.id,
+            config.target.clone(),
+            format!("{:?}", config.check_type).to_lowercase(),
+            self.peer_id.clone(),
+        );
+        // Skip overloaded ticks instead of growing a queue of overdue checks.
+        let Ok(_permit) = self.permits.try_acquire() else {
+            return result.failure("Node check capacity reached".into());
         };
-
-        match checker.check(&target).await {
-            Ok((latency_ms, status_code)) => {
-                if latency_ms > self.degraded_threshold_ms {
-                    result = result.degraded(latency_ms, status_code);
-                } else {
-                    result = result.success(latency_ms, status_code);
-                }
+        match super::checker::check_target(
+            &config.target,
+            config.check_type,
+            config.timeout_seconds,
+            config.allow_private_targets,
+        )
+        .await
+        {
+            Ok((latency, code)) if latency > self.degraded_threshold_ms => {
+                result.degraded(latency, code)
             }
-            Err(e) => {
-                result = result.failure(e.to_string());
-            }
+            Ok((latency, code)) => result.success(latency, code),
+            Err(error) => result.failure(error.to_string()),
         }
-
-        result
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::monitoring::types::MonitorStatus;
-
-    #[tokio::test]
-    async fn test_http_check() {
-        let executor = MonitoringExecutor::new("test-peer".to_string(), 10, 1000).unwrap();
-
-        let result = executor
-            .execute_check(Uuid::new_v4(), "https://example.com".to_string(), CheckType::Https)
-            .await;
-
-        // Should succeed for example.com
-        assert!(matches!(result.status, MonitorStatus::Up | MonitorStatus::Degraded));
-        assert!(result.latency_ms.is_some());
     }
 }

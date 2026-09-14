@@ -1,228 +1,74 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import UptimeChart from '../../components/UptimeChart.astro';
-import GlobalPingMap from '../../components/GlobalPingMap.astro';
-import IncidentList from '../../components/IncidentList.astro';
-import { 
-  Section, 
-  Grid, 
-  Card, 
-  CardBody, 
-  Heading, 
-  Paragraph, 
-  MetricCard,
-  StatusBadge,
-  Badge
-} from "../../components/ui";
+import { publicStatusPageClient } from '../../lib/api/client';
+import { Code, ConnectError } from '@connectrpc/connect';
+import { ResultStatus } from '../../gen/result/v1/result_pb';
+import type { PublicStatusPage } from '../../gen/publicstatuspage/v1/publicstatuspage_pb';
 
-export async function getStaticPaths() {
-  // In a real app, this would fetch from your API or database
-  return [
-    { params: { slug: 'production-api' } },
-    { params: { slug: 'website' } },
-    { params: { slug: 'database' } }
-  ];
+let page: PublicStatusPage | undefined;
+let unavailable = false;
+try {
+  page = await publicStatusPageClient.getPublicStatusPage({ slug: Astro.params.slug ?? '' });
+} catch (error) {
+  unavailable = !(error instanceof ConnectError && error.code === Code.NotFound);
+  Astro.response.status = unavailable ? 503 : 404;
 }
-
-const { slug } = Astro.params;
-
-// Mock public status page data - in real app, this would come from API
-const statusPage = {
-	slug: slug,
-	title: 'Production API Status',
-	description: 'Real-time status and uptime monitoring for our production API service',
-	url: 'https://api.example.com',
-	status: 'online',
-	uptime: 99.97,
-	avgResponseTime: 142,
-	lastCheck: '2024-01-15T10:30:00Z',
-	monitoringPeers: 12,
-	owner: 'Example Corp',
-	logo: '/logo.png',
-	customBranding: {
-		primaryColor: '#eb6f92',
-		backgroundColor: '#191724',
-		textColor: '#e0def4'
-	}
+const status = (value: ResultStatus) => {
+  if (value === ResultStatus.UP) return 'Operational';
+  if (value === ResultStatus.DEGRADED) return 'Degraded';
+  if ([ResultStatus.DOWN, ResultStatus.ERROR, ResultStatus.TIMEOUT].includes(value)) return 'Disruption';
+  return 'Awaiting checks';
 };
-
-const uptimeData = [99.5, 99.8, 99.2, 99.9, 99.6, 99.7, 99.9, 99.8, 99.5, 99.3, 99.7, 99.8, 99.9, 99.6, 99.4, 99.7, 99.8, 99.9, 99.5, 99.6, 99.8, 99.7, 99.9, 99.8];
-const hours = Array.from({ length: 24 }, (_, i) => i);
-
-const peerData = [
-	{ id: '1', location: 'New York, US', latitude: 40.7128, longitude: -74.0060, ping: 45, status: 'online' as const, lastCheck: '2024-01-15T10:30:00Z' },
-	{ id: '2', location: 'London, UK', latitude: 51.5074, longitude: -0.1278, ping: 78, status: 'online' as const, lastCheck: '2024-01-15T10:30:00Z' },
-	{ id: '3', location: 'Tokyo, JP', latitude: 35.6762, longitude: 139.6503, ping: 125, status: 'online' as const, lastCheck: '2024-01-15T10:30:00Z' },
-	{ id: '4', location: 'Sydney, AU', latitude: -33.8688, longitude: 151.2093, ping: 189, status: 'timeout' as const, lastCheck: '2024-01-15T10:29:00Z' },
-	{ id: '5', location: 'São Paulo, BR', latitude: -23.5505, longitude: -46.6333, ping: 156, status: 'online' as const, lastCheck: '2024-01-15T10:30:00Z' }
-];
-
-const recentIncidents = [
-	{
-		id: '1',
-		title: 'API Response Timeout',
-		description: 'Increased response times detected from multiple monitoring peers',
-		status: 'resolved' as const,
-		time: '2024-01-12T14:23:00Z',
-		duration: '24 minutes'
-	},
-	{
-		id: '2',
-		title: 'Service Unreachable',
-		description: 'Service completely unreachable from European peers',
-		status: 'resolved' as const,
-		time: '2024-01-10T08:15:00Z',
-		duration: '8 minutes'
-	}
-];
-
-const pageTitle = `${statusPage.title} - Status Page`;
-const metaDescription = `${statusPage.description} - Current uptime: ${statusPage.uptime}%`;
+const statuses = page?.monitors.map(m => status(m.status)) ?? [];
+const heading = statuses.includes('Disruption') ? 'Service disruption'
+  : statuses.includes('Degraded') ? 'Performance degradation'
+  : statuses.length === 0 || statuses.includes('Awaiting checks') ? 'Status unavailable'
+  : 'All systems operational';
+const color = /^#[0-9a-fA-F]{6}$/.test(page?.primaryColor ?? '') ? page!.primaryColor : '#c4a7e7';
 ---
-
-<Layout title={pageTitle}>
-	<div class="min-h-screen bg-surface-primary text-primary">
-		<!-- Header -->
-		<header class="border-b border-primary bg-surface-primary">
-			<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-				<div class="flex items-center justify-between">
-					<div class="flex items-center gap-4">
-						{statusPage.logo && (
-							<img src={statusPage.logo} alt={statusPage.owner} class="w-8 h-8 rounded" />
-						)}
-						<div>
-							<Heading level={1} class="text-2xl font-bold text-primary">{statusPage.title}</Heading>
-							<Paragraph class="text-secondary text-sm">{statusPage.description}</Paragraph>
-						</div>
-					</div>
-					<div class="flex items-center gap-3">
-						<StatusBadge status={statusPage.status as 'online' | 'offline' | 'degraded' | 'maintenance' | 'unknown'} />
-					</div>
-				</div>
-			</div>
-		</header>
-
-		<main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-			<!-- Current Status Banner -->
-			<Section>
-				<Card class={`border-2 ${statusPage.status === 'online' ? 'bg-status-online/10 border-status-online' : 'bg-status-error/10 border-status-error'}`}>
-					<CardBody>
-						<div class="flex items-center justify-between">
-							<div>
-								<Heading level={2} class="text-xl font-semibold text-primary mb-2">
-									{statusPage.status === 'online' ? 'All Systems Operational' : 'Service Disruption'}
-								</Heading>
-								<Paragraph class="text-secondary">
-									{statusPage.status === 'online' 
-										? 'All monitored services are running smoothly' 
-										: 'We are experiencing issues with our services'
-									}
-								</Paragraph>
-							</div>
-							<div class="text-right">
-								<div class="text-3xl font-bold text-primary">{statusPage.uptime}%</div>
-								<div class="text-sm text-secondary">24h uptime</div>
-							</div>
-						</div>
-					</CardBody>
-				</Card>
-			</Section>
-
-			<!-- Service Overview -->
-			<Section>
-				<Grid cols="3">
-					<MetricCard 
-						title="Service URL" 
-						value={statusPage.url}
-						icon="GLOBAL"
-					/>
-					<MetricCard 
-						title="Response Time" 
-						value={`${statusPage.avgResponseTime}ms`}
-						icon="PERFORMANCE"
-					/>
-					<MetricCard 
-						title="Monitoring Locations" 
-						value={statusPage.monitoringPeers.toString()}
-						icon="PERFORMANCE"
-					/>
-				</Grid>
-			</Section>
-
-			<!-- Uptime Chart -->
-			<Section>
-				<UptimeChart hours={hours} uptimeData={uptimeData} />
-			</Section>
-
-			<!-- Global Monitoring Map -->
-			<Section>
-				<GlobalPingMap peerData={peerData} targetUrl={statusPage.url} />
-			</Section>
-
-			<!-- Recent Incidents -->
-			<Section>
-				<IncidentList recentIncidents={recentIncidents} />
-			</Section>
-
-			<!-- Footer -->
-			<Section>
-				<footer class="border-t border-primary pt-8 mt-12">
-					<div class="text-center text-secondary">
-						<Paragraph class="mb-2">Powered by <strong class="text-primary">Uppe.</strong></Paragraph>
-						<Paragraph class="text-sm">Decentralized P2P uptime monitoring</Paragraph>
-						<div class="mt-4 flex items-center justify-center gap-4 text-xs">
-							<span>Last updated: {new Date(statusPage.lastCheck).toLocaleString()}</span>
-							<span>•</span>
-							<span>Monitored by {statusPage.monitoringPeers} peers worldwide</span>
-						</div>
-					</div>
-				</footer>
-			</Section>
-		</main>
-	</div>
+<Layout title={page?.title ?? (unavailable ? 'Status temporarily unavailable' : 'Page not found')}>
+  <main class="mx-auto max-w-4xl px-6 py-14 text-primary" style={`--page-accent:${color}`}>
+    {!page ? (
+      <div class="rounded-xl border border-primary bg-bg-secondary p-8">
+        <h1 class="text-2xl font-semibold">{unavailable ? 'Status temporarily unavailable' : 'Page not found'}</h1>
+        <p class="mt-3 text-secondary">{unavailable ? 'We could not load the latest checks. Try again shortly.' : 'This status page is not published.'}</p>
+      </div>
+    ) : (
+      <>
+        <header class="mb-10 border-b border-primary pb-8">
+          {page.logoUrl && <img src={page.logoUrl} alt="" referrerpolicy="no-referrer" width="64" height="64" class="mb-5 h-16 w-16 object-contain" />}
+          <p class="text-sm uppercase tracking-widest text-secondary">Service status</p>
+          <h1 class="mt-3 text-4xl font-semibold" style="color:var(--page-accent)">{page.title}</h1>
+          {page.description && <p class="mt-4 text-secondary">{page.description}</p>}
+        </header>
+        <section class="mb-8 rounded-xl border border-primary bg-bg-secondary p-7" aria-label="Overall status">
+          <h2 class="text-2xl font-semibold">{heading}</h2>
+          <p class="mt-2 text-secondary">Current checks from the services on this page.</p>
+        </section>
+        <section class="space-y-4" aria-label="Services">
+          {page.monitors.length === 0 && <p class="text-secondary">No services have been added yet.</p>}
+          {page.monitors.map(m => (
+            <article class="rounded-xl border border-primary bg-bg-secondary p-6">
+              <div class="flex flex-wrap items-center justify-between gap-3">
+                <h2 class="font-semibold text-lg">{m.name}</h2>
+                <span class:list={['text-sm font-medium', { 'text-status-success': m.status === ResultStatus.UP, 'text-status-error': ['Disruption'].includes(status(m.status)), 'text-secondary': status(m.status) === 'Awaiting checks' }]}>{status(m.status)}</span>
+              </div>
+              <dl class="mt-5 grid grid-cols-1 gap-3 text-sm sm:grid-cols-3">
+                <div><dt class="text-secondary">Uptime, last 24 hours</dt><dd class="mt-1">{Number(m.totalChecks) > 0 ? `${m.uptimePercentage.toFixed(2)}%` : 'No checks yet'}</dd></div>
+                <div><dt class="text-secondary">Average response</dt><dd class="mt-1">{m.averageLatencyMs > 0 ? `${Math.round(m.averageLatencyMs)} ms` : 'Unavailable'}</dd></div>
+                <div><dt class="text-secondary">Last checked</dt><dd class="mt-1">{Number(m.lastChecked) > 0 ? new Date(Number(m.lastChecked) * 1000).toLocaleString('en-GB', {timeZone:'UTC'}) + ' UTC' : 'Awaiting checks'}</dd></div>
+              </dl>
+            </article>
+          ))}
+        </section>
+        <footer class="mt-12 flex items-center justify-between border-t border-primary pt-6 text-sm text-secondary">
+          <span>Uppe.</span><button type="button" id="refreshStatus" class="hover:text-primary">Refresh status</button>
+        </footer>
+      </>
+    )}
+  </main>
 </Layout>
-
-<style>
-	/* Custom branding support */
-	:root {
-		--brand-primary: var(--color-accent-primary);
-		--brand-bg: var(--color-surface-primary);
-		--brand-text: var(--color-text-primary);
-	}
-	
-	/* Override theme colors if custom branding is provided */
-	.custom-brand {
-		background-color: var(--brand-bg);
-		color: var(--brand-text);
-	}
-	
-	.custom-brand .accent {
-		color: var(--brand-primary);
-	}
-</style>
-
 <script>
-	// Auto-refresh the page every 30 seconds
-	let refreshInterval = setInterval(() => {
-		window.location.reload();
-	}, 30000);
-
-	// Pause auto-refresh when user is interacting
-	let interactionTimeout: ReturnType<typeof setTimeout>;
-	
-	function resetRefreshTimer() {
-		clearInterval(refreshInterval);
-		clearTimeout(interactionTimeout);
-		
-		interactionTimeout = setTimeout(() => {
-			refreshInterval = setInterval(() => {
-				window.location.reload();
-			}, 30000);
-		}, 60000); // Resume after 1 minute of inactivity
-	}
-
-	// Listen for user interactions
-	document.addEventListener('mousemove', resetRefreshTimer);
-	document.addEventListener('keydown', resetRefreshTimer);
-	document.addEventListener('scroll', resetRefreshTimer);
+  document.getElementById('refreshStatus')?.addEventListener('click', () => window.location.reload());
+  setTimeout(() => { if (document.visibilityState === 'visible') window.location.reload(); }, 60_000);
 </script>

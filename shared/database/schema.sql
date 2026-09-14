@@ -1,10 +1,11 @@
 -- ============================================================================
--- Uppe. Database Schema (Source of Truth)
+-- Uppe. Historical Database Schema Snapshot
 -- ============================================================================
--- 
--- This file documents the canonical database schema.
--- The Rust service (apps/service) is responsible for running migrations.
--- The Go API (apps/server) reads from this schema but does NOT run migrations.
+--
+-- Documentation only: this older snapshot is not the current executable schema.
+-- apps/service/src/database/migrations.rs is the canonical source of truth.
+-- Start through the launcher or run `uppe-service migrate` to create schema 7.
+-- The Go API verifies compatibility but does NOT run migrations.
 --
 -- Schema Version: 2.0.0
 -- Last Updated: 2026-01-11
@@ -24,26 +25,32 @@
 CREATE TABLE IF NOT EXISTS monitors (
     -- Primary key (internal reference)
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    
+
     -- UUID for external reference (API, P2P)
     uuid TEXT NOT NULL UNIQUE,
-    
+
     -- Monitor configuration
     name TEXT NOT NULL,                          -- Display name
     target TEXT NOT NULL,                        -- URL or host to monitor
     check_type TEXT NOT NULL,                    -- 'Http', 'Tcp', 'Icmp'
     interval_seconds INTEGER NOT NULL DEFAULT 30, -- Check frequency
     timeout_seconds INTEGER NOT NULL DEFAULT 10,  -- Max wait time
-    
+
     -- HTTP-specific fields (added in v2)
     expected_status_codes TEXT DEFAULT '[]',     -- JSON array: ["200", "201"]
     headers TEXT DEFAULT '{}',                   -- JSON object: {"User-Agent": "..."}
     body TEXT DEFAULT '',                        -- Request body for POST/PUT
-    
+
+    -- Visibility & Orchestration (v3 - Public/Private monitors)
+    visibility TEXT NOT NULL DEFAULT 'Private',  -- 'Public' or 'Private'
+    public_domain TEXT,                          -- For public monitors (e.g., "google.com")
+    public_display_name TEXT,                    -- Display name for grouped public monitors
+    owner_peer_id TEXT,                          -- For private monitors (peer that owns it)
+
     -- Status & ownership
     enabled INTEGER NOT NULL DEFAULT 1,          -- 0=disabled, 1=enabled
     user_id TEXT,                                -- For multi-user support
-    
+
     -- Timestamps (Unix timestamps in seconds)
     created_at INTEGER NOT NULL,
     updated_at INTEGER NOT NULL
@@ -53,9 +60,11 @@ CREATE TABLE IF NOT EXISTS monitors (
 CREATE INDEX IF NOT EXISTS idx_monitors_uuid ON monitors(uuid);
 CREATE INDEX IF NOT EXISTS idx_monitors_enabled ON monitors(enabled);
 CREATE INDEX IF NOT EXISTS idx_monitors_created_at ON monitors(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_monitors_visibility ON monitors(visibility);
+CREATE INDEX IF NOT EXISTS idx_monitors_public_domain ON monitors(public_domain) WHERE public_domain IS NOT NULL;
 
 -- ============================================================================
--- Table: monitor_results  
+-- Table: monitor_results
 -- ============================================================================
 -- Stores results of monitoring checks performed by this node.
 -- Each row represents one check execution.
@@ -67,29 +76,29 @@ CREATE INDEX IF NOT EXISTS idx_monitors_created_at ON monitors(created_at DESC);
 CREATE TABLE IF NOT EXISTS monitor_results (
     -- Primary key
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    
+
     -- Foreign key to monitors table (using UUID for flexibility)
     monitor_uuid TEXT NOT NULL,
-    
+
     -- Result data
     timestamp INTEGER NOT NULL,                  -- When check was performed (Unix)
     status TEXT NOT NULL,                        -- 'Up', 'Down', 'Timeout', 'Error', 'Degraded'
     latency_ms INTEGER,                          -- Response time in milliseconds
     status_code INTEGER,                         -- HTTP status code (if applicable)
     error_message TEXT,                          -- Error details if failed
-    
+
     -- Peer identification and verification
     peer_id TEXT NOT NULL,                       -- Public key of node that ran check
     signature BLOB,                              -- Cryptographic signature of result
-    
+
     -- Metadata
     created_at INTEGER NOT NULL,                 -- When row was inserted (Unix)
-    
+
     -- Location (GeoIP of monitoring node)
     city TEXT,
     country TEXT,
     region TEXT,
-    
+
     -- Foreign key constraint
     FOREIGN KEY (monitor_uuid) REFERENCES monitors(uuid) ON DELETE CASCADE
 );
@@ -114,31 +123,36 @@ CREATE INDEX IF NOT EXISTS idx_monitor_results_status ON monitor_results(status)
 CREATE TABLE IF NOT EXISTS peer_results (
     -- Primary key
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    
+
     -- Reference to which monitor this result is for
     monitor_uuid TEXT NOT NULL,
-    
+
     -- Result data (same structure as monitor_results)
     timestamp INTEGER NOT NULL,
     status TEXT NOT NULL,
     latency_ms INTEGER,
     status_code INTEGER,
     error_message TEXT,
-    
+
     -- Peer identification
     peer_id TEXT NOT NULL,                       -- Public key of remote peer
     signature BLOB NOT NULL,                     -- Required for peer results
-    
+
     -- Verification status
     verified INTEGER NOT NULL DEFAULT 0,         -- 0=unverified, 1=verified
-    
+
     -- Metadata
     created_at INTEGER NOT NULL,
-    
+
     -- Location of remote peer
     city TEXT,
     country TEXT,
-    region TEXT
+    region TEXT,
+
+    -- P2P synchronization tracking
+    source_peer_id TEXT,                         -- Peer that originally created this result
+    synced_from_peer INTEGER DEFAULT 0,          -- 1=received from DHT sync, 0=received via gossipsub
+    retention_until INTEGER                      -- Unix timestamp when to delete (for cleanup automation)
 );
 
 -- Indexes for peer_results
@@ -166,9 +180,9 @@ CREATE TABLE IF NOT EXISTS schema_migrations (
 -- ============================================================================
 -- Status Values Reference
 -- ============================================================================
--- 
+--
 -- The 'status' column in monitor_results and peer_results uses these values:
--- 
+--
 -- | Value      | Description                                    |
 -- |------------|------------------------------------------------|
 -- | 'up'       | Service responded successfully                 |

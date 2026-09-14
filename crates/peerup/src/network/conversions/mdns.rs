@@ -1,10 +1,6 @@
 //! Conversions from mdns events to PeerUPEvent.
-//!
-//! Note: This conversion is a best-effort mapping. Not all mDNS events map
-//! cleanly to PeerUPEvent, and some variants use PeerDiscovered or PeerRemoved
-//! with a random PeerId as a fallback. Adjust as needed for your use case.
 
-use libp2p::{mdns, PeerId};
+use libp2p::mdns;
 
 use crate::network::events::PeerUPEvent;
 
@@ -15,14 +11,14 @@ impl From<mdns::Event> for PeerUPEvent {
                 if let Some((peer_id, _)) = list.into_iter().next() {
                     PeerUPEvent::PeerDiscovered(peer_id)
                 } else {
-                    PeerUPEvent::PeerDiscovered(PeerId::random())
+                    PeerUPEvent::Noop
                 }
             }
             mdns::Event::Expired(list) => {
                 if let Some((peer_id, _)) = list.into_iter().next() {
                     PeerUPEvent::PeerRemoved(peer_id)
                 } else {
-                    PeerUPEvent::PeerRemoved(PeerId::random())
+                    PeerUPEvent::Noop
                 }
             }
         }

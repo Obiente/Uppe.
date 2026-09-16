@@ -5,14 +5,14 @@
 //! Secure, auto-updating admin authentication using HTTPS bootstrap + DHT caching.
 //!
 //! ## Architecture:
-//! 1. **HTTPS Bootstrap**: Fetch initial admin keys from keys.uppe.dev (Git-tracked)
+//! 1. **HTTPS Bootstrap**: Fetch initial admin keys from keys.uppe.rs (Git-tracked)
 //! 2. **DHT Caching**: Cache keys in DHT for offline/decentralized operation
 //! 3. **Key Rotation**: Admins sign new keys with old keys, creating verifiable chain
 //! 4. **Automatic Verification**: Nodes verify chain and update hourly
 //! 5. **Revocation**: Compromised keys added to CRL (Certificate Revocation List)
 //!
 //! ## Security Model:
-//! - Root keys served over HTTPS from keys.uppe.dev (DNS + TLS security)
+//! - Root keys served over HTTPS from keys.uppe.rs (DNS + TLS security)
 //! - Git commit history provides audit trail
 //! - Optional fingerprint pinning for paranoid users
 //! - Key rotations signed by previous key (chain of trust)
@@ -26,7 +26,7 @@ use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 /// Bootstrap URLs for fetching admin trust chain (tried in order)
 pub const ADMIN_KEY_BOOTSTRAP_URLS: &[&str] = &[
-    "https://keys.uppe.dev/admin-trust-chain.json", // Primary CDN
+    "https://keys.uppe.rs/admin-trust-chain.json", // Primary CDN
     "https://uppe.github.io/keys/admin-trust-chain.json", // GitHub Pages
     "https://raw.githubusercontent.com/Obiente/Uppe/main/admin-keys.json", // Raw GitHub
 ];

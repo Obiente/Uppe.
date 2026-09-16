@@ -90,7 +90,7 @@ fn render_status(f: &mut Frame, area: Rect, state: &AppState) {
             ]),
             Line::from(vec![
                 Span::raw("  Source: "),
-                Span::styled("HTTPS (keys.uppe.dev)", Style::default().fg(Color::Cyan)),
+                Span::styled("HTTPS (keys.uppe.rs)", Style::default().fg(Color::Cyan)),
             ]),
             Line::from(vec![
                 Span::raw("  Version: "),
@@ -195,7 +195,7 @@ fn render_status(f: &mut Frame, area: Rect, state: &AppState) {
         Line::from(""),
         Line::from(vec![
             Span::raw("Keys are fetched from: "),
-            Span::styled("keys.uppe.dev", Style::default().fg(Color::Cyan)),
+            Span::styled("keys.uppe.rs", Style::default().fg(Color::Cyan)),
         ]),
         Line::from("Fallback: GitHub Pages, Raw GitHub"),
         Line::from(""),

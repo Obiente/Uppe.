@@ -330,7 +330,7 @@ Users point DNS to an Uppe gateway/resolver.
 
 Options:
 
-- `CNAME status.example.com -> gateway.uppe.dev`
+- `CNAME status.example.com -> gateway.uppe.rs`
 - TXT-based mapping to owner/page identity
 - eventually multi-gateway failover
 

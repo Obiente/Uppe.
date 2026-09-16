@@ -9,30 +9,12 @@ mod config;
 mod crypto;
 mod database;
 mod location;
-mod models;
 mod monitoring;
 mod orchestrator;
 mod p2p;
 mod pool;
 mod tui;
 mod validation;
-
-#[derive(Debug, Clone, Copy, clap::ValueEnum)]
-enum Visibility {
-    Public,
-    Private,
-    Internal,
-}
-
-impl From<Visibility> for MonitorVisibility {
-    fn from(value: Visibility) -> Self {
-        match value {
-            Visibility::Private => MonitorVisibility::Private,
-            Visibility::Public => MonitorVisibility::Public,
-            Visibility::Internal => MonitorVisibility::Internal,
-        }
-    }
-}
 
 #[derive(Subcommand, Debug)]
 enum MonitorCmd {
@@ -47,8 +29,8 @@ enum MonitorCmd {
         #[arg(long)]
         target: String,
         /// Monitor Visibility
-        #[arg(long, value_enum, default_value_t = Visibility::Private)]
-        visibility: Visibility,
+        #[arg(long, value_enum, default_value_t = MonitorVisibility::Private)]
+        visibility: MonitorVisibility,
         /// Check type (http, https, tcp, icmp)
         #[arg(long, default_value = "http")]
         check_type: String,
@@ -240,7 +222,7 @@ async fn main() -> anyhow::Result<()> {
                     let mut monitor = database::models::Monitor::new(name, target, check_type);
                     monitor.interval_seconds = interval;
                     monitor.timeout_seconds = timeout;
-                    monitor.visibility = visibility.into();
+                    monitor.visibility = visibility;
                     let id = dbi.save_monitor(&monitor).await?;
                     match audit::load_local_keypair() {
                         Ok(keypair) => {

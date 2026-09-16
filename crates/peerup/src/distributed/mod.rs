@@ -12,41 +12,25 @@
 //! - **Cleanup**: Automatic deletion of expired peer data
 //! - **Visibility**: Public (community-owned) vs Private (owner-controlled)
 //!
-//! ## Visibility Types
-//!
-//! Applications can define their own visibility types. The visibility module
-//! provides examples for monitoring applications, but the concepts apply broadly:
-//!
-//! - **Public**: Community-owned, discoverable, long-term retention
-//! - **Private**: Owner-controlled, temporary storage, privacy-preserving
-//! - **Internal**: Owner-only, no peer orchestration
+//! Applications own visibility, scheduling, and retention policy around these
+//! generic peer-storage primitives.
 //!
 //! ## Use Cases
 //!
-//! - Distributed monitoring (Uppe.)
-//! - Distributed messaging
-//! - Distributed file sharing
+//! - Distributed application data
+//! - Peer-assisted recovery
+//! - Community data backups
 //! - Any P2P system needing resilience
 
-pub mod consensus;
-pub mod dht;
 pub mod messages;
 pub mod metadata;
 pub mod storage;
 pub mod sync;
-pub mod visibility;
 
-pub use consensus::{ConsensusManager, ConsensusState, OrchestrationVote, RateLimitState};
-pub use dht::{PublicMonitorDHT, PublicMonitorRegistry};
-pub use messages::{
-    DataQueryRequest, DataQueryResponse, PeerData, PublicMonitorMessage, SyncCompletionNotification,
-};
+pub use messages::{DataQueryRequest, DataQueryResponse, PeerData, SyncCompletionNotification};
 pub use metadata::{PeerLocation, PeerMetadataDHT, PeerRateLimits, PeerTrustScore};
 pub use storage::PeerDataStorage;
 pub use sync::SyncManager;
-pub use visibility::{
-    MonitorVisibility, OrchestrationSchedule, PublicMonitorGroup, RetentionPolicy,
-};
 
 /// Trait for types that can be stored as peer data
 pub trait StorableData: Send + Sync {

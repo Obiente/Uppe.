@@ -32,7 +32,8 @@ pub struct Monitor {
 }
 
 /// Monitor visibility (matches PeerUP visibility types)
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Default)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, Default, clap::ValueEnum)]
+#[value(rename_all = "lower")]
 pub enum MonitorVisibility {
     /// Public monitor - community-owned, coordinated
     Public,

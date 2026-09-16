@@ -149,81 +149,10 @@ impl SyncCompletionNotification {
     }
 }
 
-// ===== Public Monitor Coordination Messages =====
-
-use super::{OrchestrationSchedule, PublicMonitorGroup};
-
-/// Messages exchanged between peers for public monitor coordination
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub enum PublicMonitorMessage {
-    Vote {
-        vote: Box<super::OrchestrationVote>,
-    },
-    /// Announce a new public monitor group
-    Announce {
-        domain: String,
-        display_name: String,
-        creator_peer_id: String,
-    },
-
-    /// Request to join an existing monitor group
-    Join {
-        domain: String,
-        peer_id: String,
-    },
-
-    /// Notification that a peer is leaving
-    Leave {
-        domain: String,
-        peer_id: String,
-    },
-
-    /// Propose schedule update (triggers consensus vote)
-    ScheduleUpdate {
-        domain: String,
-        schedule: OrchestrationSchedule,
-    },
-
-    /// Query for group information
-    GroupQuery {
-        domain: String,
-    },
-
-    /// Response to group query
-    GroupResponse {
-        domain: String,
-        group: Option<PublicMonitorGroup>,
-    },
-}
-
-impl PublicMonitorMessage {
-    /// Get the domain this message refers to
-    pub fn domain(&self) -> &str {
-        match self {
-            Self::Vote { vote } => &vote.domain,
-            Self::Announce { domain, .. }
-            | Self::Join { domain, .. }
-            | Self::Leave { domain, .. }
-            | Self::ScheduleUpdate { domain, .. }
-            | Self::GroupQuery { domain }
-            | Self::GroupResponse { domain, .. } => domain,
-        }
-    }
-
-    /// Get the peer ID if message is from a specific peer
-    pub fn peer_id(&self) -> Option<&str> {
-        match self {
-            Self::Vote { vote } => Some(&vote.voter_peer_id),
-            Self::Announce { creator_peer_id, .. } => Some(creator_peer_id),
-            Self::Join { peer_id, .. } | Self::Leave { peer_id, .. } => Some(peer_id),
-            _ => None,
-        }
-    }
-}
-
 #[cfg(test)]
 mod signature_tests {
     use super::*;
+
     #[test]
     fn verifies_payload_and_all_routing_metadata() {
         let key = crate::crypto::generate_keypair();

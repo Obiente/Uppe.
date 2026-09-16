@@ -117,7 +117,7 @@ impl P2PNetwork {
         }
 
         // Subscribe to monitoring results topic (public monitors)
-        node.subscribe_to_results()?;
+        node.subscribe_to_topic("/uppe/monitoring/results/v1")?;
 
         // Subscribe to helper assignments topic (for receiving helper requests)
         use crate::p2p::topics::UppeTopic;
@@ -171,7 +171,7 @@ impl P2PNetwork {
                                 };
 
                                 if let Ok(json) = serde_json::to_string(&signed_msg) {
-                                    match node.publish_result(json) {
+                                    match node.publish_to_topic("/uppe/monitoring/results/v1", json.into_bytes()) {
                                         Ok(_) => {
                                             tracing::debug!("Published monitoring result to P2P network");
                                         }
@@ -184,14 +184,14 @@ impl P2PNetwork {
                                 }
                             }
                             P2PCommand::Subscribe => {
-                                if let Err(e) = node.subscribe_to_results() {
+                                if let Err(e) = node.subscribe_to_topic("/uppe/monitoring/results/v1") {
                                     tracing::error!("Failed to subscribe: {}", e);
                                 } else {
                                     let _ = event_tx.send(P2PEvent::Subscribed).await;
                                 }
                             }
                             P2PCommand::Unsubscribe => {
-                                if let Err(e) = node.unsubscribe_from_results() {
+                                if let Err(e) = node.unsubscribe_from_topic("/uppe/monitoring/results/v1") {
                                     tracing::error!("Failed to unsubscribe: {}", e);
                                 } else {
                                     let _ = event_tx.send(P2PEvent::Unsubscribed).await;
@@ -393,7 +393,7 @@ impl P2PNetwork {
                                 let topic_str = message.topic.to_string();
 
                                 if topic_str.starts_with("/uppe/public-monitors/") {
-                                    if let Ok(group_message) = serde_json::from_slice::<peerup::distributed::PublicMonitorMessage>(&message.data) {
+                                    if let Ok(group_message) = serde_json::from_slice::<crate::orchestrator::public_monitor::PublicMonitorMessage>(&message.data) {
                                         let domain = group_message.domain().to_string();
                                         let claimed = group_message.peer_id();
                                         if domain.len() <= 253 && topic_str == format!("/uppe/public-monitors/{domain}")

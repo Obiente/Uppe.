@@ -10,7 +10,7 @@ pub mod verification;
 // Re-export from peerup's crypto module
 pub use peerup::crypto::{
     EncryptedResult, KeyPair, decrypt_result_for_owner, encrypt_result_for_owner,
-    load_or_generate_keypair,
+    load_or_generate_keypair, verify_signature,
 };
 
 // Re-export service-specific functions

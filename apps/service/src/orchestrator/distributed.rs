@@ -3,9 +3,11 @@
 //! This module coordinates monitoring checks across peers using consensus-based
 //! scheduling to prevent DDoS and ensure fair distribution.
 
+use crate::orchestrator::public_monitor::{
+    ConsensusManager, OrchestrationSchedule, PublicMonitorGroup,
+};
 use anyhow::Result;
 use peerup::crypto::KeyPair;
-use peerup::distributed::{ConsensusManager, OrchestrationSchedule, PublicMonitorGroup};
 use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::RwLock;
@@ -230,7 +232,7 @@ impl DistributedOrchestrator {
         let signature_bytes = peerup::crypto::sign_bytes(vote_data.as_bytes(), &self.keypair);
         let signature = hex::encode(&signature_bytes);
 
-        let vote = peerup::distributed::OrchestrationVote {
+        let vote = crate::orchestrator::public_monitor::OrchestrationVote {
             domain: domain.to_string(),
             schedule,
             voter_peer_id: self.peer_id.clone(),
@@ -252,7 +254,10 @@ impl DistributedOrchestrator {
     }
 
     /// Handle incoming vote from another peer
-    pub async fn handle_vote(&self, vote: peerup::distributed::OrchestrationVote) -> Result<()> {
+    pub async fn handle_vote(
+        &self,
+        vote: crate::orchestrator::public_monitor::OrchestrationVote,
+    ) -> Result<()> {
         {
             let groups = self.groups.read().await;
             let group = groups.get(&vote.domain).ok_or_else(|| anyhow::anyhow!("Unknown group"))?;
@@ -357,7 +362,7 @@ impl DistributedOrchestrator {
 
     /// Broadcast announcement of new public monitor group
     async fn broadcast_announcement(&self, group: &PublicMonitorGroup) -> Result<()> {
-        let message = peerup::distributed::PublicMonitorMessage::Announce {
+        let message = crate::orchestrator::public_monitor::PublicMonitorMessage::Announce {
             domain: group.domain.clone(),
             display_name: group.display_name.clone(),
             creator_peer_id: self.peer_id.clone(),
@@ -380,7 +385,7 @@ impl DistributedOrchestrator {
 
     /// Broadcast join message
     async fn broadcast_join(&self, domain: &str) -> Result<()> {
-        let message = peerup::distributed::PublicMonitorMessage::Join {
+        let message = crate::orchestrator::public_monitor::PublicMonitorMessage::Join {
             domain: domain.to_string(),
             peer_id: self.peer_id.clone(),
         };
@@ -401,9 +406,13 @@ impl DistributedOrchestrator {
     }
 
     /// Broadcast orchestration vote
-    async fn broadcast_vote(&self, vote: peerup::distributed::OrchestrationVote) -> Result<()> {
-        let message =
-            peerup::distributed::PublicMonitorMessage::Vote { vote: Box::new(vote.clone()) };
+    async fn broadcast_vote(
+        &self,
+        vote: crate::orchestrator::public_monitor::OrchestrationVote,
+    ) -> Result<()> {
+        let message = crate::orchestrator::public_monitor::PublicMonitorMessage::Vote {
+            vote: Box::new(vote.clone()),
+        };
 
         debug!("Broadcasting orchestration vote for domain: {}", vote.domain);
 

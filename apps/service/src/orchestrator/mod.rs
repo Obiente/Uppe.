@@ -15,6 +15,7 @@ pub mod admin_trust;
 /// for private services, coordinating helper peers and result synchronization.
 pub mod distributed;
 pub mod private;
+pub mod public_monitor;
 pub mod retention;
 
 #[cfg(test)]
@@ -250,7 +251,7 @@ impl Orchestrator {
         // aggregate results and peer counts correctly.
         let mut target_to_local_uuid: HashMap<String, Uuid> = HashMap::new();
         for m in &monitors {
-            monitor_visibility.insert(m.uuid, m.visibility.clone());
+            monitor_visibility.insert(m.uuid, m.visibility);
             if m.is_public() {
                 target_to_local_uuid.insert(m.target.trim_end_matches('/').to_lowercase(), m.uuid);
             }
@@ -1025,9 +1026,9 @@ impl Orchestrator {
                                 if let Err(e) = dist_orch.handle_peer_join(domain.clone(), creator_peer_id.clone()).await {
                                     tracing::debug!("handle_peer_join {}/{}: {}", domain, creator_peer_id, e);
                                 }
-                                let vote = peerup::distributed::OrchestrationVote {
+                                let vote = crate::orchestrator::public_monitor::OrchestrationVote {
                                     domain: domain.clone(),
-                                    schedule: peerup::distributed::OrchestrationSchedule {
+                                    schedule: crate::orchestrator::public_monitor::OrchestrationSchedule {
                                         interval_seconds,
                                         assignments: Vec::new(),
                                     },
@@ -1107,7 +1108,7 @@ impl Orchestrator {
                         }
                         P2PEvent::PublicMonitorGroupMessage { _from_peer: _, domain, message } => {
                             if let Some(dist_orch) = &self.distributed_orchestrator {
-                                use peerup::distributed::PublicMonitorMessage;
+                                use crate::orchestrator::public_monitor::PublicMonitorMessage;
                                 match *message {
                                     PublicMonitorMessage::Join { peer_id, .. } => {
                                         if let Err(e) = dist_orch.handle_peer_join(domain.clone(), peer_id.clone()).await {
@@ -1202,7 +1203,7 @@ impl Orchestrator {
                                 monitor_visibility.clear();
                                 target_to_local_uuid.clear();
                                 for m in &current_monitors {
-                                    monitor_visibility.insert(m.uuid, m.visibility.clone());
+                                    monitor_visibility.insert(m.uuid, m.visibility);
                                     if m.is_public() {
                                         target_to_local_uuid.insert(
                                             m.target.trim_end_matches('/').to_lowercase(),

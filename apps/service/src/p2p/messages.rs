@@ -2,6 +2,7 @@
 use serde::{Deserialize, Serialize};
 
 use crate::monitoring::types::CheckResult;
+use crate::orchestrator::public_monitor::PublicMonitorMessage;
 
 /// Signed message published to the P2P network
 /// This wraps a CheckResult with signature and public key for verification
@@ -158,7 +159,7 @@ pub enum P2PEvent {
     PublicMonitorGroupMessage {
         _from_peer: String,
         domain: String,
-        message: Box<peerup::distributed::PublicMonitorMessage>,
+        message: Box<PublicMonitorMessage>,
     },
 
     /// A monitoring result was received from a peer

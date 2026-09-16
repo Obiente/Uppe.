@@ -62,7 +62,7 @@ pub struct AppState {
     pub distributed_tab: super::ui::distributed::DistributedTab,
     pub public_monitors: Vec<Monitor>,
     pub selected_public_monitor: usize,
-    pub public_monitor_groups: Vec<peerup::distributed::PublicMonitorGroup>,
+    pub public_monitor_groups: Vec<crate::orchestrator::public_monitor::PublicMonitorGroup>,
     pub consensus_states: std::collections::HashMap<String, ConsensusInfo>,
     pub rate_limit_stats: std::collections::HashMap<String, u64>,
 
@@ -466,7 +466,7 @@ impl AppState {
     pub fn update_distributed_state(
         &mut self,
         public_monitors: Vec<Monitor>,
-        groups: Vec<peerup::distributed::PublicMonitorGroup>,
+        groups: Vec<crate::orchestrator::public_monitor::PublicMonitorGroup>,
     ) {
         self.public_monitors = public_monitors;
         self.public_monitor_groups = groups;

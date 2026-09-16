@@ -58,7 +58,7 @@ pub mod trust;
 /// Re-export common error types
 pub use anyhow;
 pub use network::{PeerUPBehaviour, PeerUPBehaviourState, PeerUPEvent};
-pub use node::{core::gossipsub::MONITORING_RESULTS_TOPIC, NodeConfig, PeerNode};
+pub use node::{NodeConfig, PeerNode};
 pub use protocol::{ProbeCodec, ProbeRequest, ProbeResponse, PROBE_PROTOCOL};
 
 // Re-export commonly needed libp2p types for consumers

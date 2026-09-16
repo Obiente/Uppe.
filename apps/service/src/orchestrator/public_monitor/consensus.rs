@@ -184,7 +184,8 @@ impl ConsensusState {
         }
 
         // Validate schedule against rate limits
-        self.rate_limit.validate_schedule(&vote.schedule, vote.schedule.assignments.len())?;
+        self.rate_limit
+            .validate_schedule(&vote.schedule, vote.schedule.assignments.len())?;
 
         // Check if already voted
         if self.pending_votes.iter().any(|v| v.voter_peer_id == vote.voter_peer_id) {
@@ -202,7 +203,8 @@ impl ConsensusState {
         total_peers: usize,
     ) -> Option<super::visibility::OrchestrationSchedule> {
         let now = chrono::Utc::now().timestamp();
-        self.pending_votes.retain(|vote| vote.timestamp >= now - 300 && vote.timestamp <= now + 30);
+        self.pending_votes
+            .retain(|vote| vote.timestamp >= now - 300 && vote.timestamp <= now + 30);
         if total_peers == 0 || self.pending_votes.is_empty() {
             return None;
         }
@@ -487,11 +489,11 @@ mod tests {
 
         // Cast votes with real signatures
         for _ in 0..3 {
-            let keypair = crate::crypto::generate_keypair();
+            let keypair = peerup::crypto::generate_keypair();
             let timestamp = chrono::Utc::now().timestamp();
             let schedule_json = serde_json::to_string(&schedule).unwrap();
             let vote_data = format!("test.com:{}:{}", schedule_json, timestamp);
-            let sig_bytes = crate::crypto::sign_bytes(vote_data.as_bytes(), &keypair);
+            let sig_bytes = peerup::crypto::sign_bytes(vote_data.as_bytes(), &keypair);
 
             let vote = OrchestrationVote {
                 domain: "test.com".to_string(),

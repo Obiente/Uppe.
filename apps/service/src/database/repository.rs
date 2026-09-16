@@ -91,24 +91,24 @@ pub trait Database: Send + Sync {
     async fn get_public_monitor_group(
         &self,
         domain: &str,
-    ) -> Result<Option<peerup::distributed::PublicMonitorGroup>>;
+    ) -> Result<Option<crate::orchestrator::public_monitor::PublicMonitorGroup>>;
 
     /// Save or update public monitor group
     async fn save_public_monitor_group(
         &self,
-        group: &peerup::distributed::PublicMonitorGroup,
+        group: &crate::orchestrator::public_monitor::PublicMonitorGroup,
     ) -> Result<()>;
 
     /// Get orchestration votes for a domain
     async fn get_orchestration_votes(
         &self,
         domain: &str,
-    ) -> Result<Vec<peerup::distributed::OrchestrationVote>>;
+    ) -> Result<Vec<crate::orchestrator::public_monitor::OrchestrationVote>>;
 
     /// Save orchestration vote
     async fn save_orchestration_vote(
         &self,
-        vote: &peerup::distributed::OrchestrationVote,
+        vote: &crate::orchestrator::public_monitor::OrchestrationVote,
     ) -> Result<()>;
 
     /// Get a setting value by key
@@ -819,7 +819,7 @@ impl Database for DatabaseImpl {
     async fn get_public_monitor_group(
         &self,
         domain: &str,
-    ) -> Result<Option<peerup::distributed::PublicMonitorGroup>> {
+    ) -> Result<Option<crate::orchestrator::public_monitor::PublicMonitorGroup>> {
         let conn = self.get_conn().await?;
 
         let stmt = conn
@@ -836,10 +836,10 @@ impl Database for DatabaseImpl {
             let schedule_json: String = row.get(3)?;
 
             let participating_peers: Vec<String> = serde_json::from_str(&participating_peers_json)?;
-            let schedule: peerup::distributed::OrchestrationSchedule =
+            let schedule: crate::orchestrator::public_monitor::OrchestrationSchedule =
                 serde_json::from_str(&schedule_json)?;
 
-            let group = peerup::distributed::PublicMonitorGroup {
+            let group = crate::orchestrator::public_monitor::PublicMonitorGroup {
                 domain: row.get(0)?,
                 display_name: row.get(1)?,
                 participating_peers,
@@ -857,7 +857,7 @@ impl Database for DatabaseImpl {
 
     async fn save_public_monitor_group(
         &self,
-        group: &peerup::distributed::PublicMonitorGroup,
+        group: &crate::orchestrator::public_monitor::PublicMonitorGroup,
     ) -> Result<()> {
         let conn = self.get_conn().await?;
 
@@ -889,7 +889,7 @@ impl Database for DatabaseImpl {
     async fn get_orchestration_votes(
         &self,
         domain: &str,
-    ) -> Result<Vec<peerup::distributed::OrchestrationVote>> {
+    ) -> Result<Vec<crate::orchestrator::public_monitor::OrchestrationVote>> {
         let conn = self.get_conn().await?;
 
         let stmt = conn
@@ -904,10 +904,10 @@ impl Database for DatabaseImpl {
 
         while let Some(row) = rows.next().await? {
             let schedule_json: String = row.get(2)?;
-            let schedule: peerup::distributed::OrchestrationSchedule =
+            let schedule: crate::orchestrator::public_monitor::OrchestrationSchedule =
                 serde_json::from_str(&schedule_json)?;
 
-            votes.push(peerup::distributed::OrchestrationVote {
+            votes.push(crate::orchestrator::public_monitor::OrchestrationVote {
                 domain: row.get(0)?,
                 voter_peer_id: row.get(1)?,
                 schedule,
@@ -922,7 +922,7 @@ impl Database for DatabaseImpl {
 
     async fn save_orchestration_vote(
         &self,
-        vote: &peerup::distributed::OrchestrationVote,
+        vote: &crate::orchestrator::public_monitor::OrchestrationVote,
     ) -> Result<()> {
         let conn = self.get_conn().await?;
 
